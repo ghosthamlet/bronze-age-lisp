@@ -1,0 +1,54 @@
+TODO
+----
+
+- add tests
+- fix (list* ...)
+- add missing ground bindings from Kernel Report
+- add ground bindings for Klisp compatibility
+- add numeric tower
+- improve unicode support
+- improve REPL (history, sytax higlighting on ANSI terminals)
+- add comments, write documentation
+
+-------
+
+Booleans:
+  and? or?
+
+Pairs and lists:
+  cXXXr, cXXXXr
+  get-list-metrics list-tail
+  list-ref append list-neighbors filter member
+  finite-list? countable-list? reduce
+
+Pairs mutation:
+  set-car! set-cdr! copy-es-immutable encycle!
+  append! copy-es assq
+
+Combiners:
+  apply
+  map
+
+Continuations:
+  call/cc $let/cc extend-continuation exit
+
+Control:
+  for-each
+
+Environments:
+  make-environment
+  $let $let* $letrec $letrec* $let-redirect $let-safe
+  $binds? $remote-eval $bindings-environment
+
+Environment mutation:
+  $provide! $import!
+
+Ports:
+  with-input-from-file with-output-from-file
+  get-current-input-port get-current-output-port
+  call-with-input-file call-with-output-file
+  get-module
+
+Everything from modules:
+  encapsulation, promises, keyed static/dynamic variables,
+  vectors, keywords, strings, characters, libraries, system

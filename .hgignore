@@ -1,0 +1,8 @@
+syntax: glob
+
+*~
+build/*
+tst/build/*
+unicode/{generated-*,tmp}.asm
+unicode/encode
+*.o
