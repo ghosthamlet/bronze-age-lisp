@@ -43,7 +43,7 @@
     $quote $quote*
     $sequence $when $unless $if $cond
     $and? $or?
-    $define! $set! $let1
+    $define! $set! $let1 $binds?
     $vau $lambda
     $let/cc)
   ($bounded-app 0 0
@@ -69,6 +69,8 @@
     assoc memq?
     div mod div-and-mod
     apply-continuation)
+  ($bounded-app 2 3
+    apply)
   ($bounded-app 3 3
     guard-continuation guard-dynamic-extent)
   ($unbounded-app 2 3

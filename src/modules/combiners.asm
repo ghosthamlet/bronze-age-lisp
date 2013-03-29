@@ -108,3 +108,50 @@ app_unwrap:
     mov ecx, symbol_value(rom_string_unwrap)
     jmp rn_error
 
+;;
+;; app_apply (continuation passing procedure)
+;;
+;; Implementation of (apply COMBINER PTREE)
+;;               and (apply COMBINER PTREE ENVIRONMENT)
+;;
+;; preconditions: EBX = 1st arg = COMBINER
+;;                ECX = 2nd arg = PTREE
+;;                EDX = 3nd arg = optional ENVIRONMENT
+;;                EDI = dynamic environment (not used)
+;;                EBP = current continuation
+;;
+app_apply:
+  .A2:
+    test bl, 3
+    jnz .error
+    mov eax, [ebx]
+    cmp al, applicative_header(0)
+    jne .error
+    mov esi, ebx
+    mov ebx, empty_env_object
+    call rn_make_list_environment
+    mov edi, eax
+    mov eax, [esi + applicative.underlying]
+    mov ebx, ecx
+    jmp rn_combine
+  .A3:
+    test bl, 3
+    jnz .error
+    mov eax, [ebx]
+    cmp al, applicative_header(0)
+    jne .error
+    mov esi, ebx
+    mov ebx, edx ; irritant in case of error
+    test bl, 3
+    jnz .error
+    mov eax, [ebx]
+    cmp al, environment_header(0)
+    mov edi, edx
+    mov eax, [esi + applicative.underlying]
+    mov ebx, ecx
+    jmp rn_combine
+
+  .error:
+    mov eax, err_invalid_argument
+    mov ecx, symbol_value(rom_string_apply)
+    jmp rn_error

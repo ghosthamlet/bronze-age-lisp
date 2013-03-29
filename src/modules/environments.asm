@@ -127,11 +127,18 @@ primop_SsetB:
     mov ecx, symbol_value(rom_string_SsetB)
     jmp rn_error
 
-    align 4
+;;
+;; primop_Slet1 (continuation passing procedure)
+;;
+;; Implementation of simple binding form
+;;
+;;    ($let1 SYMBOL VALUE . BODY)
+;;
+;; preconditions:  EBX = argument list = (SYMBOL VALUE . BODY)
+;;                 EDI = dynamic environment
+;;                 EBP = continuation
+;;
 primop_Slet1:
-    ;; ebx = (symbol expr . body)
-    ;; edi = (parent) environment
-    ;; ebp = continuation
     call rn_pairP_procz
     jnz .error
     mov eax, car(ebx)   ; eax = symbol
@@ -169,25 +176,47 @@ primop_Slet1:
     mov ebx, cdr(ebx)
     jmp primop_Ssequence
 
+;;
+;; app_get_current_environment.A0 (continuation passing procedure)
+;;
+;; Implementation of (get-current-environment)
+;;
+;; preconditions:  EDI = dynamic environment
+;;                 EBP = continuation
+;;
 app_get_current_environment:
   .A0:
     mov eax, edi
     call rn_capture
     jmp [ebp + cont.program]
 
+;;
+;; app_make_kernel_standard_environment.A0 (continuation passing procedure)
+;;
+;; Implementation of (make-kernel-standard-environment). The
+;; environment is not "standard", though.
+;;
+;; preconditions:  EDI = dynamic environment
+;;                 EBP = continuation
+;;
 app_make_kernel_standard_environment:
   .A0:
     mov ebx, ground_env_object
     call rn_make_list_environment
     jmp [ebp + cont.program]
 
+;;
+;; app_eval.A2 (continuation passing procedure)
+;;
+;; Implementation of (eval OBJECT ENVIRONMENT).
+;;
+;; preconditions:  EBX = 1st arg = OBJECT
+;;                 ECX = 2nd arg = ENVIRONMENT
+;;                 EDI = dynamic environment (not used)
+;;                 EBP = continuation
+;;
 app_eval:
   .A2:
-    ;; eax = closure (not used)
-    ;; ebx = first argument (expression)
-    ;; ecx = second argument (environment)
-    ;; edi = dynamic environment (not used)
-    ;; ebp = continuation
     test cl, 3
     jnz .type_error
     mov eax, [ecx]
@@ -200,3 +229,82 @@ app_eval:
     mov ebx, ecx
     mov ecx, symbol_value(rom_string_eval)
     jmp rn_error
+
+;;
+;; primop_SbindsP (continuation passing procedure)
+;;
+;; Implementation of ($binds? EXPR . SYMBOLS)
+;;
+;; preconditions:  EBX = argument list = (EXPR . SYMBOLS)
+;;                 EDI = dynamic environment (not used)
+;;                 EBP = continuation
+;;
+primop_SbindsP:
+    test bl, 3
+    jz .structure_error
+    jnp .structure_error
+    mov esi, car(ebx)                ; esi := EXPR
+    mov ebx, cdr(ebx)                ; ebx := SYMBOLS
+    mov edx, .continue
+    call make_helper_continuation    ; save ebx, edi, ebp
+    mov ebx, esi                     ; ebx := EXPR
+    jmp rn_eval
+
+  .symbol_error:
+    pop eax
+    pop ebp
+  .environment_error:
+    mov eax, err_invalid_argument
+    jmp .fail
+  .structure_error:
+    mov eax, err_invalid_argument_structure
+  .fail:
+    mov ecx, symbol_value(rom_string_SbindsP)
+    jmp rn_error
+
+  .continue:
+    call discard_helper_continuation
+    mov esi, ebx                     ; esi := SYMBOLS
+    mov ebx, eax                     ; irritant in case of error
+    test al, 3
+    jnz .environment_error
+    mov edi, eax                     ; edi := evaluated env.
+    mov eax, [edi]
+    cmp al, environment_header(0)
+    jne .environment_error
+    mov ebx, esi                     ; ebx := SYMBOLS
+    call rn_list_metrics
+    mov ebx, esi                     ; irritant in case of error
+    test eax, eax
+    jz .structure_error
+    mov ecx, edx
+    jecxz .done                      ; empty list?
+    push ebp                         ; save current continuation
+    push .yes                        ; [esp] = success address
+    lea ebp, [esp - cont.program]    ; pretend it's a cont. object
+  .next:
+    mov ebx, car(esi)
+    cmp bl, symbol_tag
+    jne .symbol_error
+    mov esi, cdr(esi)                ; advance to next elem.
+    push ecx                         ; save local values
+    push esi                         ;   ...
+    push .no                         ; fail address
+    push edi                         ; save starting environment
+    jmp [edi + environment.program]
+  .yes:
+    pop esi
+    pop ecx
+    loop .next
+    pop eax
+    pop ebp
+  .done:
+    mov eax, boolean_value(1)
+    jmp [ebp + cont.program]
+  .no:
+    pop esi
+    pop ecx
+    pop eax
+    pop ebp
+    mov eax, boolean_value(0)
+    jmp [ebp + cont.program]

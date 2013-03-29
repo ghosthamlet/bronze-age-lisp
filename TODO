@@ -26,7 +26,6 @@ Pairs mutation:
   append! copy-es assq
 
 Combiners:
-  apply
   map
 
 Continuations:
@@ -38,7 +37,7 @@ Control:
 Environments:
   make-environment
   $let $let* $letrec $letrec* $let-redirect $let-safe
-  $binds? $remote-eval $bindings-environment
+  $remote-eval $bindings->environment
 
 Environment mutation:
   $provide! $import!
