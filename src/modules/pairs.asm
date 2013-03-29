@@ -116,6 +116,9 @@ app_list:
     push eax
     call rn_cons
     jmp [ebp + cont.program]
+  .operate:
+    mov eax, ebx
+    jmp [ebp + cont.program]
 
 ;;
 ;; app_listX.A1 ... .A3, .An, .On (continuation passing procedures)

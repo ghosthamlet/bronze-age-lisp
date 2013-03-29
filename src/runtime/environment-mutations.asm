@@ -27,6 +27,49 @@ rn_make_list_environment:
     pop ecx
     ret
 
+;;
+;; rn_make_multiparent_environment (native procedure)
+;;
+;; Allocate new, persistent, multiparent list environment.
+;;
+;; preconditions:  ECX = number of parents (untagged)
+;;                 ECX >= 2
+;;                 [ESP + 4*(ECX-1)] = 1st parent env
+;;                 [ESP + 4*(ECX-2)] = 2nd parent env
+;;                 [ESP + 0] = last parent
+;;
+;; postconditions: EAX = new environment
+;; preserves:      ECX, ECX, EDX, ESI, EDI, EBP
+;; clobbers:       EAX
+;; stack usage:    ?
+;;
+rn_make_multiparent_environment:
+    push ecx
+    add ecx, 3
+    and ecx, ~1
+    call rn_allocate
+    push edx
+    push esi
+    push edi
+    mov edx, ecx
+    shl edx, 8
+    mov dl, environment_header(0)
+    mov [eax + environment.header], edx
+    mov [eax + environment.program], dword multiparent_env_lookup
+    mov ecx, [esp + 3*4]
+    test cl, 1
+    jz .copy
+    mov [eax + environment.parent + 4*ecx], dword ignore_tag
+  .copy:
+    lea esi, [esp + 5*4]
+    lea edi, [eax + environment.parent]
+    rep movsd
+    pop edi
+    pop esi
+    pop edx
+    pop ecx
+    ret
+
 ;; rn_mutate_environment
 ;; rn_mutate_list_environment
 ;; rn_mutate_private_environment

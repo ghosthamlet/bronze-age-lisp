@@ -206,6 +206,84 @@ app_make_kernel_standard_environment:
     jmp [ebp + cont.program]
 
 ;;
+;; app_make_environment (continuation passing procedures)
+;;
+;; Implementation of (make-environment),
+;;                   (make-environment E1),
+;;                   (make-environment E1 E2),
+;;               and (make-environment E1 E2 E3...).
+;;
+;; preconditions:  EDI = dynamic environment (not used)
+;;                 EBP = continuation
+;;  for .A1, .A2:  EBX = 1st arg = first parent
+;;       for .A2:  ECX = 2nd arg = second parent
+;;  for .operate:  EBX = argument list
+;;
+app_make_environment:
+  .A0:
+    mov ebx, empty_env_object
+    call rn_make_list_environment
+    jmp [ebp + cont.program]
+  .A1:
+    test bl, 3
+    jnz .type_error
+    mov eax, [ebx]
+    cmp al, environment_header(0)
+    jne .type_error
+    call rn_make_list_environment
+    jmp [ebp + cont.program]
+  .A2:
+    test bl, 3
+    jnz .type_error
+    test cl, 3
+    jnz .type_error
+    mov eax, [ebx]
+    cmp al, environment_header(0)
+    jne .type_error
+    mov eax, [ecx]
+    cmp al, environment_header(0)
+    jne .type_error
+    push ebx
+    push ecx
+    mov ecx, 2
+    call rn_make_multiparent_environment
+    mov ebx, eax
+    call rn_make_list_environment
+    add esp, 4
+    jmp [ebp + cont.program]
+  .operate:
+    mov esi, ebx
+    call rn_list_metrics
+    test eax, eax
+    jz .structure_error
+    cmp edx, 1
+    jb .A0
+    mov ebx, car(esi)
+    je .A1
+    mov ecx, edx
+  .L:
+    mov ebx, car(esi)
+    test bl, 3
+    jnz .type_error
+    mov eax, [ebx]
+    cmp al, environment_header(0)
+    jne .type_error
+    push ebx
+    mov esi, cdr(esi)
+    loop .L
+    mov ecx, edx
+    call rn_make_multiparent_environment
+    jmp [ebp + cont.program]
+  .type_error:
+    mov eax, err_invalid_argument
+    mov ecx, symbol_value(rom_string_make_environment)
+    jmp rn_error
+  .structure_error:
+    mov eax, err_invalid_argument_structure
+    mov ecx, symbol_value(rom_string_make_environment)
+    jmp rn_error
+
+;;
 ;; app_eval.A2 (continuation passing procedure)
 ;;
 ;; Implementation of (eval OBJECT ENVIRONMENT).

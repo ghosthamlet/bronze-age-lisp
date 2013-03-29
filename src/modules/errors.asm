@@ -14,7 +14,7 @@ app_error:
     mov ecx, symbol_value(rom_string_error)
     jmp rn_error
   .An:
-  .On:
+  .operate:
     mov eax, car(ebx)
     mov ebx, cdr(ebx)
     jmp .throw

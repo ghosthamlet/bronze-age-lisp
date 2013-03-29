@@ -221,16 +221,16 @@
 
   ($define! emit-applicative-support
     ($lambda ()
-      ($let ((cases ($quote* (0 0) (0 1) (1 1) (1 2) (2 2) (2 3) (0 3) (1 3) (3 3))))
+      ($let ((cases-b ($quote* (0 0) (0 1) (1 1) (0 2) (1 2) (2 2) (2 3) (0 3) (1 3) (3 3)))
+             (cases-u ($quote* (0 1) (0 2) (0 3) (2 3))))
         (asm-label "rn_asm_applicative")
-        (for-each emit-bounded-applicative-instance cases)
-        (for-each emit-unbounded-applicative-instance
-          (list (list 0 1) (list 0 3) (list 2 3)))
+        (for-each emit-bounded-applicative-instance cases-b)
+        (for-each emit-unbounded-applicative-instance cases-u)
         (emit-error-handler)
         (asm)
         (asm)
         (asm-label "rn_asm_operative")
-        (for-each emit-operative-instance cases)
+        (for-each emit-operative-instance cases-b)
         (emit-error-handler))))
 
   ($define! make-bounded-applicative

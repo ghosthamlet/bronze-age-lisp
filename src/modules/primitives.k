@@ -8,7 +8,8 @@
      ($vau symbols #ignore
        (for-each
          ($lambda (s)
-           (bind-ground! s (make-primitive-operative "primop_" s)))
+           (bind-ground! s
+             (make-primitive-operative "primop_" (asm-identifier s))))
          symbols)))
    (genlist
      ($lambda (a b suffix)
@@ -37,7 +38,8 @@
                (make-unbounded-applicative
                  (list a b)
                  (genlist a b t)
-                 (make-primitive-operative "primop_SquoteX")))))
+                 (make-primitive-operative
+                   "app_" t ".operate")))))
          symbols))))
   ($prim-op
     $quote $quote*
@@ -79,6 +81,8 @@
     (+ "plus") (* "times"))
   ($unbounded-app 0 1
     error)
+  ($unbounded-app 0 2
+    make-environment)
   ($unbounded-app 0 3
     list))
 

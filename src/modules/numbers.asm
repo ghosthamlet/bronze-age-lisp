@@ -56,6 +56,9 @@ app_plus:
     lea eax, [ebx + ecx - 1]
     lea eax, [eax + edx - 1]
     jmp [ebp + cont.program]
+  .operate:
+    mov eax, err_not_implemented
+    jmp rn_error
 
 app_times:
   .A0:
@@ -81,6 +84,9 @@ app_times:
     imul ebx, edx
     lea eax, [1 + 4*ebx]
     jmp [ebp + cont.program]
+  .operate:
+    mov eax, err_not_implemented
+    jmp rn_error
 
 app_minus:
   .A2:
@@ -99,6 +105,9 @@ app_minus:
     sub ebx, edx
     lea eax, [1 + 4*ebx]
     jmp [ebp + cont.program]
+  .operate:
+    mov eax, err_not_implemented
+    jmp rn_error
 
 app_div:
   .A2:

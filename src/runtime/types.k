@@ -242,7 +242,7 @@
     ($lambda label-cs
       (make-tagged-value primitive-tag
         (string-append*
-          (asm-identifier (apply string-append* label-cs))
+          (apply string-append* label-cs)
           " - program_segment_base")))))
 
 ;;
