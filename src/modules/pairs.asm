@@ -62,6 +62,59 @@ app_cXr:
     jmp rn_error
 
 ;;
+;; app_list_tail, app_list_ref (continuation passing procedures)
+;;
+;; Implementation of (list-tail START-OBJECT N)
+;;               and (list-ref  START-OBJECT N)
+;;
+;; preconditions:  EBX = START-OBJECT
+;;                 ECX = N
+;;                 EBP = continuation
+;;
+;; TODO: bigint???
+;;
+app_list_tail:
+  .A2:
+    mov esi, symbol_value(rom_string_list_tail)
+    call list_tail_helper
+    mov eax, ebx
+    jmp [ebp + cont.program]
+
+app_list_ref:
+  .A2:
+    mov esi, symbol_value(rom_string_list_ref)
+    call list_tail_helper
+    test bl, 3
+    jz list_tail_helper.nonpair
+    jnp list_tail_helper.nonpair
+    mov eax, car(ebx)
+    jmp [ebp + cont.program]
+
+list_tail_helper:
+    mov eax, ecx
+    xor eax, 1
+    test eax, 0x80000003
+    jnz .invalid_argument
+    shr ecx, 2
+    jecxz .done
+  .next:
+    test bl, 3
+    jz .nonpair
+    jnp .nonpair
+    mov ebx, cdr(ebx)
+    loop .next
+  .done:
+    ret
+  .invalid_argument:
+    mov eax, err_invalid_argument
+    jmp .fail
+  .nonpair:
+    mov eax, err_cannot_traverse
+  .fail:
+    mov ecx, esi
+    jmp rn_error
+
+;;
 ;; app_set_carB, app_set_cdrB (continuation passing procedures)
 ;;
 ;; Implementation of (set-car! PAIR VAL) and (set-cdr! PAIR VAL).
@@ -103,6 +156,83 @@ app_set_cdrB:
     mov  cdr(ebx), edx
     mov  eax, inert_tag
     jmp  [ebp + cont.program]
+
+;;
+;; app_encycleB (continuation passing procedure)
+;;
+;; Implementation of (encycle! START-OBJECT K1 K2)
+;;
+;; preconditions:  EBX = START-OBJECT
+;;                 ECX = K1
+;;                 EDX = K2
+;;                 EBP = continuation
+app_encycleB:
+  .A3:
+    mov esi, symbol_value(rom_string_encycleB)
+    mov eax, ecx
+    xor eax, 1
+    test eax, 0x80000003
+    jnz .invalid_argument
+    mov eax, edx
+    xor eax, 1
+    test eax, 0x80000003
+    jnz .invalid_argument
+    cmp edx, fixint_value(0)
+    jz .done
+    call list_tail_helper
+    push ebx
+    lea ecx, [edx - 4]
+    call list_tail_helper
+    test bl, 3
+    jz .nonpair
+    jnp .nonpair
+    pop dword cdr(ebx)
+  .done:
+    mov eax, inert_tag
+    jmp  [ebp + cont.program]
+  .invalid_argument:
+    jmp list_tail_helper.invalid_argument
+  .nonpair:
+    jmp list_tail_helper.nonpair
+
+;;
+;; app_get_list_metrics (continuation passing procedure)
+;;
+;; Implementation of (get-list-metrics OBJECT).
+;;
+;; preconditions:  EBX = OBJECT
+;;                 EBP = continuation
+;;
+app_get_list_metrics:
+  .A1:
+    call rn_list_metrics
+    mov ebx, fixint_value(0)
+    test eax, eax
+    jz .no_nil                ; improper => number of nils = 0
+    test ecx, ecx
+    jnz .no_nil               ; cyclic => number of nils = 0
+    mov ebx, fixint_value(1)
+  .no_nil:
+    lea ecx, [4 * ecx + 1]    ; tagged integer ECX = cycle length
+    lea edx, [4 * edx + 1]    ; tagged integer EDX = pair count
+  .cons:
+    push ecx                  ; c = cycle length
+    push dword nil_tag
+    call rn_cons
+    mov esi, edx              ; a = acyclic prefix length
+    sub esi, ecx
+    inc esi
+    push esi
+    push eax
+    call rn_cons
+    push ebx                  ; n = number of nils
+    push eax
+    call rn_cons
+    push edx                  ; p = number of pairs
+    push eax
+    call rn_cons
+    jmp [ebp + cont.program]  ; return (p n a c)
+
 ;;
 ;; app_length (continuation passing procedure)
 ;;

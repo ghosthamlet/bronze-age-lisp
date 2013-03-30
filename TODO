@@ -17,12 +17,10 @@ Booleans:
 
 Pairs and lists:
   cXXXr, cXXXXr
-  get-list-metrics list-tail
-  list-ref append list-neighbors filter member
+  append list-neighbors filter member
   finite-list? countable-list? reduce
 
 Pairs mutation:
-  set-car! set-cdr! encycle!
   append! copy-es assq
 
 Combiners:

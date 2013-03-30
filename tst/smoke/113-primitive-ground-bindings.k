@@ -1,6 +1,6 @@
 ;; Test whether that the interpreter claims support of all
 ;; ground bindings from Revised(-1) Report on the Kernel
-;; Programmin Language chapter 4: Core types and primitive
+;; Programming Language chapter 4: Core types and primitive
 ;; features.
 ;;
 ;; The interpreter must also support the bindings $sequence,

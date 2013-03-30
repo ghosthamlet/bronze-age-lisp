@@ -55,7 +55,7 @@
     get-interpreter-arguments)
   ($bounded-app 1 1
     not?
-    length ;string-length
+    get-list-metrics length ;string-length
     wrap unwrap
     copy-es-immutable
     get-output-string
@@ -69,6 +69,7 @@
     char-digit? char->digit)
   ($bounded-app 2 2
     cons eval
+    list-tail list-ref
     set-car! set-cdr!
     assoc memq?
     div mod div-and-mod
@@ -76,6 +77,7 @@
   ($bounded-app 2 3
     apply)
   ($bounded-app 3 3
+    encycle!
     guard-continuation guard-dynamic-extent)
   ($unbounded-app 2 3
     (- "minus"))
