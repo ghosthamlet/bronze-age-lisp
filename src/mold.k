@@ -215,6 +215,7 @@
     "guarded-continuations.asm"
     "mark-bits.asm"
     "equality.asm"
+    "deep-copies.asm"
     "parameter-trees.asm"
     "runtime-errors.asm"
     "platform-initialization.asm"

@@ -174,6 +174,22 @@ pred_operative:
     xor eax, eax
     ret
 
+pred_mutable_pair:
+    mov eax, ebx
+    xor eax, 0x80000003
+    test eax, 0x80000003
+    setz al
+    and eax, 0x000000FF
+    ret
+
+pred_immutable_pair:
+    mov eax, ebx
+    xor eax, 0x00000003
+    test eax, 0x80000003
+    setz al
+    and eax, 0x000000FF
+    ret
+
 ;;
 ;; op_relational_predicate:
 ;;

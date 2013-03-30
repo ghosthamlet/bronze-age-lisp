@@ -83,6 +83,16 @@ app_length:
     jmp [ebp + cont.program]
 
 ;;
+;; app_copy_es_immutable.A1 (continuation passing procedures)
+;;
+;; Implementation of (copy-es-immutable X)
+;;
+app_copy_es_immutable:
+  .A1:
+    call rn_copy_es_immutable
+    jmp [ebp + cont.program]
+
+;;
 ;; app_list.A0 ... .A3, .An (continuation passing procedures)
 ;;
 ;; Implementation of (list) (list X) (list X Y) (list X Y Z)

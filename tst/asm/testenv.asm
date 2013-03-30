@@ -87,8 +87,10 @@ fail:
 
 next_subtest:
 %ifdef VERBOSE
+    push eax
     mov al, '_'
     call print_char
+    pop eax
 %endif
     ret
 

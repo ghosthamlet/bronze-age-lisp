@@ -57,6 +57,7 @@
     not?
     length ;string-length
     wrap unwrap
+    copy-es-immutable
     get-output-string
     char->integer integer->char
     open-utf-encoder open-utf-decoder

@@ -85,7 +85,10 @@ case "$1" in
     -n) CONF_DEBUG="$CONF_DEBUG_OFF"
         shift
         ;;
-    *)  CONF_DEBUG="$CONF_DEBUG_ON"
+    -d) CONF_DEBUG="$CONF_DEBUG_ON"
+        shift
+        ;;
+    *)  CONF_DEBUG="$CONF_DEBUG_OFF"
         ;;
 esac
 
