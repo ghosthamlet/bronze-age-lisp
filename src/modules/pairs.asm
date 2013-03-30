@@ -62,6 +62,48 @@ app_cXr:
     jmp rn_error
 
 ;;
+;; app_set_carB, app_set_cdrB (continuation passing procedures)
+;;
+;; Implementation of (set-car! PAIR VAL) and (set-cdr! PAIR VAL).
+;;
+;; preconditions:  EBX = PAIR
+;;                 ECX = VAL
+;;                 EBP = continuation
+;;
+app_set_carB:
+  .A2:
+    mov  edx, ecx
+    mov  ecx, symbol_value(rom_string_set_carB)
+    mov  eax, ebx
+    xor  eax, 0x80000003
+    test eax, 0x80000003
+    jnz  .error
+    mov  car(ebx), edx
+    mov  eax, inert_tag
+    jmp  [ebp + cont.program]
+  .error:
+    test bl, 3
+    jz .nonpair
+    jnp .nonpair
+  .immutable:
+    mov eax, err_immutable_pair
+    jmp rn_error
+  .nonpair:
+    mov eax, err_invalid_argument
+    jmp rn_error
+
+app_set_cdrB:
+  .A2:
+    mov  edx, ecx
+    mov  ecx, symbol_value(rom_string_set_carB)
+    mov  eax, ebx
+    xor  eax, 0x80000003
+    test eax, 0x80000003
+    jnz  app_set_carB.error
+    mov  cdr(ebx), edx
+    mov  eax, inert_tag
+    jmp  [ebp + cont.program]
+;;
 ;; app_length (continuation passing procedure)
 ;;
 ;; Implementation of (cons X Y).

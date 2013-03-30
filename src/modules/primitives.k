@@ -69,6 +69,7 @@
     char-digit? char->digit)
   ($bounded-app 2 2
     cons eval
+    set-car! set-cdr!
     assoc memq?
     div mod div-and-mod
     apply-continuation)

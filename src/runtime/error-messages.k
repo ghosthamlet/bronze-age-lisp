@@ -27,6 +27,7 @@
     (out-of-blob-memory "Out of memory (blobs).")
     (cannot-traverse "Cannot traverse list structure.")
     (immutable-environment "Attempted to mutate immutable environment.")
+    (immutable-pair "Attempted to mutate immutable pair.")
     (match-failure "Match failure")
     (io "I/O error")
     (invalid-codepoint "Not a valid unicode code point")
