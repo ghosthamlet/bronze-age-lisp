@@ -214,7 +214,7 @@ rn_equal_find:
     mov eax, edx
     shr eax, 5                         ; index of 32-bit word
     and edx, 31                        ; index of bit within the word
-    bts [esi + eax], edx               ; get&set mark bit
+    bts [esi + 4*eax], edx             ; get&set mark bit
     jc .already_initialized
     pop edx                            ; restore element index
     mov eax, edx                       ; return value

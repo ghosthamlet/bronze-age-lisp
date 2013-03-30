@@ -69,6 +69,22 @@ smoke_test()
     fi
 }
 
+prepare_dual_test()
+{
+    echo "preparing dual tests..."
+    klisp ../src/mold.k \
+        $CONF_DEBUG \
+        'src-prefix="../src/"' > build/dual.asm
+    nasm -g -f elf32 -o build/dual.o -i ../src/ -i asm/ -i build/ build/dual.asm
+    ld -o build/dual.bin build/dual.o -Tasm/linker-script.ld
+}
+
+dual_test()
+{
+    echo -n "$1 ..."
+    build/dual.bin dual/dual-test.k $1
+}
+
 run_all_tests()
 {
     prepare_asm_test
@@ -78,6 +94,10 @@ run_all_tests()
     prepare_smoke_test
     for t in smoke/[0-9]*.k ; do
         smoke_test $t
+    done
+    prepare_dual_test
+    for t in dual/[0-9]*.k ; do
+        dual_test $t
     done
 }
 
@@ -99,6 +119,9 @@ if [ $# -ne 0 ] ; then
          ;;
     1??) prepare_smoke_test
          smoke_test smoke/$1-*.k
+         ;;
+    2??) prepare_dual_test
+         dual_test dual/$1-*.k
          ;;
     *)   echo "usage: test.sh [NUMBER]" 1>&2
          exit 1

@@ -96,15 +96,15 @@ rn_check_ptree:
     call rn_mark_index.pair
   .clear_mark:
     mov edx, eax
-    shr eax, 5            ; index of 32-bit word in the mark bit array
-    and edx, 31           ; index of bit within the word
-    btr [esi + eax], edx  ; clear mark bit
+    shr eax, 5              ; index of 32-bit word in the mark bit array
+    and edx, 31             ; index of bit within the word
+    btr [esi + 4*eax], edx  ; clear mark bit
     ret
   .set_mark:
     mov edx, eax
-    shr eax, 5            ; index of 32-bit word
-    and edx, 31           ; index of bit within the word
-    bts [esi + eax], edx  ; copy mark bit to CF and set it to 1
+    shr eax, 5              ; index of 32-bit word
+    and edx, 31             ; index of bit within the word
+    bts [esi + 4*eax], edx  ; copy mark bit to CF and set it to 1
     ret
 
 ;;
@@ -121,7 +121,12 @@ rn_match_ptree_procz:
     push eax
     push ebx
     push edx
+    push ebp
+    mov ebp, esp
     call .recurse
+  .abort:
+    mov esp, ebp
+    pop ebp
     pop edx
     pop ebx
     pop eax
@@ -137,19 +142,18 @@ rn_match_ptree_procz:
     ret
   .trivial:
     xor al, al  ; set ZF=1
-  .return:
     ret
   .pair:
     xchg ebx, edx
     call rn_pairP_procz
-    jnz .return
+    jnz .abort
     xchg edx, ebx
     push dword cdr(ebx)
     push dword cdr(edx)
     mov ebx, car(ebx)
     mov edx, car(edx)
     call .recurse
-    jnz .return
+    jnz .abort
     pop edx
     pop ebx
     jmp .recurse

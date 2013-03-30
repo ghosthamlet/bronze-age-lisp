@@ -36,7 +36,7 @@ primop_Svau:
     jmp [ebp + cont.program]
   .structure_error:
     mov eax, err_invalid_argument_structure
-  .ptree_error:
+  .ptree_error: ; message set by rn_check_ptree
     mov ecx, symbol_value(rom_string_Svau)
     jmp rn_error
 
@@ -64,8 +64,9 @@ primop_Slambda:
     jmp [ebp + cont.program]
   .structure_error:
     mov eax, err_invalid_argument_structure
-  .ptree_error:
+  .ptree_error: ; message set by rn_check_ptree
     mov ecx, symbol_value(rom_string_Slambda)
+    jmp rn_error
 
 app_wrap:
   .A1:
