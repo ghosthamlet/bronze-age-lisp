@@ -2,7 +2,7 @@ TODO
 ----
 
 - add tests
-- fix (list* ...), predicates, arithmetic applicatives
+- fix predicates, arithmetic applicatives
 - add missing ground bindings from Kernel Report
 - add ground bindings for Klisp compatibility
 - add numeric tower

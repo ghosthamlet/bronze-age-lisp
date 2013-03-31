@@ -303,14 +303,13 @@ app_list:
     jmp [ebp + cont.program]
 
 ;;
-;; app_listX.A1 ... .A3, .An, .On (continuation passing procedures)
+;; app_listX.A1 ... .A3, .operate (continuation passing procedures)
 ;;
 ;; Implementation of applicative calls
 ;;
 ;;   (list* X)
 ;;   (list* X Y)
 ;;   (list* X Y Z)
-;;   (list* X Y Z ...)
 ;;
 ;; and operative call
 ;;
@@ -333,7 +332,7 @@ app_listX:
     je rn_asm_applicative.L132
     cmp edx, 3
     je rn_asm_applicative.L133
-    jmp .An
+    jmp rn_generic_applicative
   .error:
     mov eax, err_invalid_argument_structure
     mov ecx, symbol_value(rom_string_listX)
@@ -354,13 +353,31 @@ app_listX:
     push eax
     call rn_cons
     jmp [ebp + cont.program]
-  .An:
-    ;; applicative call with 4 or more arguments
-    ;; the argument list is fresh
-    mov eax, err_not_implemented
-    jmp rn_error
   .operate:
     ;; operative call
     ;; the argument list must not be mutated
-    mov eax, err_not_implemented
+    mov esi, ebx
+    call rn_list_metrics
+    test eax, eax
+    jz .operate.error
+    test ecx, ecx
+    jnz .operate.error
+    cmp edx, 1
+    jb .operate.error
+    je .A1
+    mov ecx, edx
+  .operate.down:
+    push dword car(ebx)
+    mov ebx, cdr(ebx)
+    loop .operate.down
+    lea ecx, [edx - 1]
+  .operate.up:
+    call rn_cons
+    push eax
+    loop .operate.up
+    jmp [ebp + cont.program]
+  .operate.error:
+    mov eax, err_invalid_argument_structure
+    mov ebx, esi
+    mov ecx, symbol_value(rom_string_listX)
     jmp rn_error
