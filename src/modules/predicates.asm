@@ -231,7 +231,37 @@ op_relational_predicate:
     mov al, boolean_tag
     jmp [ebp + cont.program]
   .operate:
-    mov eax, err_not_implemented
+    push ebx
+    call rn_list_metrics
+    pop ebx
+    test eax, eax
+    jz .error
+    test ecx, ecx
+    jz .acyclic
+    inc edx
+  .acyclic:
+    cmp edx, 2
+    jb .A0
+    lea ecx, [edx - 1]
+    mov edx, cdr(ebx)
+    mov ebx, car(ebx)
+  .next:
+    push ecx
+    mov ecx, car(edx)
+    mov edx, cdr(edx)
+    call [esi + operative.var1]
+    mov ebx, ecx
+    pop ecx
+    test eax, eax
+    jz .no
+    loop .next
+    mov eax, boolean_value(1)
+    jmp [ebp + cont.program]
+  .no:
+    mov eax, boolean_value(0)
+    jmp [ebp + cont.program]
+  .error:
+    mov eax, err_invalid_argument_structure
     mov ecx, [esi + operative.var0]
     call rn_error
 
@@ -248,3 +278,26 @@ rel_char_leq:
     mov eax, err_invalid_argument
     mov ecx, [esi + operative.var0]
     call rn_error
+
+rel_integer:
+    push ebx
+    push ecx
+    push edx
+    push edi
+    mov edi, [esi + operative.var0]
+    call rn_integer_compare
+    test eax, eax
+    jz .signum
+    sar eax, 31
+    lea eax, [2*eax + 1]
+  .signum:
+    add eax, 3
+    mov ebx, [esi + operative.var2]
+    bt ebx, eax
+    setc al
+    and eax, 0xFF
+    pop edi
+    pop edx
+    pop ecx
+    pop ebx
+    ret

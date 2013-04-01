@@ -5,6 +5,8 @@
 
 err_out_of_lisp_memory      equ 0xDEAD0010
 err_internal_error          equ 0xDEAD0020
+err_not_a_number            equ 0xDEAD0030
+err_not_implemented         equ 0xDEAD0040
 private_lookup_table_length equ 0
 
 rn_get_blob_data:

@@ -92,66 +92,24 @@
   ($bind-relational-predicate! eq? "rn_eq")
   ($bind-relational-predicate! equal? "rn_equal")
   ($bind-relational-predicate! char<=? "rel_char_leq")
-  ($bind-relational-predicate! <? "rel_fixint_le")
-  )
 
-#|
+  ($define! $bind-order-predicate!
+    ($vau (symbol procedure on-le on-eq on-gt) denv
+      (bind-ground! symbol
+        (make-unbounded-applicative
+          (list 0 3)
+          (list "op_relational_predicate.A0"
+                "op_relational_predicate.A1"
+                "op_relational_predicate.A2"
+                "op_relational_predicate.A3")
+          (make-operative
+            "op_relational_predicate.operate"
+            symbol
+            (make-nonlisp-value procedure)
+            (+ ($if on-le 1 0) ($if on-eq 2 0) ($if on-gt 4 0)))))))
 
-($let
-  ((make-predicate
-    ($lambda (label . rest)
-      (make-unbounded-applicative
-        0
-        1
-        (list "app_0_predicate" "app_1_predicate")
-        (apply make-operative
-          (list* "op_predicate" label rest)))))
-   (make-relation
-    ($lambda (label . rest)
-      (make-unbounded-applicative
-        0
-        3
-        (list "app_0_relation" "app_1_relation" "app_2_relation" "app_3_relation")
-        (apply make-operative
-          (list* "op_relation" label rest))))))
-  ($bind-ground! integer? (make-predicate "pred_fixint"))
-  ($bind-ground! pair? (make-predicate "pred_pair"))
-  ($bind-ground! operative? (make-predicate "pred_operative"))
-  ($bind-ground! combiner? (make-predicate "pred_combiner"))
-  (for-each
-    (wrap
-      ($vau ((s tag)) e
-        (bind-ground! s
-          (make-predicate "pred_tag" (eval tag e)))))
-    ($quote*
-      (null? nil-tag)
-      (inert? inert-tag)
-      (ignore? ignore-tag)
-      (eof-object? eof-tag)
-      (char? char-tag)
-      (boolean? boolean-tag)
-      (symbol? symbol-tag)
-      (keyword? keyword-tag)
-      (string? string-tag)
-      (bytevector? bytevector-tag)))
-  (for-each
-    (wrap
-      ($vau ((s tag mask)) e
-        (bind-ground! s
-          (make-predicate "pred_tag"
-            (+ (eval tag e) (* 256 (eval mask e)))))))
-    ($quote*
-      (applicative? applicative-header-tag #b11111011)
-      (port? txt-in-header-tag #b11110011)
-      (vector? vector-header-tag #xFF)
-      (error-object? error-header-tag #xFF)
-      (continuation? cont-header-tag #xFF)
-      (environment? environment-header-tag #xFF)))
-  ($when ($configured character-predicates)
-    ($bind-ground! char-whitespace? (make-predicate "pred_char" "white_space_code"))
-    ($bind-ground! char-alphabetic? (make-predicate "pred_char" "alphabetic_code")))
-  ($bind-ground! eq? (make-relation "rel_eq"))
-  ($bind-ground! equal? (make-relation "rel_equal"))
-  ($bind-ground! char<=? (make-relation "rel_char_leq"))
-  ($bind-ground! <? (make-relation "rel_fixint_le")))
-|#
+  ($bind-order-predicate!  <? "rel_integer" #t #f #f)
+  ($bind-order-predicate! <=? "rel_integer" #t #t #f)
+  ($bind-order-predicate!  =? "rel_integer" #f #t #f)
+  ($bind-order-predicate! >=? "rel_integer" #f #t #t)
+  ($bind-order-predicate!  >? "rel_integer" #f #f #t))

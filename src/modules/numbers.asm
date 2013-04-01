@@ -301,16 +301,6 @@ scheme_div_mod:
     jmp rn_error
 
 ;;
-;; helper for (<? ...)
-;;
-rel_fixint_le:
-    call check_fixint.app_2
-    xor eax, eax
-    cmp ebx, ecx
-    setl al
-    ret
-
-;;
 ;; (number-digits NUMBER BASE)
 ;;
 

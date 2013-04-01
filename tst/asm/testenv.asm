@@ -64,6 +64,16 @@ pass_if:
     setb al
     movzx ebx, al
     jmp .account
+  .l:
+    push_abcd
+    setl al
+    movzx ebx, al
+    jmp .account
+  .g:
+    push_abcd
+    setg al
+    movzx ebx, al
+    jmp .account
   .account:
     mov eax, [testenv_fail + 4 * ebx]
     add eax, 1

@@ -53,6 +53,116 @@ rn_fixintP_procz:
     ret
 
 ;;
+;; rn_siglog (native procedure)
+;;
+;; Returns sign and representation length of an integer.
+;;
+;; preconditions:  EBX = object
+;;
+;; postconditions: ZF = 1 if EBX represents integer (fixint or bigint)
+;;                 ZF = 0 if EBX is does not represent integer
+;;                 EAX = S * M (untagged signed integer)
+;;
+;; where: S = sign of the number represented by EBX (-1, 0, or 1)
+;;        M = 1 if EBX is fixint
+;;        M = size of representation in 32-bit words,
+;;            not including the header, if EBX is bigint
+;;
+;; preserves:      EBX, ECX, EDX, ESI, EDI, EBP
+;; clobbers:       EAX, EFLAGS
+;; stack usage:    2 (incl. call/ret)
+;;
+rn_siglog:
+    test bl, 3
+    jz .header
+    mov eax, ebx
+    xor al, 1
+    test al, 3
+    jnz .done
+    test eax, eax
+    je .done
+    sar eax, 31
+    lea eax, [2*eax + 1]
+    cmp eax, eax           ; set ZF = 1
+  .done:
+    ret
+  .header:
+    mov eax, [ebx]
+    cmp al, bigint_header(0)
+    jne .done
+    shr eax, 8
+    dec eax
+    push edx
+    mov edx, [ebx + 4 * eax]
+    test edx, 0x80000000
+    jz .positive_bigint
+    neg eax
+    cmp eax, eax          ; set ZF = 1
+  .positive_bigint:
+    pop edx
+    ret
+
+;;
+;; rn_integer_compare
+;;
+;; Compare integers.
+;;
+;; preconditions:  EBX = integer X (fixint or bigint)
+;;                 ECX = integer Y (fixint or bigint)
+;;                 EDI = symbol for error reporting
+;;
+;; postcondition:  EAX = 0 if X = Y,
+;;                     > 0 if X > Y,
+;;                     < 0 if X < Y, if X and Y are integers
+;;
+;;                 EIP = rn_error if one if X or Y is not integer
+;;
+;; preserves:      ESI, EDI, EBP, DF
+;; clobbers:       EAX, EBX, ECX, EDX, EFLAGS(except DF)
+;;
+rn_integer_compare:
+    xchg ebx, ecx
+    call rn_siglog
+    jnz .nan
+    mov edx, eax
+    xchg ebx, ecx
+    call rn_siglog
+    jnz .nan
+    sub eax, edx
+    jne .done
+    test bl, 3
+    jz .bigint
+  .fixint:
+    mov eax, ebx
+    sar eax, 2
+    sar ecx, 2
+    sub eax, ecx
+  .done:
+    ret
+  .nan:
+    mov eax, err_not_a_number
+    mov ecx, edi
+    push dword .nan
+    jmp rn_error
+  .bigint:
+    push esi
+    push edi
+    std
+    mov edx, [ebx]
+    shr edx, 8
+    lea esi, [ebx + 4*edx - 4]
+    lea edi, [ecx + 4*edx - 4]
+    lea ecx, [edx - 1]
+    repe cmpsd
+    mov eax, [esi + 4]
+    mov ebx, [edi + 4]
+    pop edi
+    pop esi
+    cld
+    sub eax, ebx
+    ret
+
+;;
 ;; normalize_loop SIGN (native procedure)
 ;;
 ;; preconditions:   EBX = input bigint object representing
