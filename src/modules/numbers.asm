@@ -5,25 +5,17 @@
 ;;;
 ;;; todo - overflow checks
 
-rn_fixintP_procz:
-    mov eax, ebx
-    xor al, 1
-    test al, 3
-    ret
-
 check_fixint:
   .app_3:
     xchg ebx, edx
     call rn_fixintP_procz
     jne .type_error
     xchg ebx, edx
-    ret
   .app_2:
     xchg ebx, ecx
     call rn_fixintP_procz
     jne .type_error
     xchg ebx, ecx
-    ret
   .app_1:
     call rn_fixintP_procz
     jne .type_error
@@ -44,21 +36,73 @@ app_plus:
     mov eax, fixint_value(0)
     jmp [ebp + cont.program]
   .A1:
-    call check_fixint.app_1
+    call rn_integerP_procz
+    jnz .type_error
     mov eax, ebx
     jmp [ebp + cont.program]
   .A2:
-    call check_fixint.app_2
-    lea eax, [ebx + ecx - 1]
+    call .add_two_integers
     jmp [ebp + cont.program]
   .A3:
-    call check_fixint.app_3
-    lea eax, [ebx + ecx - 1]
-    lea eax, [eax + edx - 1]
+    push edx
+    call .add_two_integers
+    pop edx
+    mov ebx, eax
+    mov ecx, edx
+    call .add_two_integers
     jmp [ebp + cont.program]
-  .operate:
-    mov eax, err_not_implemented
+  .type_error:
+    mov eax, err_not_a_number
+    mov ecx, symbol_value(rom_string_C)
     jmp rn_error
+  .structure_error:
+  .cyclic:
+    mov eax, err_invalid_argument_structure
+    mov ecx, symbol_value(rom_string_C)
+    jmp rn_error
+  .operate:
+    mov esi, ebx
+    call rn_list_metrics
+    test eax, eax
+    jz .structure_error
+    test ecx, ecx
+    jnz .cyclic
+    cmp edx, 1
+    jb .A0
+    mov edi, fixint_value(0)
+    mov ecx, edx
+  .next:
+    mov ebx, car(esi)
+    mov esi, cdr(esi)
+    push ecx
+    mov ecx, edi
+    call .add_two_integers
+    pop ecx
+    mov edi, eax
+    loop .next
+    mov eax, edi
+    jmp [ebp + cont.program]
+
+  .add_two_integers:
+    call rn_integerP_procz
+    jne .type_error
+    mov dl, al
+    xchg ebx, ecx
+    call rn_integerP_procz
+    jne .type_error
+    shl dl, 1
+    or dl, al
+    and eax, 0x3
+    xchg ebx, ecx
+    mov eax, [.jump_table + eax*4]
+    call eax
+    ret
+    align 16
+  .jump_table:
+    dd rn_fixint_plus_fixint
+    dd rn_bigint_plus_fixint
+    dd rn_fixint_plus_bigint
+    dd rn_bigint_plus_bigint
 
 app_times:
   .A0:

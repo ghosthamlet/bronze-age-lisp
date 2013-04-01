@@ -171,6 +171,8 @@ rn_trace_print_lisp:
     je .case.applicative
     cmp al, (error_header & 0xFF)
     je .case.error_object
+    cmp al, bigint_header(0)
+    je .case.bigint
     jmp .case.other_header
   .tagged:
     cmp bl, boolean_tag
@@ -400,6 +402,33 @@ rn_trace_print_lisp:
     pop edx
     mov al, ']'
     jmp rn_trace_print_char
+  .case.bigint:
+    push ebx
+    mov ebx, .bigint_string
+    mov ecx, 9
+    call rn_trace_print_buf
+    pop ebx
+    mov eax, ebx
+    call rn_trace_print_hex
+    mov al, ' '
+    call rn_trace_print_char
+    mov eax, [ebx]
+    shr eax, 8
+    call rn_trace_print_hex
+    mov al, ' '
+    call rn_trace_print_char
+    mov eax, [ebx + bigint.digit0]
+    call rn_trace_print_hex
+    mov eax, [ebx + bigint.digit1]
+    call rn_trace_print_hex
+    mov eax, [ebx + bigint.digit2]
+    call rn_trace_print_hex
+    mov al, '.'
+    call rn_trace_print_char
+    call rn_trace_print_char
+    call rn_trace_print_char
+    mov al, ']'
+    jmp rn_trace_print_char
 
   .header_string db '#[header '
   .unknown_message db '<???>'
@@ -419,6 +448,7 @@ rn_trace_print_lisp:
   .operative_string db '#[operative '
   .applicative_string db '#[applicative '
   .error_object_string db '#[error '
+  .bigint_string db '#[bigint '
 
 ;;
 ;; rn_exit

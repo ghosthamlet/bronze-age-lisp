@@ -218,6 +218,7 @@
     "deep-copies.asm"
     "parameter-trees.asm"
     "runtime-errors.asm"
+    "bigints.asm"
     "platform-initialization.asm"
     "platform-ports.asm"))
 

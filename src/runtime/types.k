@@ -52,7 +52,10 @@
     (#b00100001 "txt-in" ("env" "close" "read" "peek")  "var")
     (#b00100101 "txt-out" ("env" "close" "write" "flush") "var")
     (#b00101001 "bin-in" ("env" "close" "read" "peek") "var")
-    (#b00101101 "bin-out" ("env" "close" "write" "flush") "var")))
+    (#b00101101 "bin-out" ("env" "close" "write" "flush") "var")
+
+    ;; top two bits of bigint header tag must be zero
+    (#b00110001 "bigint" () "digit")))
 
 ;;
 ;; range of fixints
@@ -168,6 +171,10 @@
 
   ($define! emit-type-macros
     ($lambda ()
+      (asm)
+      (asm ";; fixint range")
+      (asm "%define max_fixint" max-fixint)
+      (asm "%define min_fixint" min-fixint)
       (asm)
       (asm ";; type tags and structure of heap-allocated objects")
       (emit-tags)
