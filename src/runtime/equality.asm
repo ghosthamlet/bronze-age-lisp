@@ -41,6 +41,8 @@ rn_eq_header:
   .compare:
     mov eax, [ebx] ; get header fields
     mov edx, [ecx]
+    cmp al, bigint_header(0)
+    je .bigint
     cmp al, applicative_header(0)
     jne .not_equal
     cmp dl, applicative_header(0)
@@ -55,6 +57,9 @@ rn_eq_header:
     test cl, 3
     jnz .not_equal
     jmp .compare
+  .bigint:
+    call rn_shallow_compare
+    je .equal
   .not_equal:
     xor eax, eax
     pop edx
@@ -66,6 +71,29 @@ rn_eq_header:
     pop edx
     pop ecx
     pop ebx
+    ret
+
+;;
+;; rn_shallow_compare (native procedure)
+;;
+;; Compare two objects word by word.
+;;
+rn_shallow_compare:
+    push esi
+    push edi
+    mov eax, [ebx]
+    mov edi, [ecx]
+    cmp eax, edi
+    jne .done
+    lea esi, [ebx + 4]
+    lea edi, [ecx + 4]
+    mov ecx, eax
+    shr ecx, 8
+    dec ecx
+    repe cmpsd
+  .done:
+    pop edi
+    pop esi
     ret
 
 ;;
@@ -167,6 +195,8 @@ rn_equal:
     mov edx, [ecx]
     cmp al, applicative_header(0)
     je .applicative
+    cmp al, bigint_header(0)
+    je .bigint
     cmp eax, edx
     jne .not_equal
     cmp al, vector_header(0)
@@ -179,7 +209,10 @@ rn_equal:
     mov ebx, [ebx + applicative.underlying]
     mov ecx, [ecx + applicative.underlying]
     jmp .L2
-
+  .bigint:
+    call rn_shallow_compare
+    jne .not_equal
+    jmp .L1
   .string:
     cmp cl, string_tag
     jne .not_equal
