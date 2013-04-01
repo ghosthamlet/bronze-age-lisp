@@ -10,8 +10,10 @@
         (write-char #\( p)
         (write-simple-aux (car x) p)
         (write-simple-tail (cdr x) p))
-      ((integer? x)
+      ((fixint? x)
         (write-number x 10 p))
+      ((bigint? x)
+        (write-string "#[bigint]" p)) ;; TODO
       ((inert? x)
         (write-string "#inert" p))
       ((ignore? x)

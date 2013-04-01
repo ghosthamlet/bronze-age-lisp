@@ -190,6 +190,12 @@ pred_immutable_pair:
     and eax, 0x000000FF
     ret
 
+pred_integer:
+    xor eax, eax
+    call rn_integerP_procz
+    setz al
+    ret
+
 ;;
 ;; op_relational_predicate:
 ;;

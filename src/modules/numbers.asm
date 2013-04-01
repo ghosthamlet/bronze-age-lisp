@@ -5,6 +5,67 @@
 ;;;
 ;;; todo - overflow checks
 
+;;
+;; app_negate.A1 (continuation passing procedure)
+;;
+;; Implementation of (negate X) == (- 0 X).
+;;
+app_negate:
+  .A1:
+    call rn_integerP_procz
+    jne .error
+    test al, al
+    jnz .bigint
+    call rn_negate_fixint
+    jmp [ebp + cont.program]
+  .bigint:
+    call rn_negate_bigint
+    jmp [ebp + cont.program]
+  .error:
+    mov eax, err_not_a_number
+    mov ecx, symbol_value(rom_string_negate)
+    push app_negate.error
+    jmp rn_error
+
+;;
+;; reduce_finite_list (native procedure)
+;;
+;; preconditions:  EBX = argument list
+;;                 EDI = initial value
+;;                 [ESP] = symbol for error reporting
+;;                 [ESP + 4] = operator
+;;
+reduce_finite_list:
+    mov esi, ebx
+    call rn_list_metrics
+    test eax, eax
+    jz .structure_error
+    test ecx, ecx
+    jnz .structure_error
+  .list_ok:
+    mov ecx, edx
+    jecxz .done
+    pop eax
+  .next:
+    push ecx
+    mov ebx, edi
+    mov ecx, car(esi)
+    mov esi, cdr(esi)
+    call [esp + 4]
+    mov edi, eax
+    pop ecx
+    loop .next
+    mov eax, edi
+  .done:
+    pop edx
+    jmp [ebp + cont.program]
+  .structure_error:
+    mov eax, err_invalid_argument_structure
+    mov ebx, esi
+    pop ecx
+    push dword reduce_finite_list.structure_error
+    jmp rn_error
+
 check_fixint:
   .app_3:
     xchg ebx, edx
@@ -55,34 +116,11 @@ app_plus:
     mov eax, err_not_a_number
     mov ecx, symbol_value(rom_string_C)
     jmp rn_error
-  .structure_error:
-  .cyclic:
-    mov eax, err_invalid_argument_structure
-    mov ecx, symbol_value(rom_string_C)
-    jmp rn_error
   .operate:
-    mov esi, ebx
-    call rn_list_metrics
-    test eax, eax
-    jz .structure_error
-    test ecx, ecx
-    jnz .cyclic
-    cmp edx, 1
-    jb .A0
+    push dword .add_two_integers
+    push dword symbol_value(rom_string_C)
     mov edi, fixint_value(0)
-    mov ecx, edx
-  .next:
-    mov ebx, car(esi)
-    mov esi, cdr(esi)
-    push ecx
-    mov ecx, edi
-    call .add_two_integers
-    pop ecx
-    mov edi, eax
-    loop .next
-    mov eax, edi
-    jmp [ebp + cont.program]
-
+    jmp reduce_finite_list
   .add_two_integers:
     call rn_integerP_procz
     jne .type_error
@@ -91,65 +129,104 @@ app_plus:
     call rn_integerP_procz
     jne .type_error
     shl dl, 1
-    or dl, al
+    or al, dl
     and eax, 0x3
     xchg ebx, ecx
-    mov eax, [.jump_table + eax*4]
-    call eax
-    ret
+    jmp [.jump_table + eax*4]
     align 16
   .jump_table:
     dd rn_fixint_plus_fixint
-    dd rn_bigint_plus_fixint
     dd rn_fixint_plus_bigint
+    dd rn_bigint_plus_fixint
     dd rn_bigint_plus_bigint
+
+app_minus:
+  .A2:
+    call .subtract_two_integers
+    jmp [ebp + cont.program]
+  .A3:
+    push edx
+    call .subtract_two_integers
+    pop edx
+    mov ebx, eax
+    mov ecx, edx
+    call .subtract_two_integers
+    jmp [ebp + cont.program]
+  .operate:
+    mov esi, ebx
+    call rn_list_metrics
+    test eax, eax
+    jz .structure_error
+    test ecx, ecx
+    jnz .structure_error
+    cmp edx, 1
+    jbe .structure_error
+    dec edx
+    mov edi, car(esi)
+    mov esi, cdr(esi)
+    push dword .subtract_two_integers
+    push dword symbol_value(rom_string__)
+    jmp reduce_finite_list.list_ok
+  .subtract_two_integers:
+    call rn_integerP_procz
+    jnz .type_error
+    push ebx
+    mov ebx, ecx
+    call rn_integerP_procz
+    jnz .type_error
+    test al, al
+    jnz .bigint
+    call rn_negate_fixint
+  .negated:
+    mov ecx, eax
+    pop ebx
+    jmp app_plus.add_two_integers
+  .bigint:
+    call rn_negate_bigint
+    jmp .negated
+  .type_error:
+    mov eax, err_not_a_number
+    mov ecx, symbol_value(rom_string__)
+    jmp rn_error
+  .structure_error:
+    mov eax, err_invalid_argument_structure
+    mov ecx, symbol_value(rom_string__)
+    jmp rn_error
 
 app_times:
   .A0:
     mov eax, fixint_value(1)
     jmp [ebp + cont.program]
   .A1:
-    call check_fixint.app_1
+    call rn_integerP_procz
+    jnz .type_error
     mov eax, ebx
     jmp [ebp + cont.program]
   .A2:
     call check_fixint.app_2
-    sar ebx, 2
-    sar ecx, 2
-    imul ebx, ecx
-    lea eax, [1 + 4*ebx]
+    call rn_fixint_times_fixint
     jmp [ebp + cont.program]
   .A3:
-    call check_fixint.app_3
-    sar ebx, 2
-    sar ecx, 2
-    sar edx, 2
-    imul ebx, ecx
-    imul ebx, edx
-    lea eax, [1 + 4*ebx]
-    jmp [ebp + cont.program]
-  .operate:
-    mov eax, err_not_implemented
-    jmp rn_error
-
-app_minus:
-  .A2:
     call check_fixint.app_2
-    sar ebx, 2
-    sar ecx, 2
-    sub ebx, ecx
-    lea eax, [1 + 4*ebx]
+    push edx
+    call rn_fixint_times_fixint
+    mov ebx, eax
+    pop ecx
+    call check_fixint.app_2
+    call rn_fixint_times_fixint
     jmp [ebp + cont.program]
-  .A3:
-    call check_fixint.app_3
-    sar ebx, 2
-    sar ecx, 2
-    sar edx, 2
-    sub ebx, ecx
-    sub ebx, edx
-    lea eax, [1 + 4*ebx]
-    jmp [ebp + cont.program]
+  .type_error:
+    mov eax, err_not_a_number
+    mov ecx, symbol_value(rom_string_X)
+    jmp rn_error
   .operate:
+    push dword .multiply_two_fixints
+    push dword symbol_value(rom_string_X)
+    mov edi, fixint_value(1)
+    jmp reduce_finite_list
+  .multiply_two_fixints:
+    call check_fixint.app_2
+    jmp rn_fixint_times_fixint
     mov eax, err_not_implemented
     jmp rn_error
 

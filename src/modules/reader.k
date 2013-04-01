@@ -189,7 +189,7 @@
   (read-number-or-symbol (c p)
     ($if (char<=? #\0 (peek-char p) #\9)
       ($let1 x (read-unsigned-number p 10)
-        ($if (eq? c #\-) (- 0 x) x))
+        ($if (eq? c #\-) (negate x) x))
       (string->symbol
         (get-output-string
           (read-symbol-tail p
@@ -200,7 +200,7 @@
     ($let1 c (peek-char p)
       ($cond
         ((eof-object? c) (error "read-number EOF"))
-        ((eq? c #\-) (read-char p) (- 0 (read-unsigned-number p b)))
+        ((eq? c #\-) (read-char p) (negate (read-unsigned-number p b)))
         ((eq? c #\+) (read-char p) (read-unsigned-number p b))
         (#t (read-unsigned-number p b)))))
   (read-unsigned-number (p b)

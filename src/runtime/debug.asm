@@ -419,14 +419,17 @@ rn_trace_print_lisp:
     call rn_trace_print_char
     mov eax, [ebx + bigint.digit0]
     call rn_trace_print_hex
-    mov eax, [ebx + bigint.digit1]
+    mov ecx, [ebx + bigint.header]
+    shr ecx, 8
+    sub ecx, 2
+    push edx
+    lea edx, [ebx + bigint.digit1]
+  .case.bigint.L1:
+    mov eax, [edx]
+    add edx, 4
     call rn_trace_print_hex
-    mov eax, [ebx + bigint.digit2]
-    call rn_trace_print_hex
-    mov al, '.'
-    call rn_trace_print_char
-    call rn_trace_print_char
-    call rn_trace_print_char
+    loop .case.bigint.L1
+    pop edx
     mov al, ']'
     jmp rn_trace_print_char
 

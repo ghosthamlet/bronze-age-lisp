@@ -38,6 +38,9 @@ _start:
     call test_fix_fix_fix
     call test_fix_fix_big
     call test_big_big
+
+    call test_neg_fix
+    call test_neg_big
     jmp test_finished
 
 test_negative_fixint_constants:
@@ -403,9 +406,113 @@ test_big_big:
     test_64 0xFFFFF050, 0x6FE43210, \
             0xFFFFFFFF, 0xFFFFFF80, \
             0xFFFFF050, 0x6FE43190
+    test_64 0xFFFFFFFF, 0xE0000000, \
+            0xFFFFFFFF, 0xFFFFFFFF, \
+            0xFFFFFFFF, 0xDFFFFFFF
+    test_64 0xFFFFFFFF, 0xDFFFFFFF, \
+            0x00000000, 0x00000001, \
+            0xFFFFFFFF, 0xE0000000
+    ret
+
+test_neg_fix:
+    call next_subtest
+%macro check_negff 2
+    mov ebx, fixint_value(%1)
+    call rn_negate_fixint
+    cmp eax, fixint_value(%2)
+    call pass_if.z
+%endmacro
+    check_negff 0, 0
+    check_negff 1, -1
+    check_negff -1, 1
+    check_negff 2, -2
+    check_negff -2, 2
+    check_negff -32131, 32131
+    check_negff 543329, -543329
+    check_negff max_fixint, (- max_fixint)
+    check_negff (- max_fixint), max_fixint
+    mov ebx, fixint_value(min_fixint)
+    call rn_negate_fixint
+    test al, 3
+    call pass_if.z
+    cmp [eax], dword bigint_header(4)
+    call pass_if.z
+    cmp [eax + bigint.digit0], dword fixint_value(min_fixint)
+    call pass_if.z
+    cmp [eax + bigint.digit1], dword fixint_value(0)
+    call pass_if.z
+    cmp [eax + bigint.digit2], dword fixint_value(0)
+    call pass_if.z
+    ret
+
+test_neg_big:
+    call next_subtest
+%macro check_neg_64 4
+    mov esi, %1
+    mov edi, %2
+    call big_of_64
+    mov ebx, eax
+    mov esi, 0x123456
+    mov edi, 0x123456
+    mov ebp, 0x123456
+    push ebx
+    call rn_negate_bigint
+    pop ebx
+    cmp eax, ebx
+    call pass_if.nz
+    mov ebx, eax
+    call big_to_64
+    cmp esi, %3
+    call pass_if.z
+    cmp edi, %4
+    call pass_if.z
+%endmacro
+    check_neg_64 0x00000000, 0x87654321, \
+                 0xFFFFFFFF, 0x789ABCDF
+    check_neg_64 0xFFFFFF00, 0x00000000, \
+                 0x00000100, 0x00000000
+
+    mov ebx, bigint_boundary_90
+    call rn_negate_bigint
+    cmp eax, fixint_value(min_fixint)
+    call pass_if.z
+
+    mov ebx, bigint_negative_90
+    push ebx
+    call rn_negate_bigint
+    pop ebx
+    cmp eax, ebx
+    call pass_if.nz
+    test al, 3
+    call pass_if.z
+    cmp [eax], dword bigint_header(6)
+    call pass_if.z
+    cmp [eax + bigint.digit0], dword fixint_value(0)
+    call pass_if.z
+    cmp [eax + bigint.digit1], dword fixint_value(0)
+    call pass_if.z
+    cmp [eax + bigint.digit2], dword fixint_value(min_fixint)
+    call pass_if.z
+    cmp [eax + bigint.digit3], dword fixint_value(0)
+    call pass_if.z
+    cmp [eax + bigint.digit4], dword fixint_value(0)
+    call pass_if.z
     ret
 
 section .lisp_rom
     align 8
 lisp_rom_base:
+
+bigint_negative_90:
+    dd bigint_header(4)
+    dd fixint_value(0)
+    dd fixint_value(0)
+    dd fixint_value(min_fixint)
+
+bigint_boundary_90:
+    dd bigint_header(4)
+    dd fixint_value(min_fixint)
+    dd fixint_value(0)
+    dd fixint_value(0)
+
 lisp_rom_limit:

@@ -22,7 +22,7 @@
         (make-predicate "op_immediate_type_predicate"
           (list (eval mask denv) (eval type-tag denv))))))
 
-  ($bind-immediate-predicate! integer? #x00000001 #x00000003)
+  ($bind-immediate-predicate! fixint?  #x00000001 #x00000003)
   ($bind-immediate-predicate! pair?    #x00000003 #x00000003)
   ($bind-immediate-predicate! null?       nil-tag #x000000FF)
   ($bind-immediate-predicate! eof-object? eof-tag #x000000FF)
@@ -47,6 +47,7 @@
   ($bind-header-predicate! vector? vector-header-tag #xFF)
   ($bind-header-predicate! error-object? error-header-tag #xFF)
   ($bind-header-predicate! applicative? applicative-header-tag #xFF)
+  ($bind-header-predicate! bigint? bigint-header-tag #xFF)
   ($bind-header-predicate! continuation? cont-header-tag #xFF)
   ($bind-header-predicate! environment? environment-header-tag #xFF)
   ($bind-header-predicate! port? txt-in-header-tag #b11110011)
@@ -68,6 +69,7 @@
   ($bind-native-predicate! operative? "pred_operative")
   ($bind-native-predicate! mutable-pair? "pred_mutable_pair")
   ($bind-native-predicate! immutable-pair? "pred_immutable_pair")
+  ($bind-native-predicate! integer? "pred_integer")
   ($bind-native-predicate! char-whitespace? "pred_char" (make-nonlisp-value "white_space_code"))
   ($bind-native-predicate! char-alphabetic? "pred_char" (make-nonlisp-value "alphabetic_code")))
 

@@ -217,8 +217,9 @@ rn_bigint_plus_bigint:
     shr eax, 8                      ; object length
     shr ebx, 8
     mov edx, ebx                    ; EDX := length of shorter obj
-    sub ebx, eax
-    mov [esp + bi_add.ndiff], ebx   ; save difference
+    mov ecx, eax
+    sub ecx, ebx
+    mov [esp + bi_add.ndiff], ecx   ; save difference
     lea ecx, [eax + 2]              ; create object for the result
     call rn_allocate                ;  with 2 more words
     mov [esp + bi_add.result], eax  ;  to accomodate overflow
@@ -257,7 +258,7 @@ rn_bigint_plus_bigint:
     ;;   add digits from the longer summand with sign extension
     ;;   of the shorter summand
     ;;
-    mov ebx, [ebp - 4]              ; get most significand digit
+    mov ebp, [ebp - 4]              ; get most significand digit
     bigint_extension ebp            ; compute sign extension word
     mov edx, [esp + bi_add.ndiff]
     test edx, edx
@@ -390,14 +391,16 @@ rn_bigint_plus_fixint:
 ;;
 rn_fixint_times_fixint:
     mov eax, ecx
-    sar eax, 2           ; untag
+    and al, ~3           ; clear tag bits
     sar ebx, 2           ; untag
     imul ebx
     jo .overflow
-    lea eax, [4*eax + 1] ; tag as fixint
+    or al, 1             ; tag as fixint
     ret
   .overflow:
     mov ebx, eax
+    or bl, 1
+    lea edx, [4*edx + 1]
     mov ecx, 4
     call rn_allocate
     mov ecx, edx
@@ -405,5 +408,117 @@ rn_fixint_times_fixint:
     mov [eax + bigint.header], dword bigint_header(4)
     mov [eax + bigint.digit0], ebx
     mov [eax + bigint.digit1], edx
+    mov [eax + bigint.digit2], ecx
+    ret
+
+;;
+;; rn_negate_fixint (native procedure)
+;;
+;; Compute (-X) for fixint X.
+;;
+;; preconditions:  EBX = operand X (fixint)
+;; postconditions: EAX = result (-X) (fixint or bigint)
+;;
+;; preserves:      EBX, ECX, EDX, ESI, EDI, EBP
+;; clobbers:       EAX
+;; stack usage:    ??? (incl. call/ret)
+;;
+rn_negate_fixint:
+    cmp ebx, fixint_value(min_fixint)
+    je .bigint_result
+    mov eax, ebx
+    xor eax, 0xFFFFFFFC
+    lea eax, [eax + 4]
+    ret
+  .bigint_result:
+    push ecx
+    mov ecx, 4
+    call rn_allocate
+    mov [eax + bigint.header], dword bigint_header(4)
+    mov [eax + bigint.digit0], ebx
+    mov ecx, fixint_value(0)
     mov [eax + bigint.digit1], ecx
+    mov [eax + bigint.digit2], ecx
+    pop ecx
+    ret
+
+;;
+;; rn_negate_bigint (native procedure)
+;;
+;; Compute (-X) for bigint X.
+;;
+;; preconditions:  EBX = operand X (bigint)
+;; postconditions: EAX = result (-X) (fixint or bigint)
+;;
+;; preserves:      ESI, EDI, EBP
+;; clobbers:       EAX, EBX, ECX, EDX, EFLAGS
+;; stack usage:    ??? (incl. call/ret)
+;;
+rn_negate_bigint:
+    mov ecx, [ebx]
+    cmp ecx, bigint_header(4)
+    ja .no_fixint
+    mov eax, fixint_value(min_fixint)
+    cmp [ebx + bigint.digit0], eax
+    jne .no_fixint
+    mov edx, fixint_value(0)
+    cmp [ebx + bigint.digit1], edx
+    jne .no_fixint
+    cmp [ebx + bigint.digit2], edx
+    jne .no_fixint
+    ret
+  .no_fixint:
+    mov edx, ecx
+    shr ecx, 8
+    call rn_allocate
+    push esi
+    push edi
+    push eax
+    mov [eax], edx
+    lea esi, [ebx + bigint.digit0]
+    lea edi, [eax + bigint.digit0]
+    jmp .L
+  .zero:
+    mov [edi], eax
+    lea esi, [esi + 4]
+    lea edi, [edi + 4]
+  .L:
+    dec ecx
+    mov eax, [esi]
+    cmp eax, fixint_value(0)
+    je .zero
+    cmp eax, fixint_value(min_fixint)
+    je .min_digit
+    xor eax, 0xFFFFFFFC
+    lea eax, [eax + 4]
+    mov [edi], eax
+    dec ecx
+  .invert:
+    lea esi, [esi + 4]
+    lea edi, [edi + 4]
+    mov eax, [esi]
+    xor eax, 0xFFFFFFFC
+    mov [edi], eax
+    loop .invert
+  .done:
+    pop eax
+    pop edi
+    pop esi
+    ret
+  .min_digit:
+    cmp ecx, 1
+    jnz .invert
+    mov [edi], eax
+  .append_more_digits:
+    pop eax
+    lea edx, [edx + (2 << 8)]
+    mov [eax], edx
+    mov ebx, fixint_value(0)
+    mov [edi + 4], ebx
+    mov [edi + 8], ebx
+    mov esi, [lisp_heap_pointer]
+    lea esi, [esi + 2]
+    mov [lisp_heap_pointer], esi
+    pop edi
+    pop esi
     ret

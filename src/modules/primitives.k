@@ -55,6 +55,7 @@
     get-interpreter-arguments)
   ($bounded-app 1 1
     not?
+    negate
     get-list-metrics length ;string-length
     wrap unwrap
     copy-es-immutable
