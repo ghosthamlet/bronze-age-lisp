@@ -55,6 +55,9 @@
           (string->symbol
             (get-output-string
               (read-barsymbol-tail p (open-output-string)))))
+        (($or? (eq? c #\+) (eq? c #\-))
+          (read-char p)
+          (read-number-or-symbol c p))
         (($or? (char-alphabetic? c) (memq? c extended-identifier-characters))
           (string->symbol
             (get-output-string
@@ -183,6 +186,16 @@
                 (error "escape sequence #\\x...; must end with a semicolon"))
               (integer->char n))))
         (#t c))))
+  (read-number-or-symbol (c p)
+    ($if (char<=? #\0 (peek-char p) #\9)
+      ($let1 x (read-unsigned-number p 10)
+        ($if (eq? c #\-) (- 0 x) x))
+      (string->symbol
+        (get-output-string
+          (read-symbol-tail p
+            ($let1 q (open-output-string)
+              (write-char c q)
+              q))))))
   (read-number (p b)
     ($let1 c (peek-char p)
       ($cond
