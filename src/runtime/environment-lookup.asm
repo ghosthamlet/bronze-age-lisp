@@ -25,6 +25,9 @@
 ;;;       - immutable
 ;;;
 
+%define private_binding(string_index) \
+  [ground_private_lookup_table + 4*(string_index - 1)]
+
 ;;
 ;; table_lookup_procedure BASE, LENGTH
 ;;

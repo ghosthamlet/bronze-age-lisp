@@ -198,7 +198,8 @@
       (s-contents)
       (s-names
         (map symbol->string
-          (cons ($quote intern) (map car ground-bindings))))
+          (append (map car ground-bindings)
+                  (map car private-bindings))))
       ;; define initialization and start object
       (asm)
       (display ";; init form = ")

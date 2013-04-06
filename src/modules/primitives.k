@@ -88,6 +88,8 @@
     error)
   ($unbounded-app 0 2
     make-environment)
+  ($unbounded-app 2 2
+    map for-each)
   ($unbounded-app 0 3
     list))
 

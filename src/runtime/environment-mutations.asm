@@ -87,7 +87,7 @@ rn_mutate_environment:
     cmp al, symbol_tag
     jne .bad_key
     cmp [edi + environment.program], dword tail_env_lookup
-    je mutate_list_environment
+    je mutate_list_environment.mutate_tail
     cmp [edi + environment.program], dword list_env_lookup
     je mutate_list_environment
     cmp edi, dword private_env_object
@@ -131,6 +131,7 @@ mutate_list_environment:
     ret
   .not_found:
     pop edi
+  .mutate_tail:
     call .capture_edi
     push eax
     push ebx

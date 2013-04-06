@@ -40,7 +40,7 @@ app_read_typed:
     ;; eax = closure (var2 = name, var3 = port tag, var4 = method index)
     ;; edi = dynamic environment (not used)
     ;; ebp = continuation
-    mov ebx, dword [ground_private_lookup_table + 4*(rom_string_stdin - 1)]
+    mov ebx, private_binding(rom_string_stdin)
     ; fallthrough
   .A1:
     ;; eax = closure (var0 = name, var1 = port tag, var2 = method index)
@@ -61,7 +61,7 @@ app_write_typed:
     ;; esi = closure (var2 = name, var3 = port tag, var4 = object tag)
     ;; edi = dynamic environment (not used)
     ;; ebp = continuation
-    mov ecx, dword [ground_private_lookup_table + 4*(rom_string_stdout - 1)]
+    mov ecx, private_binding(rom_string_stdout)
     ; fallthrough
   .A2:
     ;; ebx = argument
@@ -91,7 +91,7 @@ app_flush_output_port:
     ;; esi = closure (not used)
     ;; edi = dynamic environment (not used)
     ;; ebp = continuation
-    mov ebx, dword [ground_private_lookup_table + 4*(rom_string_stdout - 1)]
+    mov ebx, private_binding(rom_string_stdout)
   .A1:
     mov edx, eax
     test bl, 3

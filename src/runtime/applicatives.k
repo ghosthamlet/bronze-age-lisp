@@ -222,7 +222,7 @@
   ($define! emit-applicative-support
     ($lambda ()
       ($let ((cases-b ($quote* (0 0) (0 1) (1 1) (0 2) (1 2) (2 2) (2 3) (0 3) (1 3) (3 3)))
-             (cases-u ($quote* (0 1) (0 2) (0 3) (2 3))))
+             (cases-u ($quote* (0 1) (0 2) (2 2) (0 3) (2 3))))
         (asm-label "rn_asm_applicative")
         (for-each emit-bounded-applicative-instance cases-b)
         (for-each emit-unbounded-applicative-instance cases-u)
@@ -273,7 +273,7 @@
 
 ($provide!
   ($define-ground-lambda! $define-private-lambda!
-   $define-ground-wrapvau!
+   $define-ground-wrapvau! $define-private-wrapvau!
    $defun-privates!)
 
   ($define! make-builtin-wrap
@@ -321,6 +321,11 @@
   ($define! $define-ground-wrapvau!
     ($vau (name formals eformal . body) #ignore
       (bind-ground! name
+        (make-builtin-wrapvau name formals eformal body))))
+
+  ($define! $define-private-wrapvau!
+    ($vau (name formals eformal . body) #ignore
+      (bind-private! name
         (make-builtin-wrapvau name formals eformal body))))
 
   ($define! $defun-privates!

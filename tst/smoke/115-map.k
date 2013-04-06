@@ -1,0 +1,10 @@
+;; basic test of (map ...)
+(list
+  (applicative? map)
+  (map boolean? ())
+  (map boolean? (list 1))
+  (map boolean? (list #t 3 () #f))
+  (map cons () ())
+  (map cons (list 1 2 3) (list 4 5 6))
+  (map list () () ())
+  (map list (list 1 2 3) (list 4 5 6) (list 7 8 9)))
