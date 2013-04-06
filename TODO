@@ -2,6 +2,7 @@ TODO
 ----
 
 - add tests
+- SRFI-38 compatible reader
 - fix predicates, arithmetic applicatives
 - add missing ground bindings from Kernel Report
 - add ground bindings for Klisp compatibility
@@ -16,24 +17,17 @@ Booleans:
   and? or?
 
 Pairs and lists:
-  cXXXr, cXXXXr
-  append list-neighbors filter member
+  append list-neighbors filter
   finite-list? countable-list? reduce
 
 Pairs mutation:
-  append! copy-es assq
-
-Combiners:
-  map
+  append! copy-es
 
 Continuations:
   call/cc $let/cc extend-continuation exit
 
-Control:
-  for-each
-
 Environments:
-  $let $let* $letrec $letrec* $let-redirect $let-safe
+  $let* $letrec $letrec* $let-redirect $let-safe
   $remote-eval $bindings->environment
 
 Environment mutation:

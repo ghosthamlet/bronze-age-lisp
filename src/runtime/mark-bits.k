@@ -13,7 +13,7 @@
     ($define! heap-slots (div ($configured lisp-heap-size) 8))
     ($define! blob-slots ($configured blob-descriptor-capacity))
     ($define! reserved-slots 1)
-    ($define! all-slots  (align (+ reserved-slots rom-slots heap-slots blob-slots) 8))
+    ($define! all-slots  (align (+ reserved-slots rom-slots heap-slots blob-slots) 32))
     ($define! mark-space (align (+ (* 5 all-slots) (div (+ all-slots 7) 8)) 8))
     ($unless (<=? mark-space ($configured lisp-heap-size))
       (error "Mark words do not fit in heap halfspace. Configured heap size is too small."
