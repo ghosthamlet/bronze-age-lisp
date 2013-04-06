@@ -1,15 +1,43 @@
-($define-ground-lambda! write (x . r) ;write-simple
+($define-ground-lambda! write-simple (x . r)
   ($let1 p ($if (null? r) stdout (car r))
-    (write-simple-aux x p)
+    (write-shared
+      x
+      (list (shared-structure-indicator #inert))
+      p)
+    (flush-output-port p)))
+
+($define-ground-lambda! write (x . r)
+  ($let1 p ($if (null? r) stdout (car r))
+    (write-aux
+      x
+      (list (shared-structure-indicator x) () 0)
+      p)
     (flush-output-port p)))
 
 ($defun-privates!
-  (write-simple-aux (x p)
+  (write-shared (x s p)
+    ($if ((car s) x)
+      ($sequence
+        ($define! (#ignore a n) s)
+        ($define! z (assq x a))
+        (write-char #\# p)
+        ($if (pair? z)
+          ($sequence
+            (write-number (cdr z) 10 p)
+            (write-char #\# p))
+          ($sequence
+            (write-number n 10 p)
+            (write-char #\= p)
+            (set-car! (list-tail s 1) (cons (cons x n) a))
+            (set-car! (list-tail s 2) (+ 1 n))
+            (write-aux x s p))))
+      (write-aux x s p)))
+  (write-aux (x s p)
     ($cond
       ((pair? x)
         (write-char #\( p)
-        (write-simple-aux (car x) p)
-        (write-simple-tail (cdr x) p))
+        (write-shared (car x) s p)
+        (write-tail (cdr x) s p))
       ((fixint? x)
         (write-number x 10 p))
       ((bigint? x)
@@ -52,20 +80,20 @@
         (write-string "#[vector]" p))
       ((error-object? x)
         (write-string "#[error " p)
-        (write-simple-aux (error-object-message x) p)
+        (write-shared (error-object-message x) s p)
         (write-string "]" p))
       (#t (write-string "<something else>" p))))
-  (write-simple-tail (x p)
+  (write-tail (x s p)
     ($cond
       ((null? x)
         (write-char #\) p))
-      ((pair? x)
+      (($and? (pair? x) (not? ((car s) x)))
         (write-char #\space p)
-        (write-simple-aux (car x) p)
-        (write-simple-tail (cdr x) p))
+        (write-shared (car x) s p)
+        (write-tail (cdr x) s p))
       (#t
         (write-string " . " p)
-        (write-simple-aux x p)
+        (write-shared x s p)
         (write-char #\) p))))
   (write-char-char (c p)
     ($cond

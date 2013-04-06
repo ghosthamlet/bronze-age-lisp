@@ -65,14 +65,14 @@
     open-input-string
     string->symbol symbol->string keyword->string
     error-object-message error-object-irritants error-object-source error-object-continuation
-    open-binary-input-file open-binary-output-file)
+    open-binary-input-file open-binary-output-file
+    shared-structure-indicator)
   ($bounded-app 1 2
     char-digit? char->digit)
   ($bounded-app 2 2
     cons eval
     list-tail list-ref
     set-car! set-cdr!
-    assoc memq?
     div mod div-and-mod
     apply-continuation)
   ($bounded-app 2 3

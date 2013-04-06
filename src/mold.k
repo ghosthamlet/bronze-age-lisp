@@ -128,6 +128,7 @@
   "predicates.k"
   "primitives.k"
   "pairs.k"
+  "lists.k"
   ;"characters.k"
   ;"continuations.k"
   ;"numbers.k"
@@ -242,6 +243,7 @@
     "pairs.asm"
     "ports.asm"
     ;"strings.asm"
+    "shared-structures.asm"
     "symbols.asm"
     "system.asm")
   ($when ($configured character-predicates)

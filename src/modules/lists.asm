@@ -4,11 +4,20 @@
 ;;; High-level list manipulation procedures.
 ;;;
 
+;;
+;; app_assoc (continuation passing procedure)
+;;
+;; Implementation of (assoc KEY ALIST) and (assq KEY ALIST).
+;;
+;; preconditions: EBX = 1st arg = KEY
+;;                ECX = 2nd arg = ALIST
+;;                EBP = continuation
+;;
+;; closure: [ESI + operative.var0] = app_assoc
+;;          [ESI + operative.var1] = symbol |assoc| or |assq|
+;;          [ESI + operative.var2] = address of rn_equal or rn_eq
+;;
 app_assoc:
-  .A2:
-    ;; ebx = first arg = key
-    ;; ecx = second arg = list
-    ;; ebp = continuation
     push ebx
     push ecx
     mov ebx, ecx
@@ -16,60 +25,75 @@ app_assoc:
     test eax, eax
     jz .invalid_list
     mov ecx, edx
-    pop esi
+    pop edi
     pop edx
     jecxz .not_found
   .next_element:
-    mov ebx, car(esi)
+    mov ebx, car(edi)
     call rn_pairP_procz
     jne .invalid_element
     mov ebx, car(ebx)
     push ecx
     mov ecx, edx
-    call rn_equal
+    call [esi + operative.var2]
     pop ecx
     test eax, eax
     jnz .found
-    mov esi, cdr(esi)
+    mov edi, cdr(edi)
     loop .next_element
   .not_found:
     mov eax, nil_tag
     jmp [ebp + cont.program]
   .found:
-    mov eax, car(esi)
+    mov eax, car(edi)
     jmp [ebp + cont.program]
   .invalid_list:
     pop ebx
     pop eax
   .invalid_element:
     mov eax, err_invalid_argument
-    mov ecx, symbol_value(rom_string_assoc)
+    mov ecx, [esi + operative.var1]
     jmp rn_error
 
-app_memqP:
-  .A2:
-    ;; ebx = first arg = key
-    ;; ecx = second arg = list
-    ;; ebp = continuation
+;;
+;; app_member (continuation passing procedure)
+;;
+;; Implementation of (member? KEY LIST) and (memq? KEY LIST).
+;;
+;; preconditions: EBX = 1st arg = KEY
+;;                ECX = 2nd arg = LIST
+;;                EBP = continuation
+;;
+;; closure: [ESI + operative.var0] = app_assoc
+;;          [ESI + operative.var1] = symbol |member?| or |memq?|
+;;          [ESI + operative.var2] = address of rn_equal or rn_eq
+;;
+app_member:
     push ebx
     push ecx
     mov ebx, ecx
     call rn_list_metrics
     test eax, eax
     jz .invalid_list
-    mov ecx, edx
-    pop esi
-    pop edx
-    jecxz .not_found
-    dec ecx
-    cmp edx, car(esi)
-    je .found
-    jecxz .not_found
+    pop edi
+    pop ebx
+    test edx, edx
+    jz .not_found
+    dec edx
+    mov ecx, car(edi)
+    call [esi + operative.var2]
+    test eax, eax
+    jnz .found
+    test edx, edx
+    jz .not_found
   .next:
-    mov esi, cdr(esi)
-    cmp edx, car(esi)
-    je .found
-    loop .next
+    mov edi, cdr(edi)
+    mov ecx, car(edi)
+    call [esi + operative.var2]
+    test eax, eax
+    jne .found
+    dec edx
+    jnz .next
   .not_found:
     mov eax, boolean_value(0)
     jmp [ebp + cont.program]
@@ -80,5 +104,5 @@ app_memqP:
     pop ebx
     pop eax
     mov eax, err_invalid_argument
-    mov ecx, symbol_value(rom_string_memqP)
+    mov ecx, [esi + operative.var1]
     jmp rn_error
