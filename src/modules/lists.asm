@@ -106,3 +106,68 @@ app_member:
     mov eax, err_invalid_argument
     mov ecx, [esi + operative.var1]
     jmp rn_error
+
+;;
+;; app_append (continuation passing procedure)
+;;
+;; Implementation of applicative calls (append),
+;; (append X) and (append X Y). General argument
+;; lists are handled in lisp code.
+;;
+app_append:
+  .A0:
+    mov eax, nil_tag
+    jmp [ebp + cont.program]
+  .A1:
+    mov eax, ebx
+    jmp [ebp + cont.program]
+  .invalid_argument:
+    mov eax, err_invalid_argument
+    mov ecx, symbol_value(rom_string_append)
+    jmp rn_error
+  .A2_0:
+    mov eax, edi
+    jmp [ebp + cont.program]
+  .A2_1:
+    push dword car(esi)
+    push edi
+    call rn_cons
+    jmp [ebp + cont.program]
+  .A2:
+    mov esi, ebx
+    mov edi, ecx
+    call rn_list_metrics
+    mov ebx, esi
+    test eax, eax
+    jz .invalid_argument
+    test ecx, ecx
+    jnz .invalid_argument
+    cmp edx, 1
+    jb .A2_0
+    je .A2_1
+    lea ecx, [2 * edx]
+    call rn_allocate
+    push eax
+    dec edx
+  .next:
+    mov ebx, car(esi)
+    lea ecx, [eax + 8]
+    shr ecx, 1
+    or  ecx, 0x80000003
+    mov [eax], ebx
+    mov [eax + 4], ecx
+    lea eax, [eax + 8]
+    mov esi, cdr(esi)
+    dec edx
+    jnz .next
+    mov ebx, car(esi)
+    mov [eax], ebx
+    mov [eax + 4], edi
+    pop eax
+    shr eax, 1
+    or  eax, 0x80000003
+    jmp [ebp + cont.program]
+  .operate:
+    mov eax, private_binding(rom_string_general_append)
+    mov eax, [eax + applicative.underlying]
+    jmp rn_combine

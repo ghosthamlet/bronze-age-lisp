@@ -87,11 +87,11 @@
   ($unbounded-app 0 1
     error)
   ($unbounded-app 0 2
-    make-environment)
+    make-environment append)
   ($unbounded-app 2 2
     map for-each)
   ($unbounded-app 0 3
-    list))
+    and? or? list))
 
 ;;
 ;; Table for assembler implementation of (number->string ...).

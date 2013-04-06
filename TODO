@@ -13,11 +13,8 @@ TODO
 
 -------
 
-Booleans:
-  and? or?
-
 Pairs and lists:
-  append list-neighbors filter
+  list-neighbors filter
   finite-list? countable-list? reduce
 
 Pairs mutation:
