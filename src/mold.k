@@ -130,6 +130,7 @@
   "pairs.k"
   "lists.k"
   "iterations.k"
+  "environments.k"
   ;"characters.k"
   ;"continuations.k"
   ;"numbers.k"

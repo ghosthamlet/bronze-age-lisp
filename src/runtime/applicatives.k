@@ -272,8 +272,10 @@
 
 
 ($provide!
-  ($define-ground-lambda! $define-private-lambda!
+  (make-builtin-lambda
+   $define-ground-lambda! $define-private-lambda!
    $define-ground-wrapvau! $define-private-wrapvau!
+   $define-ground-vau!
    $defun-privates!)
 
   ($define! make-builtin-wrap
@@ -297,6 +299,18 @@
           name
           0))))
 
+  ($define! make-builtin-vau
+    ($lambda (name formals eformal body)
+      (make-rom-object
+        (operative-header* 8)
+        (make-nonlisp-value "operate_interpreted.env")
+        (make-nonlisp-value "private_env_object")
+        formals
+        eformal
+        body
+        name
+        0)))
+
   ($define! make-builtin-wrapvau
     ($lambda (name formals eformal body)
       (make-builtin-wrap
@@ -313,6 +327,10 @@
   ($define! $define-ground-lambda!
     ($vau (name formals . body) #ignore
       (bind-ground! name (make-builtin-lambda name formals body))))
+
+  ($define! $define-ground-vau!
+    ($vau (name formals eformal . body) #ignore
+      (bind-ground! name (make-builtin-vau name formals eformal body))))
 
   ($define! $define-private-lambda!
     ($vau (name formals . body) #ignore
