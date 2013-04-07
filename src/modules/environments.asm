@@ -462,6 +462,8 @@ primop_SletX:
     mov ebx, car(ebx)             ; EBX = R1
     jmp rn_eval
   .empty:
+    mov eax, edi                  ; capture dynamic environment
+    call rn_capture               ;  (in case it is allocated by, e.g. $let1)
     mov ebx, edi                  ; create child
     call rn_make_list_environment ;   of the dynamic environment
     mov edi, eax                  ; EDI = the new environment
@@ -478,6 +480,8 @@ primop_SletX:
   .continue:
     mov edx, eax                     ; EDX = evaluated R1
     mov ebx, [ebp + cont.var0]       ; EBX = parent environment
+    mov eax, ebx                     ; capture dynamic environment
+    call rn_capture                  ;  (in case it was created by e.g. $let1)
     call rn_make_list_environment
     mov edi, eax                     ; EDI = child environment
     mov ebx, [ebp + cont.var1]       ; EBX = ((L1 R1) . T)
