@@ -23,12 +23,6 @@ Pairs mutation:
 Continuations:
   call/cc $let/cc extend-continuation exit
 
-Environments:
-  $remote-eval $bindings->environment
-
-Environment mutation:
-  $provide! $import!
-
 Ports:
   with-input-from-file with-output-from-file
   get-current-input-port get-current-output-port
