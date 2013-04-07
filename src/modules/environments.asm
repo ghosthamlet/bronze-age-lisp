@@ -177,6 +177,152 @@ primop_Slet1:
     jmp primop_Ssequence
 
 ;;
+;; aux_map_car_cadr (native procedure)
+;;
+;; Construct list of CARs and CADRs from a given list.
+;;
+;; preconditions:  ESI = input list
+;;                 ECX = N > 0, input list length (untagged integer)
+;;
+;; postconditions: EAX = list of CARs
+;;                 EDX = list of CADRs
+;;
+;; preserves:      EBX, ECX, ESI, EDI, EBP
+;; clobbers:       EAX, EDX, EFLAGS
+;; stack usage:    ?
+;;
+aux_map_car_cadr:
+    push ebx
+    push ecx
+    push esi
+    push edi
+    shl ecx, 2              ; allocate 4*N dwords
+    call rn_allocate        ;   for two lists of length N
+    lea edi, [2 * ecx]      ; stride between two output lists
+    shr ecx, 2              ; ECX = N
+    push eax                ; save head of original list
+  .next:
+    mov ebx, car(esi)        ; next element of input list
+    test bl, 3               ; check type
+    jz .error
+    jnp .error
+    mov edx, car(ebx)        ; copy CAR field
+    mov [eax], edx           ;   ...
+    lea edx, [eax + 8]       ; get pointer to next element
+    shr edx, 1               ;   of 1st output list
+    or  edx, 0x80000003      ; tag as mutable pair
+    mov [eax + 4], edx       ; store in CDR field of output element
+    mov ebx, cdr(ebx)        ; get CDR of input element
+    test bl, 3               ; check type
+    jz .error                ;   ...
+    jnp .error               ;   ...
+    mov ebx, car(ebx)        ; get CADR of input element
+    lea edx, [eax + edi + 8] ; get pointer to next element
+    shr edx, 1               ;   of 2nd output list
+    or  edx, 0x80000003      ; tag as mutable pair
+    mov [eax + edi], ebx     ; store CAR field
+    mov [eax + edi + 4], edx ; store CDR field
+    mov esi, cdr(esi)        ; move to next input element
+    lea eax, [eax + 8]       ; move to next output element
+    loop .next
+    mov ecx, nil_tag
+    mov [eax - 4], ecx       ; terminate 1st list with nil
+    mov [eax + edi - 4], ecx ; terminate 2nd list with nil
+    pop eax                  ; head of 1st list
+    lea edx, [eax + edi]     ; head of 2nd list
+    shr eax, 1               ; tag both as mutable pairs
+    shr edx, 1
+    or  eax, 0x80000003
+    or  edx, 0x80000003
+    pop edi
+    pop esi
+    pop ecx
+    pop ebx
+    ret
+  .error:
+    mov eax, err_cannot_traverse
+    mov ebx, esi
+    mov ecx, symbol_value(rom_string_Sletrec) ;; TODO: replace hardwired symbol with a parameter
+    push .error
+    jmp rn_error
+
+;;
+;; primop_Sletrec (continuation passing procedure)
+;;
+;; Implementation of ($letrec BINDINGS . BODY)
+;;
+;; preconditions:  EBX = argument list = (BINDINGS . BODY)
+;;                 EDI = dynamic environment
+;;                 EBP = continuation
+;;
+primop_Sletrec:
+    test bl, 3                    ; check argument list
+    jz .invalid_structure
+    jnp .invalid_structure
+    mov esi, cdr(ebx)             ; ESI = BODY
+    mov ebx, car(ebx)             ; EBX = BINDINGS
+    call rn_list_metrics
+    test eax, eax                 ; BINDINGS improper list?
+    jz .invalid_structure
+    test ecx, ecx                 ; BINDINGS cyclic?
+    jnz .invalid_structure
+    test edx, edx                 ; BINDINGS empty?
+    jz .empty
+    ;; TODO: special case length=1, ($letrec ((X Y)) . T)
+    mov ecx, edx                  ; ECX = length of BINDINGS
+    xchg ebx, esi                 ; EBX = BODY, ESI = BINDINGS
+    call aux_map_car_cadr         ; EDX = rhs := (map cadr BINDINGS)
+    mov ecx, eax                  ; ECX = lhs := (map car BINDINGS)
+    mov esi, ebx                  ; ESI = BODY
+    mov ebx, ecx                  ; EBX = lhs
+    call rn_check_ptree           ; is (map car BINDINGS)
+    test eax, eax                 ;   valid ptree?
+    jnz .fail                     ;   ...
+    mov eax, edi                  ; capture the dynamic environment
+    call rn_capture               ;   ...
+    mov ebx, edi                  ; create child
+    call rn_make_list_environment ;   of the dynamic environment
+    mov edi, eax                  ; EDI = the new environment
+    mov ebx, ecx                  ; EBX = lhs
+    mov ecx, -6
+    call rn_allocate_transient
+    mov [eax + cont.header], dword cont_header(6)
+    mov [eax + cont.program], dword .continue
+    mov [eax + cont.parent], ebp
+    mov [eax + cont.var0], edi    ; new environment
+    mov [eax + cont.var1], ebx    ; lhs
+    mov [eax + cont.var2], esi    ; body of $letrec form
+    mov ebp, eax
+    mov eax, private_binding(rom_string_list)
+    mov ebx, edx
+    jmp rn_combine                ; evaluate (list . rhs)
+  .invalid_structure:
+    mov eax, err_invalid_argument_structure
+  .fail:
+    mov ecx, symbol_value(rom_string_Sletrec)
+    jmp rn_error
+  .match_failure:
+    mov eax, err_match_failure
+    jmp .fail
+  .empty:
+    mov ebx, edi                  ; create child
+    call rn_make_list_environment ;   of the dynamic environment
+    mov edi, eax                  ; EDI = the new environment
+    mov ebx, esi                  ; EBX = body of ($letrec () . BODY)
+    jmp rn_sequence
+  .continue:
+    mov edi, [ebp + cont.var0]   ; EDI = environment
+    mov ebx, [ebp + cont.var1]   ; EBX = lhs
+    mov esi, [ebp + cont.var2]   ; ESI = body of $letrec
+    mov ebp, [ebp + cont.parent] ; restore original continuation
+    mov edx, eax                 ; EDX = result of (list . rhs)
+    call rn_match_ptree_procz    ; check
+    jnz .match_failure
+    call rn_bind_ptree           ; bind lhs <- rhs
+    mov ebx, esi                 ; EBX = body of $letrec
+    jmp rn_sequence
+
+;;
 ;; app_get_current_environment.A0 (continuation passing procedure)
 ;;
 ;; Implementation of (get-current-environment)

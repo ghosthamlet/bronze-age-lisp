@@ -45,7 +45,7 @@
     $quote $quote*
     $sequence $when $unless $if $cond
     $and? $or?
-    $define! $set! $let1 $binds?
+    $define! $set! $let1 $letrec $binds?
     $vau $lambda
     $let/cc)
   ($bounded-app 0 0
