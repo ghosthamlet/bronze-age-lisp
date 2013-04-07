@@ -237,6 +237,7 @@
     "combiners.asm"
     "continuations.asm"
     "control.asm"
+    "encapsulations.asm"
     "environments.asm"
     "errors.asm"
     "iterations.asm"

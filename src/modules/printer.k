@@ -82,7 +82,7 @@
         (write-string "#[error " p)
         (write-shared (error-object-message x) s p)
         (write-string "]" p))
-      (#t (write-string "<something else>" p))))
+      (#t (write-string "#[encapsulation]" p))))
   (write-tail (x s p)
     ($cond
       ((null? x)

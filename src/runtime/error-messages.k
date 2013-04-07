@@ -45,5 +45,6 @@
     (repeated-symbol "Repeated symbol in formal parameter tree.")
     (invalid-ptree "Invalid formal parameter tree.")
     (cyclic-ptree "Cyclic formal parameter tree.")
+    (incompatible-encapsulation "Incompatible encapsulation type.")
     (internal-error "Internal error.")
   ))

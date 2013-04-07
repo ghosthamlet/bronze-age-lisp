@@ -52,6 +52,7 @@
   ($bounded-app 0 0
     get-current-environment
     make-kernel-standard-environment
+    make-encapsulation-type
     open-output-string
     get-interpreter-arguments)
   ($bounded-app 1 1
