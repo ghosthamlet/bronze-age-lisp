@@ -121,7 +121,7 @@
   (write-number (n b p)
     ($if (<? n 0)
       ($sequence
-        (write-char #\-)
+        (write-char #\- p)
         (write-string (number-digits (- 0 n) b) p))
       (write-string (number-digits n b) p)))
   (write-string-like-symbol (s p)
@@ -135,13 +135,15 @@
     ($let1 c (read-char p)
       ($or?
         (eof-object? c)
-        ($and? ($or? (char-alphabetic? c) (char<=? #\* c #\z))
+        ($and? ($or? (char-alphabetic? c)
+                     (memq? c extended-identifier-characters))
                (simple-string-tail? p)))))
   (simple-string? (p)
     ($let1 c (read-char p)
       ($and?
         (char? c)
-        ($or? (char-alphabetic? c) (eq? c #\$) (char<=? #\< c #\z))
+        ($or? (char-alphabetic? c)
+              (memq? c extended-identifier-characters))
         (simple-string-tail? p)))))
 
 ($bind-private! number-digits

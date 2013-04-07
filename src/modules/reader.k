@@ -104,9 +104,14 @@
 ($bind-private! character-names
   ($quote*
     ("null" . #\x0000)
+    ("alarm" . #\x0007)
+    ("backspace" . #\x0008)
     ("tab" . #\x0009)
     ("newline" . #\x000A)
-    ("space" . #\x0020)))
+    ("return" . #\x000D)
+    ("escape" . #\x001B)
+    ("space" . #\x0020)
+    ("delete" . #\x007F)))
 
 ($bind-private! extended-identifier-characters
   ($quote*
@@ -260,12 +265,13 @@
               (integer->char n))))
         (#t c))))
   (read-number-or-symbol (c p)
-    ($if (char<=? #\0 (peek-char p) #\9)
-      ($let1 x (read-unsigned-number p 10)
-        ($if (eq? c #\-) (negate x) x))
-      (string->symbol
-        (get-output-string
-          (read-symbol-tail p (open-output-string* c))))))
+    ($let1 d (peek-char p)
+      ($if ($and? (char? d) (char<=? #\0 d #\9))
+        ($let1 x (read-unsigned-number p 10)
+          ($if (eq? c #\-) (negate x) x))
+        (string->symbol
+          (get-output-string
+            (read-symbol-tail p (open-output-string* c)))))))
   (open-output-string* (c)
     ($let1 q (open-output-string)
       (write-char c q)

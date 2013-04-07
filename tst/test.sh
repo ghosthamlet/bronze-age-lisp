@@ -85,6 +85,12 @@ dual_test()
     build/dual.bin dual/dual-test.k $1
 }
 
+self_test()
+{
+    echo -n "$1 ..."
+    build/dual.bin -l self/self-test-support.k $1
+}
+
 run_all_tests()
 {
     prepare_asm_test
@@ -98,6 +104,9 @@ run_all_tests()
     prepare_dual_test
     for t in dual/[0-9]*.k ; do
         dual_test $t
+    done
+    for t in self/[0-9]*.k ; do
+        self_test $t
     done
 }
 
@@ -122,6 +131,9 @@ if [ $# -ne 0 ] ; then
          ;;
     2??) prepare_dual_test
          dual_test dual/$1-*.k
+         ;;
+    3??) prepare_dual_test
+         self_test self/$1-*.k
          ;;
     *)   echo "usage: test.sh [NUMBER]" 1>&2
          exit 1
