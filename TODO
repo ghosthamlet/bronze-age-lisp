@@ -24,7 +24,6 @@ Continuations:
   call/cc $let/cc extend-continuation exit
 
 Environments:
-  $let* $letrec* $let-redirect $let-safe
   $remote-eval $bindings->environment
 
 Environment mutation:

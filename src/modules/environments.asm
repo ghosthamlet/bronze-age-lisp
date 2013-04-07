@@ -247,15 +247,110 @@ aux_map_car_cadr:
     jmp rn_error
 
 ;;
-;; primop_Sletrec (continuation passing procedure)
+;; primop_Slet, primop_Sletrec,
+;;             primop_Slet_safe (continuation passing procedures)
 ;;
 ;; Implementation of ($letrec BINDINGS . BODY)
+;;               and ($let BINDINGS . BODY)
 ;;
 ;; preconditions:  EBX = argument list = (BINDINGS . BODY)
 ;;                 EDI = dynamic environment
 ;;                 EBP = continuation
 ;;
 primop_Sletrec:
+    mov esi, ebx                  ; ESI = (BINDINGS . BODY)
+    mov eax, edi                  ; capture the dynamic
+    call rn_capture               ;   environment
+    mov ebx, edi                  ; create child
+    call rn_make_list_environment ;   of the dynamic environment
+    mov ebx, esi                  ; EBX = (BINDINGS . BODY)
+    push eax                      ; environment "R" = child
+    push eax                      ; environment "L" = child
+    push dword symbol_value(rom_string_Sletrec)
+    jmp aux_let_common
+
+primop_Slet:
+    mov esi, ebx                  ; ESI = (BINDINGS . BODY)
+    mov eax, edi                  ; capture the dynamic
+    call rn_capture               ;    environment
+    mov ebx, edi                  ; create child
+    call rn_make_list_environment ;   of the dynamic environment
+    mov ebx, esi                  ; EBX = (BINDINGS . BODY)
+    push edi                      ; environment "R" = parent
+    push eax                      ; environment "L" = child
+    push dword symbol_value(rom_string_Slet)
+    jmp aux_let_common
+
+primop_Slet_safe:
+    mov esi, ebx                  ; ESI = (BINDINGS . BODY)
+    mov ebx, ground_env_object    ; create new standard
+    call rn_make_list_environment ;   environment
+    mov ebx, esi                  ; EBX = (BINDINGS . BODY)
+    push edi                      ; environment "R" = dynamic env
+    push eax                      ; environment "L" = new std. env
+    push dword symbol_value(rom_string_Slet_safe)
+    jmp aux_let_common
+
+;;
+;; primop_Slet_redirect (continuation passing procedure)
+;;
+;; Implementation of ($let-redirect ENV BINDINGS . BODY)
+;;
+;; preconditions:  EBX = argument list = (ENV BINDINGS . BODY)
+;;                 EDI = dynamic environment
+;;                 EBP = continuation
+;;
+primop_Slet_redirect:
+    test bl, 3
+    jz .invalid_structure
+    jnp .invalid_structure
+    mov esi, car(ebx)
+    mov ebx, cdr(ebx)
+    mov edx, .continue
+    call make_helper_continuation
+    mov ebx, esi
+    jmp rn_eval
+  .invalid_structure:
+    mov eax, err_invalid_argument_structure
+    mov ecx, symbol_value(rom_string_Slet_redirect)
+    jmp rn_error
+  .invalid_type:
+    mov eax, err_not_an_environment
+    mov ecx, symbol_value(rom_string_Slet_redirect)
+    jmp rn_error
+  .continue:
+    call discard_helper_continuation
+    mov esi, ebx                   ; ESI = (BINDINGS . BODY)
+    mov ebx, eax                   ; EBX = evaluated env. argument
+    test bl, 3                     ; check type
+    jnz .invalid_type
+    mov eax, [ebx]
+    cmp al, environment_header(0)
+    jne .invalid_type
+    call rn_make_list_environment  ; create child env.
+    mov ebx, esi                   ; EBX = (BINDINGS . BODY)
+    push edi                       ; environment "R" = dynamic env
+    push eax                       ; environment "L" = child of arg
+    push dword symbol_value(rom_string_Slet_redirect)
+    jmp aux_let_common
+
+;;
+;; aux_let_common (continuation passing procedure)
+;;
+;; Implementats common part of $let, $letrec, $let-redirect
+;; and $let-safe.
+;;
+;; Evaluates right hand sides of bindings in environment "R",
+;; binds the left hand sides in environment "L" and evaluates
+;; the body in the environment "L".
+;;
+;; preconditions:  EBX = (BINDINGS . BODY)
+;;                 EBP = current continuation
+;;           [ESP + 0] = symbol for error reporting
+;;           [ESP + 4] = environment "L"
+;;           [ESP + 8] = environment "R"
+;;
+aux_let_common:
     test bl, 3                    ; check argument list
     jz .invalid_structure
     jnp .invalid_structure
@@ -278,37 +373,40 @@ primop_Sletrec:
     call rn_check_ptree           ; is (map car BINDINGS)
     test eax, eax                 ;   valid ptree?
     jnz .fail                     ;   ...
-    mov eax, edi                  ; capture the dynamic environment
-    call rn_capture               ;   ...
-    mov ebx, edi                  ; create child
-    call rn_make_list_environment ;   of the dynamic environment
-    mov edi, eax                  ; EDI = the new environment
     mov ebx, ecx                  ; EBX = lhs
-    mov ecx, -6
+    mov ecx, -8
     call rn_allocate_transient
-    mov [eax + cont.header], dword cont_header(6)
+    pop ecx                       ; ECX = symbol for error reporting
+    pop edi                       ; EDI = environment "L"
+    mov [eax + cont.header], dword cont_header(8)
     mov [eax + cont.program], dword .continue
     mov [eax + cont.parent], ebp
-    mov [eax + cont.var0], edi    ; new environment
+    mov [eax + cont.var0], edi    ; environment "L"
     mov [eax + cont.var1], ebx    ; lhs
     mov [eax + cont.var2], esi    ; body of $letrec form
+    mov [eax + cont.var3], ecx    ; symbol for error reporting
+    mov [eax + cont.var4], ecx    ; padding
     mov ebp, eax
     mov eax, private_binding(rom_string_list)
     mov ebx, edx
+    pop edi                       ; EDI = environment "R"
     jmp rn_combine                ; evaluate (list . rhs)
   .invalid_structure:
     mov eax, err_invalid_argument_structure
   .fail:
-    mov ecx, symbol_value(rom_string_Sletrec)
+    pop ecx
+    pop edx
+    pop edx
     jmp rn_error
   .match_failure:
     mov eax, err_match_failure
-    jmp .fail
+    mov ecx, [ebp + cont.var3]
+    jmp rn_error
   .empty:
-    mov ebx, edi                  ; create child
-    call rn_make_list_environment ;   of the dynamic environment
-    mov edi, eax                  ; EDI = the new environment
-    mov ebx, esi                  ; EBX = body of ($letrec () . BODY)
+    pop eax                       ; discard environment "R"
+    pop edi                       ; EDI = environment "L"
+    pop eax                       ; discard operative name
+    mov ebx, esi                  ; EBX = BODY of let form
     jmp rn_sequence
   .continue:
     mov edi, [ebp + cont.var0]   ; EDI = environment
@@ -343,7 +441,7 @@ primop_SletX:
     test ecx, ecx                 ; BINDINGS cyclic?
     jnz .invalid_structure
     test edx, edx                 ; BINDINGS empty?
-    jz primop_Sletrec.empty       ;   like ($letrec () . BODY)
+    jz .empty
     mov ecx, -6
     call rn_allocate_transient
     mov [eax + cont.header], dword cont_header(6)
@@ -363,6 +461,12 @@ primop_SletX:
     jnp .invalid_structure
     mov ebx, car(ebx)             ; EBX = R1
     jmp rn_eval
+  .empty:
+    mov ebx, edi                  ; create child
+    call rn_make_list_environment ;   of the dynamic environment
+    mov edi, eax                  ; EDI = the new environment
+    mov ebx, esi                  ; EBX = body of ($letrec () . BODY)
+    jmp rn_sequence
   .invalid_structure:
     mov eax, err_invalid_argument_structure
   .fail:

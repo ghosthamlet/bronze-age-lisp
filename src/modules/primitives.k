@@ -42,10 +42,11 @@
                    "app_" t ".operate")))))
          symbols))))
   ($prim-op
-    $quote $quote*
+    $quote $quote* $let1
     $sequence $when $unless $if $cond
     $and? $or?
-    $define! $set! $let1 $letrec $let* $binds?
+    $define! $set! $binds?
+    $let $letrec $let* $let-redirect $let-safe
     $vau $lambda
     $let/cc)
   ($bounded-app 0 0

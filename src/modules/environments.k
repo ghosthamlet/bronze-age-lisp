@@ -8,7 +8,10 @@
 ;;; TODO: Efficient implementation for common cases.
 ;;;
 
-($define-ground-vau! $let (bindings . body) env
-  (eval (cons (list* $lambda (map car bindings) body)
-              (map cadr bindings))
-        env))
+($define-ground-vau! $letrec* (bindings . body) env
+  (eval ($if (null? bindings)
+             (list* $letrec bindings body)
+             (list $letrec
+                   (list (car bindings))
+                   (list* $letrec* (cdr bindings) body)))
+         env))
