@@ -323,6 +323,97 @@ primop_Sletrec:
     jmp rn_sequence
 
 ;;
+;; primop_SletX (continuation passing procedure)
+;;
+;; Implementation of ($let* BINDINGS . BODY)
+;;
+;; preconditions:  EBX = argument list = (BINDINGS . BODY)
+;;                 EDI = dynamic environment
+;;                 EBP = continuation
+;;
+primop_SletX:
+    test bl, 3                    ; check argument list
+    jz .invalid_structure
+    jnp .invalid_structure
+    mov esi, cdr(ebx)             ; ESI = BODY
+    mov ebx, car(ebx)             ; EBX = BINDINGS
+    call rn_list_metrics
+    test eax, eax                 ; BINDINGS improper list?
+    jz .invalid_structure
+    test ecx, ecx                 ; BINDINGS cyclic?
+    jnz .invalid_structure
+    test edx, edx                 ; BINDINGS empty?
+    jz primop_Sletrec.empty       ;   like ($letrec () . BODY)
+    mov ecx, -6
+    call rn_allocate_transient
+    mov [eax + cont.header], dword cont_header(6)
+    mov [eax + cont.program], dword .continue
+    mov [eax + cont.parent], ebp
+    mov [eax + cont.var0], edi    ; dynamic environment
+    mov [eax + cont.var1], ebx    ; BINDINGS = ((L1 R1) . T)
+    mov [eax + cont.var2], esi    ; BODY
+    mov ebp, eax
+    mov ebx, car(ebx)             ; EBX = (L1 R1)
+    test bl, 3                    ; check structure of binding
+    jz .invalid_structure
+    jnp .invalid_structure
+    mov ebx, cdr(ebx)             ; EBX = (R1)
+    test bl, 3                    ; check structure of binding
+    jz .invalid_structure
+    jnp .invalid_structure
+    mov ebx, car(ebx)             ; EBX = R1
+    jmp rn_eval
+  .invalid_structure:
+    mov eax, err_invalid_argument_structure
+  .fail:
+    mov ecx, symbol_value(rom_string_SletX)
+    jmp rn_error
+  .match_failure:
+    mov eax, err_match_failure
+    jmp .fail
+  .continue:
+    mov edx, eax                     ; EDX = evaluated R1
+    mov ebx, [ebp + cont.var0]       ; EBX = parent environment
+    call rn_make_list_environment
+    mov edi, eax                     ; EDI = child environment
+    mov ebx, [ebp + cont.var1]       ; EBX = ((L1 R1) . T)
+    mov ebx, car(ebx)                ; EBX = (L1 R1)
+    test bl, 3                       ; paranoid check
+    jz .invalid_structure            ;  in case the list was mutated
+    jnp .invalid_structure           ;  TODO: copy-es-immutable ?
+    mov ebx, car(ebx)                ; EBX = L1
+    call rn_check_ptree
+    test eax, eax
+    jnz .fail
+    call rn_match_ptree_procz
+    jnz .match_failure
+    call rn_bind_ptree
+    mov edx, [ebp + cont.var1]      ; EDX = ((L1 R1) . T)
+    mov edx, cdr(edx)               ; EDX = T = ((L2 R2) ...)
+    cmp edx, nil_tag
+    jz .done
+    test dl, 3                      ; paranoid check
+    jz .invalid_structure
+    jnp .invalid_structure
+    call rn_force_transient_continuation
+    mov [ebp + cont.var0], edi
+    mov [ebp + cont.var1], edx
+    mov ebx, car(edx)               ; EBX = (L2 R2)
+    test bl, 3                      ; check structure
+    jz .invalid_structure           ;  of next binding
+    jnp .invalid_structure
+    mov ebx, cdr(ebx)               ; EBX = (R2)
+    test bl, 3                      ; check binding structure
+    jz .invalid_structure
+    jnp .invalid_structure
+    mov ebx, car(ebx)               ; EBX = R2
+    jmp rn_eval
+  .done:
+    mov ebx, [ebp + cont.var2]      ; EBX = body
+    mov ebp, [ebp + cont.parent]    ; original continuation
+    jmp rn_sequence
+
+;;
 ;; app_get_current_environment.A0 (continuation passing procedure)
 ;;
 ;; Implementation of (get-current-environment)
