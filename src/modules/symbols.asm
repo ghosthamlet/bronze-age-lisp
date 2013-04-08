@@ -1,8 +1,31 @@
+;;;
+;;; symbols.asm
+;;;
+;;; Built-in applicatives related to symbols and keywords.
+;;;
 
 app_string_Gsymbol:
   .A1:
-    ;; ebx = argument (string)
-    ;; ebp = continuation
+    mov ecx, symbol_value(rom_string_string_Gsymbol)
+    call aux_string_to_symbol
+    jmp [ebp + cont.program]
+
+app_string_Gkeyword:
+  .A1:
+    mov ecx, symbol_value(rom_string_string_Gkeyword)
+    call aux_string_to_symbol
+    mov al, keyword_tag
+    jmp [ebp + cont.program]
+
+;;
+;; aux_string_to_symbol (native procedure)
+;;
+;; preconditions:  EBX = value
+;;                 ECX = symbol for error reporting
+;;
+;; postconditions: EAX = symbol
+;;
+aux_string_to_symbol:
     cmp bl, string_tag
     jne .error
     mov esi, ground_private_lookup_table + 4*(rom_string_intern - 1)
@@ -13,10 +36,9 @@ app_string_Gsymbol:
     mov edi, fixint_value(0)
     call cb_insert
     jnz .new_symbol
-    jmp [ebp + cont.program]
+    ret
   .error:
     mov eax, err_invalid_argument
-    mov ecx, symbol_value(rom_string_string_Gsymbol)
     jmp rn_error
   .new_symbol:
     call rn_get_blob_data
@@ -26,7 +48,7 @@ app_string_Gsymbol:
     xchg eax, ebx
     call rn_copy_blob_data
     xchg eax, ebx
-    jmp [ebp + cont.program]
+    ret
   .load_rom:
     rn_trace configured_debug_gc_blobs, 'load-rom-symbols'
     push ebx

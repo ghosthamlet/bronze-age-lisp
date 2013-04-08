@@ -56,7 +56,7 @@
         (write-string-like-symbol (symbol->string x) p))
       ((keyword? x)
         (write-string "#:" p)
-        (write-string-like-symbol (symbol->string x) p))
+        (write-string-like-symbol (keyword->string x) p))
       ((char? x)
         (write-string "#\\" p)
         (write-char-char x p))
@@ -136,15 +136,21 @@
       ($or?
         (eof-object? c)
         ($and? ($or? (char-alphabetic? c)
+                     (char<=? #\0 c #\9)
                      (memq? c extended-identifier-characters))
                (simple-string-tail? p)))))
   (simple-string? (p)
     ($let1 c (read-char p)
-      ($and?
-        (char? c)
-        ($or? (char-alphabetic? c)
-              (memq? c extended-identifier-characters))
-        (simple-string-tail? p)))))
+      ($cond
+        ((eq? c #\.)
+          ($and? (not? (eof-object? (peek-char p)))
+                 (simple-string-tail? p)))
+        (#t
+          ($and?
+            (char? c)
+            ($or? (char-alphabetic? c)
+                  (memq? c extended-identifier-characters))
+            (simple-string-tail? p)))))))
 
 ($bind-private! number-digits
   (make-bounded-applicative

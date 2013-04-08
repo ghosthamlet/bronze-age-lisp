@@ -65,7 +65,7 @@
     char->integer integer->char
     open-utf-encoder open-utf-decoder
     open-input-string
-    string->symbol symbol->string keyword->string
+    string->symbol symbol->string string->keyword keyword->string
     error-object-message error-object-irritants error-object-source error-object-continuation
     open-binary-input-file open-binary-output-file
     shared-structure-indicator)

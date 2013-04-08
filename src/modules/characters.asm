@@ -16,6 +16,7 @@ app_char_Ginteger:
 
 app_integer_Gchar:
   .A1:
+    mov ecx, symbol_value(rom_string_integer_Gchar)
     ;; ebx = argument
     ;; ebp = continuation
     ;; check if it is fixint
@@ -40,11 +41,9 @@ app_integer_Gchar:
     mov eax, ebx
     jmp [ebp + cont.program]
   .invalid_argument:
-    mov ebx, eax
     mov eax, err_invalid_argument
     jmp rn_error
   .invalid_codepoint:
-    mov ebx, eax
     mov eax, err_invalid_codepoint
     jmp rn_error
 

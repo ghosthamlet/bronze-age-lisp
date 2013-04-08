@@ -1,3 +1,8 @@
+;;;
+;;; 301-basic-external-representation.k
+;;;
+;;; Test reader and printer.
+;;;
 
 ($define! $r
   ($vau (ext int) #ignore
@@ -87,15 +92,33 @@
 ($r "#\\λ" #\x03BB)
 ($r "#\\Č" #\x010C)
 
-;; symbols (canonical representation)
+;; symbols and keywords (canonical representation)
 ;;
 ($rw "abc" abc)
+($rw "x1" x1)
 ($rw "$let*" $let*)
 ($rw "string->symbol" string->symbol)
 ($rw "+" +)
 ($rw "-" -)
 ($rw "/" /)
+($rw ".a" .a)
+($rw "..." ...)
 ($rw "|s p a c e s|" |s p a c e s|)
+($rw "|.|" |.|)
+($rw "#:abc" #:abc)
+($rw "#:k>e<y-w_o%r@d" #:k>e<y-w_o%r@d)
+($rw "#:**1-c" #:**1-c)
+($rw "#:string->symbol" #:string->symbol)
+($rw "#:+" #:+)
+($rw "#:|s p a c e s|" #:|s p a c e s|)
+($rw "#:|0123|" #:|0123|)
+($rw "||" ||)
+($rw "#:||" #:||)
+
+;; noncanonical symbols and kewords
+;;
+($r "|pqr|" pqr)
+($r "#:0123" #:|0123|)
 
 ;; lists (canonical representation)
 ;;

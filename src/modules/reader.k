@@ -123,7 +123,17 @@
     (#\; . ($sequence (skip-line p) (read-token p)))
     (#\( . t-left)
     (#\) . t-right)
-    (#\. . t-dot)
+    (#\. . ($let1 c (peek-char p)
+             ($cond
+               (($or? (char-alphabetic? c)
+                      (memq? c extended-identifier-characters))
+                 (string->symbol
+                   (get-output-string
+                     (read-symbol-tail p (open-output-string* #\.)))))
+               ((char-digit? c)
+                 (error "reader: dot followed by a digit is not supported syntax"))
+               (#t
+                 t-dot))))
     (#\+ . #1=(read-number-or-symbol c p))
     (#\- . #1#)
     (#\# . (read-special p))
@@ -159,7 +169,18 @@
         ((eq? c #\\)
           (read-character-literal p))
         ((eq? c #\:)
-          (error "read: keywords not implemented"))
+          ($let1 d (read-char p)
+            (string->keyword
+              (get-output-string
+                ($cond
+                  ((eq? d #\|)
+                    (read-barsymbol-tail p (open-output-string)))
+                  (($or? (char-alphabetic? d)
+                         (char-digit? d)
+                         (memq? d extended-identifier-characters))
+                    (read-symbol-tail p (open-output-string* d)))
+                  (#t
+                    (error "invalid keyword")))))))
         ((eq? c #\|)
           (skip-block-comment 1 (read-char p) p)
           (read-token p))
@@ -346,7 +367,10 @@
           (read-form e p!)
           ($unless (eq? (read-aux-token e) t-right)
             (error "expected ) after improper list")))
-        (#t (read-list e p!))))))
+        ((eof-object? t)
+          (error "unexpected EOF in a list"))
+        (#t
+          (read-list e p!))))))
 
 
 ;;
