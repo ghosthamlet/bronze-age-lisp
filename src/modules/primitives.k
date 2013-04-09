@@ -53,6 +53,7 @@
     get-current-environment
     make-kernel-standard-environment
     make-encapsulation-type
+    make-keyed-dynamic-variable
     open-output-string
     get-interpreter-arguments)
   ($bounded-app 1 1

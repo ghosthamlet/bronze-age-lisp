@@ -58,6 +58,7 @@ primop_Sif:
     jmp rn_eval
   .structure_error:
     mov eax, err_invalid_argument_structure
+    mov ecx, symbol_value(rom_string_Sif)
     jmp rn_error
 
   .continue:

@@ -30,5 +30,5 @@ Ports:
   get-module
 
 Everything from modules:
-  encapsulation, promises, keyed static/dynamic variables,
-  vectors, keywords, strings, characters, libraries, system
+  promises, keyed static variables,
+  vectors, strings, characters, libraries, system

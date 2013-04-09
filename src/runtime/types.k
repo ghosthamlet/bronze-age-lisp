@@ -24,6 +24,7 @@
     (#b00001110 "eof")
 
     (#b00010010 "primitive")    ; primitive operative
+    (#b00010110 "unbound") ; "value" of unbound dynamic variable
 
     (#b00100010 "symbol")
     (#b00100110 "keyword")

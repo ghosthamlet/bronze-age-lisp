@@ -47,4 +47,5 @@
     (cyclic-ptree "Cyclic formal parameter tree.")
     (incompatible-encapsulation "Incompatible encapsulation type.")
     (internal-error "Internal error.")
+    (unbound-dynamic-variable "Unbound keyed dynamic variable.")
   ))

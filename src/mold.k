@@ -241,6 +241,7 @@
     "environments.asm"
     "errors.asm"
     "iterations.asm"
+    "keyed-variables.asm"
     "lists.asm"
     "misc.asm"
     "numbers.asm"
