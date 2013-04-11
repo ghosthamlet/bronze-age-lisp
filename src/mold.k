@@ -139,6 +139,7 @@
 
 ($when ($configured reader-and-printer)
   ($for-each-src load src-prefix "modules/"
+    "ports.k"
     "printer.k"
     "reader.k"
     "repl.k"))

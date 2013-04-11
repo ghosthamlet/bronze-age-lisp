@@ -275,7 +275,7 @@
   (make-builtin-lambda
    $define-ground-lambda! $define-private-lambda!
    $define-ground-wrapvau! $define-private-wrapvau!
-   $define-ground-vau!
+   $define-ground-vau! $define-private-vau!
    $defun-privates!)
 
   ($define! make-builtin-wrap
@@ -335,6 +335,10 @@
   ($define! $define-private-lambda!
     ($vau (name formals . body) #ignore
       (bind-private! name (make-builtin-lambda name formals body))))
+
+  ($define! $define-private-vau!
+    ($vau (name formals eformal . body) #ignore
+      (bind-private! name (make-builtin-vau name formals eformal body))))
 
   ($define! $define-ground-wrapvau!
     ($vau (name formals eformal . body) #ignore

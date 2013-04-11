@@ -128,6 +128,44 @@ primop_SsetB:
     jmp rn_error
 
 ;;
+;; app_setB (continuation passing procedure)
+;;
+;; Implementation of (set! ENV LHS RHS), the applicative
+;; version of $set!.
+;;
+;; preconditions:  EBX = ENV
+;;                 ECX = LHS
+;;                 EDX = RHS
+;;                 EBP = continuation
+;;
+app_setB:
+  .A3:
+    test bl, 3
+    jnz .type_error
+    mov eax, [ebx]
+    cmp al, environment_header(0)
+    jne .type_error
+    mov edi, ebx
+    mov ebx, ecx
+    call rn_check_ptree
+    test eax, eax
+    jnz .ptree_error
+    call rn_match_ptree_procz
+    jnz .match_failure
+    call rn_bind_ptree
+    mov eax, dword inert_tag
+    jmp [ebp + cont.program]
+  .type_error:
+    mov eax, err_not_an_environment
+  .ptree_error:
+    mov ecx, symbol_value(rom_string_setB)
+    jmp rn_error
+  .match_failure:
+    mov eax, err_match_failure
+    mov ecx, symbol_value(rom_string_setB)
+    jmp rn_error
+
+;;
 ;; primop_Slet1 (continuation passing procedure)
 ;;
 ;; Implementation of simple binding form

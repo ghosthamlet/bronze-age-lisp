@@ -82,7 +82,8 @@
     apply)
   ($bounded-app 3 3
     encycle!
-    guard-continuation guard-dynamic-extent)
+    guard-continuation guard-dynamic-extent
+    set!)
   ($unbounded-app 2 3
     (- "minus"))
   ($unbounded-app 0 3
