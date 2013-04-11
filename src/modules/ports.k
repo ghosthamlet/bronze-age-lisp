@@ -83,3 +83,12 @@
   ($let* ((port (open-output-string)))
     (with-output-to-port port proc)
     (get-output-string port)))
+
+;; get-module (definition adapted from KR)
+
+($define-ground-lambda! get-module (filename . opt)
+  ($let* ((env (make-kernel-standard-environment)))
+    ($when (pair? opt)
+      ($set! env module-parameters (car opt)))
+    (eval (list load filename) env)
+    env))

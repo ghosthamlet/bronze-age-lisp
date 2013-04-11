@@ -24,10 +24,12 @@ Continuations:
   call/cc $let/cc extend-continuation exit
 
 Ports:
-  with-input-from-file with-output-from-file
-  get-current-input-port get-current-output-port
-  call-with-input-file call-with-output-file
-  get-module
+  display
+  read-line
+  input-port? output-port?
+  textual-port? binary-port?
+  textual-input-port? ...
+  require ...
 
 Everything from modules:
   promises, keyed static variables,
