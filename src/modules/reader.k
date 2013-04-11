@@ -190,6 +190,9 @@
             ($if ($or? (eq? k #\=) (eq? k #\#))
               (list k n)
               (error "invalid S-expression label" n k))))
+        ((eq? c #\!)
+          (skip-line p)
+          (read-token p))
         (#t
           ($let1 s (get-output-string
                      (read-symbol-tail p (open-output-string* c)))
