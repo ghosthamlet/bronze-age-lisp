@@ -83,14 +83,50 @@ app_bind_dynamic_variable:
     mov ecx, inert_tag
     jmp rn_error
   .ok:
-    mov edx, ecx                           ; EDX := combiner
-    mov ecx, -6                            ; allocate continuation
-    call rn_allocate_transient             ;  which undoes the binding
+    mov edi, [esi + operative.var1] ; EDI := accessor object
+    mov eax, ebp
+    call rn_capture       ; capture current continuation
+    mov edx, ecx          ; EDX := combiner
+    mov ecx, 26           ; allocate memory for two combiners
+    call rn_allocate      ;   and three continuations
+    ;; exit interceptor
+    mov [eax + operative.header], dword operative_header(4)
+    mov [eax + operative.program], dword .intercept
+    mov [eax + operative.var0], edi
+    mov ecx, [edi + operative.var1]  ; get currently bound value
+    mov [eax + operative.var1], ecx  ; old value in exit interceptor
+    push eax
+    lea eax, [eax + 16]
+    ;; entry interceptor
+    mov [eax + operative.header], dword operative_header(4)
+    mov [eax + operative.program], dword .intercept
+    mov [eax + operative.var0], edi
+    mov [eax + operative.var1], ebx  ; new value in entry interceptor
+    mov ecx, eax
+    lea eax, [eax + 16]
+    ;; outer guard continuation
     mov [eax + cont.header], dword cont_header(6)
+    mov [eax + cont.program], dword cont_outer
     mov [eax + cont.parent], ebp
+    mov [eax + cont.guard.environment], dword empty_env_object
+    mov [eax + cont.guard.selector0], dword root_continuation
+    mov [eax + cont.guard.selector0 + 4], ecx
+    mov ecx, eax
+    lea eax, [eax + 24]
+    ;; inner guard continuation
+    mov [eax + cont.header], dword cont_header(6)
+    mov [eax + cont.program], dword cont_inner
+    mov [eax + cont.parent], ecx
+    mov [eax + cont.guard.environment], dword empty_env_object
+    mov [eax + cont.guard.selector0], dword root_continuation
+    pop dword [eax + cont.guard.selector0 + 4]
+    mov ecx, eax
+    lea eax, [eax + 24]
+    ;; continuation for normal exit handling
+    mov [eax + cont.header], dword cont_header(6)
+    mov [eax + cont.parent], ecx
     mov [eax + cont.program], dword .undo
     mov ebp, eax                           ; make it current cont.
-    mov edi, [esi + operative.var1]        ; accessor object
     mov eax, [edi + operative.var1]        ; currently bound value
     mov [ebp + cont.var0], edi             ; save acessor
     mov [ebp + cont.var1], eax             ; save current value
@@ -113,3 +149,9 @@ app_bind_dynamic_variable:
     xor edi, edi
     xor esi, esi
     jmp [ebp + cont.program]
+  .intercept:
+    mov edi, [esi + operative.var0]   ; get accessor object
+    mov ecx, [esi + operative.var1]   ; put new value of the dynamic variable
+    mov [edi + operative.var1], ecx   ;   in the accessor object
+    mov eax, car(ebx)                 ; pass forth the value which is
+    jmp [ebp + cont.program]          ;   is being abnormally pased

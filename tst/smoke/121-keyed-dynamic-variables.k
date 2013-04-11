@@ -15,4 +15,20 @@
                        (b1 3 ($lambda () (list (a1) (a2))))
                        (a1)
                        (a2))))
+             (a1)
+             (b2 4
+               ($lambda ()
+                 (guard-dynamic-extent
+                   ()
+                   ($lambda ()
+                     (b1 5
+                       ($lambda () (error "x" (a1) (a2)))))
+                   (list
+                     (list error-continuation
+                           ($lambda (x divert)
+                             (divert
+                               (list*
+                                 (a1)
+                                 (a2)
+                                 (error-object-irritants x)))))))))
              (a1))))))
