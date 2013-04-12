@@ -56,6 +56,8 @@
     make-keyed-dynamic-variable
     open-output-string
     get-interpreter-arguments)
+  ($bounded-app 0 1
+    exit)
   ($bounded-app 1 1
     not?
     negate
@@ -79,7 +81,7 @@
     div mod div-and-mod
     apply-continuation)
   ($bounded-app 2 3
-    apply)
+    apply extend-continuation)
   ($bounded-app 3 3
     encycle!
     guard-continuation guard-dynamic-extent

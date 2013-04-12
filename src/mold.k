@@ -132,7 +132,7 @@
   "iterations.k"
   "environments.k"
   ;"characters.k"
-  ;"continuations.k"
+  "continuations.k"
   ;"numbers.k"
   ;"symbols.k"
   )

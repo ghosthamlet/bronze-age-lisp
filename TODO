@@ -20,9 +20,6 @@ Pairs and lists:
 Pairs mutation:
   append! copy-es
 
-Continuations:
-  call/cc $let/cc extend-continuation exit
-
 Ports:
   display
   read-line

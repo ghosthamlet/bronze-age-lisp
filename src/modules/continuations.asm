@@ -18,10 +18,15 @@ app_apply_continuation:
     mov ecx, symbol_value(rom_string_apply_continuation)
     jmp rn_error
 
-    align 4
+;;
+;; primop_Slet_cc (continuation passing procedure)
+;;
+;; Implementation of ($let/cc SYMBOL . BODY)
+;;
+;; preconditions:  EBX = (SYMBOL . BODY)
+;;                 EDI = dynamic environment
+;;                 EBP = current continuation
 primop_Slet_cc:
-    ;; ebx = argument list = (symbol . body)
-    ;; ebp = current continuation
     call rn_pairP_procz
     jnz .error
     mov edx, car(ebx)
@@ -35,11 +40,11 @@ primop_Slet_cc:
     call rn_allocate_transient
     mov [eax + environment.header], dword environment_header(6)
     mov [eax + environment.program], dword tail_env_lookup
-    mov [eax + environment.parent], esi
+    mov [eax + environment.parent], edi
     mov [eax + environment.key0], edx
     mov [eax + environment.val0], ebp
     mov [eax + environment.key1], edx ; unused, padding only
-    mov esi, eax
+    mov edi, eax
     mov ebx, cdr(ebx)
     jmp rn_sequence
   .error:
@@ -82,9 +87,9 @@ app_guard_continuation:
     jmp rn_error
 
 ;;
-;; app_3_guard_dynamic_extent (continuation passing procedure)
+;; app_guard_dynamic_extent (continuation passing procedure)
 ;;
-;; Implementation of (guard-dynamic-extend ENTRY COMBINER EXIT).
+;; Implementation of (guard-dynamic-extent ENTRY COMBINER EXIT).
 ;;
 ;; preconditions:  EBX = entry guard list
 ;;                 ECX = target combiner
@@ -222,3 +227,62 @@ make_guard_continuation:
     mov ecx, symbol_value(rom_string_guard_continuation)
     jmp rn_error
 
+
+;;
+;; app_exit (continuation passing procedure)
+;;
+;; Implementation of (exit [OBJECT])
+;;
+app_exit:
+  .A0:
+    mov ebx, inert_tag
+  .A1:
+    mov ecx, ebx
+    mov ebx, root_continuation
+    jmp rn_apply_continuation
+
+;;
+;; app_extend_continuation (continuation passing procedure)
+;;
+;; Implementation of (extend-continuation CONT APPV [ENV])
+;;
+app_extend_continuation:
+  .A2:
+    push ebx
+    mov ebx, empty_env_object
+    call rn_make_list_environment
+    mov edx, eax
+    pop ebx
+  .A3:
+    test bl, 3
+    jnz .error
+    mov eax, [ebx]
+    cmp al, cont_header(0)
+    jne .error
+    mov esi, ebx                    ; ESI := CONT
+    mov ebx, ecx                    ; EBX := APPV
+    test bl, 3
+    jnz .error
+    mov eax, [ebx]
+    cmp al, applicative_header(0)
+    jne .error
+    call rn_fully_unwrap            ; EBX := underlying operative
+    mov ecx, 6
+    call rn_allocate
+    mov [eax + cont.header], dword cont_header(6)
+    mov [eax + cont.program], dword .do
+    mov [eax + cont.parent], esi
+    mov [eax + cont.var0], ebx
+    mov [eax + cont.var1], edx
+    mov [eax + cont.var2], dword inert_tag
+    jmp [ebp + cont.program]
+  .error:
+    mov eax, err_invalid_argument
+    mov ecx, symbol_value(rom_string_extend_continuation)
+    jmp rn_error
+  .do:
+    mov ebx, eax
+    mov eax, [ebp + cont.var0]
+    mov edi, [ebp + cont.var1]
+    mov ebp, [ebp + cont.parent]
+    jmp rn_combine
