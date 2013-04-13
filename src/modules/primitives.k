@@ -63,6 +63,7 @@
     negate
     get-list-metrics length
     string-length string-size
+    vector-length
     wrap unwrap
     copy-es-immutable
     get-output-string
@@ -74,12 +75,13 @@
     open-binary-input-file open-binary-output-file
     shared-structure-indicator)
   ($bounded-app 1 2
-    char-digit? char->digit)
+    char-digit? char->digit
+    make-vector)
   ($bounded-app 2 2
     cons eval
     list-tail list-ref
     set-car! set-cdr!
-    string-ref
+    string-ref vector-ref
     div mod div-and-mod
     apply-continuation)
   ($bounded-app 2 3
@@ -87,7 +89,7 @@
   ($bounded-app 3 3
     encycle!
     guard-continuation guard-dynamic-extent
-    set!)
+    set! vector-set!)
   ($unbounded-app 2 3
     (- "minus"))
   ($unbounded-app 0 3

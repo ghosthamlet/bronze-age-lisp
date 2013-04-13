@@ -251,7 +251,8 @@
     "strings.asm"
     "shared-structures.asm"
     "symbols.asm"
-    "system.asm")
+    "system.asm"
+    "vectors.asm")
   ($when ($configured character-predicates)
     ($for-each-src asm-include asm-prefix "unicode/"
       "unicode-lookup.asm"
