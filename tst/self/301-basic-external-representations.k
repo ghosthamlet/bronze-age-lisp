@@ -53,12 +53,17 @@
 ($r "+0" 0)
 ($r "+1" 1)
 
-;; small binary, hexadecimal and octal numbers (reader)
+;; small binary, hexadecimal, octal and decimal numbers (reader)
 ;;
 ($r "#b101010" 42)
 ($r "#o15" 13)
 ($r "#x10" 16)
+($r "#d17" 17)
 ($r "#xFF" 255)
+($r "#b-11" -3)
+($r "#o-377" -255)
+($r "#d-99" -99)
+($r "#x-AB" -171)
 
 ;; ascii characters
 ;;

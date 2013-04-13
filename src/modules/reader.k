@@ -144,6 +144,17 @@
              (get-output-string
                (read-barsymbol-tail p (open-output-string)))))))
 
+($bind-private! read-special-token-cases
+  ($quote*
+    (#\\ . (read-character-literal p))
+    (#\x . (read-signed-number p 16))
+    (#\d . (read-signed-number p 10))
+    (#\o . (read-signed-number p 8))
+    (#\b . (read-signed-number p 2))
+    (#\! . ($sequence (skip-line p) (read-token p)))
+    (#\| . ($sequence (skip-block-comment 1 (read-char p) p)
+                      (read-token p)))))
+
 ($defun-privates!
   (read-token (p)
     ($let1 c (read-char p)
@@ -165,10 +176,11 @@
               (#t
                 (error "invalid character on input" c))))))))
   (read-special (p)
-    ($let1 c (read-char p)
+    ($let* ((c (read-char p))
+            (t (assq c read-special-token-cases)))
       ($cond
-        ((eq? c #\\)
-          (read-character-literal p))
+        ((pair? t)
+          (eval (cdr t) (get-current-environment)))
         ((eq? c #\:)
           ($let1 d (read-char p)
             (string->keyword
@@ -182,18 +194,12 @@
                     (read-symbol-tail p (open-output-string* d)))
                   (#t
                     (error "invalid keyword")))))))
-        ((eq? c #\|)
-          (skip-block-comment 1 (read-char p) p)
-          (read-token p))
         ((char<=? #\0 c #\9)
           ($let* ((n (read-number-tail p 10 (char->digit c 10)))
                   (k (read-char p)))
             ($if ($or? (eq? k #\=) (eq? k #\#))
               (list k n)
               (error "invalid S-expression label" n k))))
-        ((eq? c #\!)
-          (skip-line p)
-          (read-token p))
         (#t
           ($let1 s (get-output-string
                      (read-symbol-tail p (open-output-string* c)))
