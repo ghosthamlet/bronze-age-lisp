@@ -4,17 +4,19 @@
 ;;; Static and dynamic keyed variables.
 ;;;
 
-;; app_make_keyed_dynamic_variable (continuation passing procedure)
+;; app_make_keyed_dynamic_variableX,
+;; app_make_keyed_dynamic_variable (continuation passing procedures)
 ;;
-;; Implementation of (make-keyed-dynamic-variable).
+;; Implementation of (make-keyed-dynamic-variable)
+;;               and (make-keyed-dynamic-variable* DEFAULT)
 ;;
 ;; Value of the dynamic variable is stored in the closure
 ;; of the operative underlying the corresponding accessor
 ;; in the slot operative.var1. If the variable is not bound,
 ;; the slot contains "unbound_tag".
 ;;
-app_make_keyed_dynamic_variable:
-  .A0:
+app_make_keyed_dynamic_variableX:
+  .A1:
     ;; allocate memory for accessor and binder
     mov ecx, 16
     call rn_allocate
@@ -22,7 +24,7 @@ app_make_keyed_dynamic_variable:
     mov [eax + operative.header], dword operative_header(4)
     mov [eax + operative.program], dword rn_asm_operative.L00
     mov [eax + operative.var0], dword app_access_dynamic_variable.A0
-    mov [eax + operative.var1], dword unbound_tag
+    mov [eax + operative.var1], dword ebx
     mov edx, eax
     ;; initialize accessor applicative
     lea eax, [eax + 16]
@@ -53,6 +55,11 @@ app_make_keyed_dynamic_variable:
     push eax
     call rn_cons
     jmp [ebp + cont.program]
+
+app_make_keyed_dynamic_variable:
+  .A0:
+    mov ebx, unbound_tag
+    jmp app_make_keyed_dynamic_variableX.A1
 
 app_access_dynamic_variable:
   .A0:

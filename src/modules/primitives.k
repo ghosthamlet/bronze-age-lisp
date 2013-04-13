@@ -73,6 +73,7 @@
     string->symbol symbol->string string->keyword keyword->string
     error-object-message error-object-irritants error-object-source error-object-continuation
     open-binary-input-file open-binary-output-file
+    make-keyed-dynamic-variable*
     shared-structure-indicator)
   ($bounded-app 1 2
     char-digit? char->digit

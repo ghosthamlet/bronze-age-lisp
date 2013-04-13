@@ -20,7 +20,7 @@
     "Size of blob heap (bytes).")
   ($param blob-descriptor-capacity 1024
     "Size of blob heap descriptor table (entries).")
-  ($param lisp-heap-size (* 64 1024)
+  ($param lisp-heap-size (* 128 1024)
     "Size of lisp heap (bytes, power of two).")
   ($param lisp-transient-size 192
     "Size of transient environment area in the heap (bytes).")

@@ -5,7 +5,10 @@
 ;;;
 
 ($define-ground-lambda! read-eval-print-loop (env)
-  (repl-loop env)
+  ($with-printer-flags
+    ((color #t)  ;; TODO: disable ansi terminal colors when user program prints to file
+     (unicode #t))
+    (repl-loop env))
   (newline))
 
 ($define-ground-lambda! stand-alone-interpreter ()
@@ -24,7 +27,10 @@
       ()
       ($lambda ()
         (flush-output-port stderr)
-        (write-string ">> ")
+        (write-string
+          ($if ($get-printer-flag color)
+            "\x1B;[1m>>\x1B;[m "
+            ">> "))
         (flush-output-port stdout)
         ($let1 input (read)
           ($if (eof-object? input)
@@ -37,7 +43,11 @@
         (list error-continuation (unwrap repl-error)))))
   (repl-error (x divert)
     ($let1 port stdout ;stderr
-      (write-string "ERROR: " port)
+      (write-string
+        ($if ($get-printer-flag color)
+          "\x1B;[31;1mERROR:\x1B;[m "
+          "ERROR: ")
+        port)
       (flush-output-port port)
       ($if (error-object? x)
         ($sequence

@@ -1,16 +1,67 @@
-($define-ground-lambda! write-simple (x . r)
-  ($let1 p ($if (null? r) stdout (car r))
-    (write-shared
-      x
-      (list (shared-structure-indicator #inert))
-      p)
-    (flush-output-port p)))
+;;;
+;;; printer.k
+;;;
+;;; Printing of lisp values.
+;;;
+
+;;
+;; printer flags
+;;
+;;  unicode ... allow use of non-ascii characters on output
+;;  share   ... print shared substructures using datum labels
+;;  color   ... print in color using ANSI terminal escape sequences
+;;  escape  ... if #t, print like (write ...), if #f, print like (display ...)
+;;
+;; extension:
+;;
+;;   ($get-printer-flag <SYMBOL>)
+;;
+;;     Returns value of printer flag designated by <SYMBOL>.
+;;
+;;   ($with-printer-flags <BINDINGS> . <BODY>)
+;;
+;;     Evaluate forms of <BODY> with printer flags set
+;;     according to <BINDINGS>. <BINDINGS> have the
+;;     same form as in $bindings->environment.
+;;
+($bind-private! get-printer-flags ())
+($bind-private! bind-printer-flags ())
+
+(init-forms-add!
+  ($quote
+    ($define! (bind-printer-flags get-printer-flags)
+      (make-keyed-dynamic-variable*
+        ($bindings->environment
+          (unicode #f)
+          (color #f)
+          (share #t)
+          (escape #t))))))
+
+($define-ground-vau! $get-printer-flag (flag) #ignore
+  (eval flag (get-printer-flags)))
+
+($define-ground-vau! $with-printer-flags (flags . body) denv
+  (bind-printer-flags
+    (make-environment
+      (eval (cons $bindings->environment flags) denv)
+      (get-printer-flags))
+    (eval (list* $lambda () body) denv)))
+
+($define-ground-lambda! write-simple args
+  ($with-printer-flags ((share #f)) (apply write args)))
+
+($define-ground-lambda! display args
+  ($with-printer-flags ((escape #f)) (apply write args)))
 
 ($define-ground-lambda! write (x . r)
   ($let1 p ($if (null? r) stdout (car r))
     (write-aux
       x
-      (list (shared-structure-indicator x) () 0)
+      (list (shared-structure-indicator
+              ($if ($get-printer-flag share) x #inert))
+            ()
+            0
+            ($if ($get-printer-flag color) 0 #f))
       p)
     (flush-output-port p)))
 
@@ -18,7 +69,7 @@
   (write-shared (x s p)
     ($if ((car s) x)
       ($sequence
-        ($define! (#ignore a n) s)
+        ($define! (#ignore a n . #ignore) s)
         ($define! z (assq x a))
         (write-char #\# p)
         ($if (pair? z)
@@ -35,7 +86,7 @@
   (write-aux (x s p)
     ($cond
       ((pair? x)
-        (write-char #\( p)
+        (write-colored-parenthesis #\( s p)
         (write-shared (car x) s p)
         (write-tail (cdr x) s p))
       ((number? x)
@@ -45,9 +96,13 @@
           ((bigint? x)
             (write-string "#[bigint]" p)) ;; TODO
           (#t
-            (write-string
-              ($if (positive? x) "#e+infinity" "#e-infinity")
-              p))))
+            ($if ($get-printer-flag unicode)
+              ($sequence
+                (write-char ($if (positive? x) #\+ #\-))
+                (write-char (integer->char #x221E)))
+              (write-string
+                ($if (positive? x) "#e+infinity" "#e-infinity")
+                p)))))
       ((inert? x)
         (write-string "#inert" p))
       ((ignore? x)
@@ -55,17 +110,23 @@
       ((null? x)
         (write-string "()" p))
       ((string? x)
-        (write-char #\" p)
-        (write-string-data (open-input-string x) p)
-        (write-char #\" p))
+        ($if ($get-printer-flag escape)
+          ($sequence
+            (write-char #\" p)
+            (write-string-data (open-input-string x) p)
+            (write-char #\" p))
+          (write-string x p)))
       ((symbol? x)
         (write-string-like-symbol (symbol->string x) p))
       ((keyword? x)
         (write-string "#:" p)
         (write-string-like-symbol (keyword->string x) p))
       ((char? x)
-        (write-string "#\\" p)
-        (write-char-char x p))
+        ($if ($get-printer-flag escape)
+          ($sequence
+            (write-string "#\\" p)
+            (write-char-char x p))
+          (write-char x p)))
       ((eq? x #t)
         (write-string "#t" p))
       ((eq? x #f)
@@ -92,7 +153,7 @@
   (write-tail (x s p)
     ($cond
       ((null? x)
-        (write-char #\) p))
+        (write-colored-parenthesis #\) s p))
       (($and? (pair? x) (not? ((car s) x)))
         (write-char #\space p)
         (write-shared (car x) s p)
@@ -100,7 +161,20 @@
       (#t
         (write-string " . " p)
         (write-shared x s p)
-        (write-char #\) p))))
+        (write-colored-parenthesis #\) s p))))
+  (write-colored-parenthesis (c s p)
+    ($let ((k (list-ref s 3)))
+      ($if (integer? k)
+        ($let (((a b) ($if (eq? c #\()
+                        (list k (+ k 1))
+                        (list (- k 1) (- k 1)))))
+          (set-car! (list-tail s 3) b)
+          (write-string "\x1B;[3" p)
+          (write-char (integer->char (+ #x31 (mod a 5))) p)
+          (write-char #\m p)
+          (write-char c p)
+          (write-string "\x1B;[m" p))
+        (write-char c p))))
   (write-char-char (c p)
     ($cond
       ((eq? c #\newline) (write-string "newline" p))
