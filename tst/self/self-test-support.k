@@ -27,10 +27,12 @@
         (newline))))))
 
 ($define! protect-call
-  ($lambda (proc)
+  ($lambda (proc . opt)
     (guard-dynamic-extent
       ()
-      ($lambda () (list "return" (proc)))
+      ($lambda ()
+        (list "return"
+              (apply proc ($if (null? opt) opt (car opt)))))
       (list
         (list error-continuation
               ($lambda (x divert)

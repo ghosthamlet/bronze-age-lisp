@@ -38,10 +38,16 @@
         (write-char #\( p)
         (write-shared (car x) s p)
         (write-tail (cdr x) s p))
-      ((fixint? x)
-        (write-number x 10 p))
-      ((bigint? x)
-        (write-string "#[bigint]" p)) ;; TODO
+      ((number? x)
+        ($cond
+          ((fixint? x)
+            (write-number x 10 p))
+          ((bigint? x)
+            (write-string "#[bigint]" p)) ;; TODO
+          (#t
+            (write-string
+              ($if (positive? x) "#e+infinity" "#e-infinity")
+              p))))
       ((inert? x)
         (write-string "#inert" p))
       ((ignore? x)

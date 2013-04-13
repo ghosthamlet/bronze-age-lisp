@@ -136,10 +136,17 @@
             ((ignore? x) ignore-tag)
             ((char? x) (pack char-tag (char->integer x)))
             ((boolean? x #t) (pack boolean-tag ($if x 1 0)))
-            ((integer? x)
-              ($if (<=? min-fixint x max-fixint)
-                (pack-fixint x)
-                (string-append* "TODO_BIGINT_" x)))
+            ((number? x)
+              ($cond
+                (($and? (integer? x)
+                        (<=? min-fixint x max-fixint))
+                  (pack-fixint x))
+                ((not? (finite? x))
+                  (pack
+                    einf-tag
+                    ($if (positive? x) #x0000001 #xFFFFFF)))
+                (#t
+                  (string-append* "TODO_BIGINT_" x))))
             ((symbol? x)
               (pack symbol-tag (s-ind (symbol->string x))))
             ((keyword? x)

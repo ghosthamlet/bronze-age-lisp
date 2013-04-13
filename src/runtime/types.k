@@ -33,7 +33,8 @@
 
     ;; N.B. highest two bits of char tag must be 01
     (#b01000010 "char")
-    (#b01000110 "boolean")))
+    (#b01000110 "boolean")
+    (#b01001010 "einf")))   ; exact infinity (payload is +/-1)
 
 ($define! header-types
   ($quote*

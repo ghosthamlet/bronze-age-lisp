@@ -29,8 +29,17 @@
 
 ;;
 ;; rn_integerP_procz (native procedure)
+;; rn_fixintP_procz
+;; rn_numberP_procz
 ;;
-;; TODO
+;; preconditions:  EBX = object
+;; postconditions: ZF = 1 and AL = 0 if object is a fixint
+;;                 ZF = 1 and AL = 1 if object is a bigint
+;;                 ZF = 1 and AL = 2 if object is an exact infinity
+;;                 ZF = 0 if object is not a number
+;;
+;; preserves:      EBX, ECX, EDX, ESI, EDI, EBP
+;; clobbers:       EAX, EFLAGS
 ;;
 rn_integerP_procz:
     test ebx, 3
@@ -52,10 +61,17 @@ rn_fixintP_procz:
     test al, 3
     ret
 
+rn_numberP_procz:
+    cmp bl, einf_tag
+    jne rn_integerP_procz
+    mov al, 2
+    ret
+
 ;;
 ;; rn_siglog (native procedure)
 ;;
-;; Returns sign and representation length of an integer.
+;; Returns sign and representation length of an integer
+;; or exact infinity.
 ;;
 ;; preconditions:  EBX = object
 ;;
@@ -67,6 +83,7 @@ rn_fixintP_procz:
 ;;        M = 1 if EBX is fixint
 ;;        M = size of representation in 32-bit words,
 ;;            not including the header, if EBX is bigint
+;;       |M| >= 0x00FFFFFF if EBX is infinite
 ;;
 ;; preserves:      EBX, ECX, EDX, ESI, EDI, EBP
 ;; clobbers:       EAX, EFLAGS
@@ -75,6 +92,8 @@ rn_fixintP_procz:
 rn_siglog:
     test bl, 3
     jz .header
+    cmp bl, einf_tag
+    jz .infinite
     mov eax, ebx
     xor al, 1
     test al, 3
@@ -85,6 +104,11 @@ rn_siglog:
     lea eax, [2*eax + 1]
     cmp eax, eax           ; set ZF = 1
   .done:
+    ret
+  .infinite:
+    mov eax, ebx
+    or eax, 0x0FFFFFFF
+    cmp eax, eax           ; set ZF = 1
     ret
   .header:
     mov eax, [ebx]

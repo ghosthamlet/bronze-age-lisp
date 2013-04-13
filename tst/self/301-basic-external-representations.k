@@ -35,6 +35,8 @@
 ($rw "#f" #f)
 ($rw "#inert" #inert)
 ($rw "#ignore" #ignore)
+($rw "#e+infinity" #e+infinity)
+($rw "#e-infinity" #e-infinity)
 
 ;; small decimal numbers (canonical representation)
 ;;

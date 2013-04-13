@@ -12,11 +12,16 @@
 ;;
 app_negate:
   .A1:
-    call rn_integerP_procz
+    call rn_numberP_procz
     jne .error
-    test al, al
-    jnz .bigint
+    cmp al, 1
+    ja .infinite
+    je .bigint
     call rn_negate_fixint
+    jmp [ebp + cont.program]
+  .infinite:
+    mov eax, ebx
+    xor eax, 0xFFFFFE00
     jmp [ebp + cont.program]
   .bigint:
     call rn_negate_bigint
@@ -97,60 +102,87 @@ app_plus:
     mov eax, fixint_value(0)
     jmp [ebp + cont.program]
   .A1:
-    call rn_integerP_procz
+    call rn_numberP_procz
     jnz .type_error
     mov eax, ebx
     jmp [ebp + cont.program]
   .A2:
-    call .add_two_integers
+    call .add_two_numbers
     jmp [ebp + cont.program]
   .A3:
     push edx
-    call .add_two_integers
+    call .add_two_numbers
     pop edx
     mov ebx, eax
     mov ecx, edx
-    call .add_two_integers
+    call .add_two_numbers
     jmp [ebp + cont.program]
   .type_error:
     mov eax, err_not_a_number
     mov ecx, symbol_value(rom_string_C)
     jmp rn_error
   .operate:
-    push dword .add_two_integers
+    push dword .add_two_numbers
     push dword symbol_value(rom_string_C)
     mov edi, fixint_value(0)
     jmp reduce_finite_list
-  .add_two_integers:
-    call rn_integerP_procz
+  .add_two_numbers:
+    call rn_numberP_procz
     jne .type_error
     mov dl, al
     xchg ebx, ecx
-    call rn_integerP_procz
+    call rn_numberP_procz
     jne .type_error
-    shl dl, 1
+    shl dl, 2
     or al, dl
-    and eax, 0x3
+    and eax, 0xF
     xchg ebx, ecx
     jmp [.jump_table + eax*4]
+  .finite_plus_infinite:
+    mov eax, ecx
+    ret
+  .infinite_plus_finite:
+    mov eax, ebx
+    ret
+  .infinite_plus_infinite:
+    cmp ebx, ecx
+    jne .undefined
+    mov eax, ebx
+    ret
+  .undefined:
+    mov eax, err_undefined_arithmetic_operation
+    mov ecx, symbol_value(rom_string_C)
+    jmp rn_error
     align 16
   .jump_table:
     dd rn_fixint_plus_fixint
     dd rn_fixint_plus_bigint
+    dd .finite_plus_infinite
+    dd 0xDEAD0A10
     dd rn_bigint_plus_fixint
     dd rn_bigint_plus_bigint
+    dd .finite_plus_infinite
+    dd 0xDEAD0A20
+    dd .infinite_plus_finite
+    dd .infinite_plus_finite
+    dd .infinite_plus_infinite
+    dd 0xDEAD0A30
+    dd 0xDEAD0A40
+    dd 0xDEAD0A50
+    dd 0xDEAD0A60
+    dd 0xDEAD0A70
 
 app_minus:
   .A2:
-    call .subtract_two_integers
+    call .subtract_two_numbers
     jmp [ebp + cont.program]
   .A3:
     push edx
-    call .subtract_two_integers
+    call .subtract_two_numbers
     pop edx
     mov ebx, eax
     mov ecx, edx
-    call .subtract_two_integers
+    call .subtract_two_numbers
     jmp [ebp + cont.program]
   .operate:
     mov esi, ebx
@@ -164,25 +196,30 @@ app_minus:
     dec edx
     mov edi, car(esi)
     mov esi, cdr(esi)
-    push dword .subtract_two_integers
+    push dword .subtract_two_numbers
     push dword symbol_value(rom_string__)
     jmp reduce_finite_list.list_ok
-  .subtract_two_integers:
-    call rn_integerP_procz
+  .subtract_two_numbers:
+    call rn_numberP_procz
     jnz .type_error
     push ebx
     mov ebx, ecx
-    call rn_integerP_procz
+    call rn_numberP_procz
     jnz .type_error
-    test al, al
-    jnz .bigint
+    cmp al, 1
+    je .bigint
+    ja .infinity
     call rn_negate_fixint
   .negated:
     mov ecx, eax
     pop ebx
-    jmp app_plus.add_two_integers
+    jmp app_plus.add_two_numbers
   .bigint:
     call rn_negate_bigint
+    jmp .negated
+  .infinity:
+    mov eax, ebx
+    xor eax, 0xFFFFFE00
     jmp .negated
   .type_error:
     mov eax, err_not_a_number
@@ -198,7 +235,7 @@ app_times:
     mov eax, fixint_value(1)
     jmp [ebp + cont.program]
   .A1:
-    call rn_integerP_procz
+    call rn_numberP_procz
     jnz .type_error
     mov eax, ebx
     jmp [ebp + cont.program]

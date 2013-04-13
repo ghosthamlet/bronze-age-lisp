@@ -139,6 +139,7 @@ op_native_type_predicate:
   .A1:
     mov eax, ebx
     call [esi + operative.var1]
+    and eax, 0x000000FF
     mov ah, al
     mov al, boolean_tag
     jmp [ebp + cont.program]
@@ -159,13 +160,14 @@ op_native_type_predicate:
     mov ebx, car(edi)
     mov edi, cdr(edi)
     call [esi + operative.var1]
-    test eax, eax
+    test al, al
     jz .done
     dec dword [esp]
     jnz .next
   .done:
     pop edx
   .yes:
+    and eax, 0x000000FF
     mov ah, al
     mov al, boolean_tag
     jmp [ebp + cont.program]
@@ -175,8 +177,8 @@ op_native_type_predicate:
 ;; preconditions:  EBX = object
 ;;                 ESI = operative closure
 ;;                 EBP = current continuation
-;; postconditions: EAX = 1 if object satisfies the predicate
-;;                 EAX = 0 otherwise
+;; postconditions: AL = 1 if object satisfies the predicate
+;;                 AL = 0 otherwise
 ;; preserves:      ESI, EDI, EBP, ESP
 ;; clobbers:       EAX, EBX, ECX, EDX, EFLAGS
 ;;
@@ -186,7 +188,6 @@ pred_char:
     mov eax, ebx
     shr eax, 8
     call [esi + operative.var2]
-    and eax, 0x000000FF
     ret
   .no:
     xor eax, eax
@@ -212,7 +213,6 @@ pred_mutable_pair:
     xor eax, 0x80000003
     test eax, 0x80000003
     setz al
-    and eax, 0x000000FF
     ret
 
 pred_immutable_pair:
@@ -220,13 +220,49 @@ pred_immutable_pair:
     xor eax, 0x00000003
     test eax, 0x80000003
     setz al
-    and eax, 0x000000FF
     ret
 
 pred_integer:
+pred_finite_number:
     xor eax, eax
     call rn_integerP_procz
     setz al
+    ret
+
+pred_number:
+    xor eax, eax
+    call rn_numberP_procz
+    setz al
+    ret
+
+pred_zero:
+    call rn_numberP_procz
+    jne .nan
+    xor eax, eax
+    cmp ebx, fixint_value(0)
+    setz al
+    ret
+  .nan:
+    mov eax, err_not_a_number
+    mov ecx, [esi + operative.var0]
+    jmp rn_error
+
+pred_positive:
+    call rn_siglog
+    jne pred_zero.nan
+    test eax, eax
+    jz .no
+    setns al
+    ret
+  .no:
+    xor eax, eax
+    ret
+
+pred_negative:
+    call rn_siglog
+    jne pred_zero.nan
+    test eax, eax
+    sets al
     ret
 
 pred_finite_list:

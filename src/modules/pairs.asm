@@ -250,8 +250,7 @@ app_length:
     lea eax, [1 + 4*edx]
     jmp [ebp + cont.program]
   .cyclic:
-    ; TODO: return infinity
-    mov eax, 0xFFFFFFFD
+    mov eax, einf_value(1)      ; positive infinity
     jmp [ebp + cont.program]
 
 ;;
