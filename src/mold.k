@@ -248,7 +248,7 @@
     "numbers.asm"
     "pairs.asm"
     "ports.asm"
-    ;"strings.asm"
+    "strings.asm"
     "shared-structures.asm"
     "symbols.asm"
     "system.asm")

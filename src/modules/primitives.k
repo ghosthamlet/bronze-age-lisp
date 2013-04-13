@@ -61,7 +61,8 @@
   ($bounded-app 1 1
     not?
     negate
-    get-list-metrics length ;string-length
+    get-list-metrics length
+    string-length string-size
     wrap unwrap
     copy-es-immutable
     get-output-string
@@ -78,6 +79,7 @@
     cons eval
     list-tail list-ref
     set-car! set-cdr!
+    string-ref
     div mod div-and-mod
     apply-continuation)
   ($bounded-app 2 3

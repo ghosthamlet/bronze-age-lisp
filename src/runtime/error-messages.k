@@ -49,4 +49,5 @@
     (internal-error "Internal error.")
     (unbound-dynamic-variable "Unbound keyed dynamic variable.")
     (undefined-arithmetic-operation "Undefined arithmetic operation.")
+    (index-out-of-bounds "Index out of bounds.")
   ))
