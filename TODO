@@ -15,7 +15,7 @@ TODO
 
 Pairs and lists:
   list-neighbors filter
-  finite-list? countable-list? reduce
+  reduce
 
 Pairs mutation:
   append! copy-es

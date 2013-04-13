@@ -124,7 +124,7 @@ op_header_type_predicate:
 ;;
 ;; Implementation of type predicate based on native procedure.
 ;;
-;; preconditions:  EAX = closure
+;; preconditions:  EAX = ESI = closure
 ;;                 [EAX + operative.var0] = name
 ;;                 [EAX + operative.var1] = native procedure
 ;;                 EBP = current continuation
@@ -142,11 +142,44 @@ op_native_type_predicate:
     mov ah, al
     mov al, boolean_tag
     jmp [ebp + cont.program]
-  .operate:
-    mov eax, err_not_implemented
+  .error:
+    mov eax, err_invalid_argument_structure
     mov ecx, [esi + operative.var0]
-    call rn_error
+    jmp rn_error
+  .operate:
+    mov edi, ebx
+    call rn_list_metrics
+    mov ebx, edi            ; for error messages
+    test eax, eax
+    jz .error
+    test edx, edx
+    jz .yes
+    push edx
+  .next:
+    mov ebx, car(edi)
+    mov edi, cdr(edi)
+    call [esi + operative.var1]
+    test eax, eax
+    jz .done
+    dec dword [esp]
+    jnz .next
+  .done:
+    pop edx
+  .yes:
+    mov ah, al
+    mov al, boolean_tag
+    jmp [ebp + cont.program]
 
+;; unary type predicates (native procedures)
+;;
+;; preconditions:  EBX = object
+;;                 ESI = operative closure
+;;                 EBP = current continuation
+;; postconditions: EAX = 1 if object satisfies the predicate
+;;                 EAX = 0 otherwise
+;; preserves:      ESI, EDI, EBP, ESP
+;; clobbers:       EAX, EBX, ECX, EDX, EFLAGS
+;;
 pred_char:
     cmp bl, char_tag
     jne .no
@@ -195,6 +228,20 @@ pred_integer:
     call rn_integerP_procz
     setz al
     ret
+
+pred_finite_list:
+    call rn_list_metrics
+    test eax, eax
+    jz .no
+    test ecx, ecx
+    jnz .no
+    ret            ; here, EAX = 1, ECX = 0
+  .no:
+    xor eax, eax
+    ret
+
+pred_countable_list:
+    jmp rn_list_metrics
 
 ;;
 ;; op_relational_predicate:

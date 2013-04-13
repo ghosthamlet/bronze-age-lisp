@@ -70,6 +70,8 @@
   ($bind-native-predicate! mutable-pair? "pred_mutable_pair")
   ($bind-native-predicate! immutable-pair? "pred_immutable_pair")
   ($bind-native-predicate! integer? "pred_integer")
+  ($bind-native-predicate! finite-list? "pred_finite_list")
+  ($bind-native-predicate! countable-list? "pred_countable_list")
   ($bind-native-predicate! char-whitespace? "pred_char" (make-nonlisp-value "white_space_code"))
   ($bind-native-predicate! char-alphabetic? "pred_char" (make-nonlisp-value "alphabetic_code")))
 
