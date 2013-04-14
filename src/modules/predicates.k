@@ -51,6 +51,7 @@
   ($bind-header-predicate! continuation? cont-header-tag #xFF)
   ($bind-header-predicate! environment? environment-header-tag #xFF)
   ($bind-header-predicate! port? txt-in-header-tag #b11110011)
+  ($bind-header-predicate! promise? promise-header-tag #xFF)
 
   ($define! $bind-native-predicate!
     ($vau (symbol procedure . more) denv

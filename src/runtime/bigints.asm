@@ -321,7 +321,7 @@ bi_normalize:
 ;;
 ;; preserves:      ESI, EDI, EBP
 ;; clobbers:       EAX, EBX, ECX, EDX, EFLAGS
-;; stack usage:    6 (incl. call/ret)
+;; stack usage:    6 + ??? (incl. call/ret)
 ;;
 
 %define bi_add.ndiff   0
@@ -514,8 +514,8 @@ rn_bigint_plus_fixint:
 ;;
 ;; Multiply two fixints, producing bigint on overflow.
 ;;
-;; preconditions:  EBX = 1st summand (tagged fixint)
-;;                 ECX = 2nd summand (tagged fixint)
+;; preconditions:  EBX = 1st multiplicand (tagged fixint)
+;;                 ECX = 2nd multiplicand (tagged fixint)
 ;;
 ;; postconditions: EAX = the product (fixint or bigint)
 ;;
@@ -544,6 +544,312 @@ rn_fixint_times_fixint:
     mov [eax + bigint.digit1], edx
     mov [eax + bigint.digit2], ecx
     ret
+
+;;
+;; rn_bigint_umul (native procedure)
+;;
+;; Multiply bigint by an unsigned 32-bit integer.
+;;
+;; preconditions:  EBX = 1st multiplicand (untagged)
+;;                 ESI = 2nd multiplicand (bigint)
+;;                 2 <= EBX <= 2^31 - 1
+;;
+;; postconditions: EAX = the product (bigint or fixint in case EBX = 0)
+;;
+;; preserves:      EDI, EBP
+;; clobbers:       EAX, EBX, ECX, EDX, ESI, EFLAGS
+;; stack usage:    O(size of input bigint)
+;;
+rn_bigint_umul:
+    cmp ebx, 0
+    je .zero
+    cmp ebx, 1
+    jne .regular_case
+    mov eax, esi
+    ret
+  .zero:
+    mov eax, fixint_value(0)
+    ret
+  .regular_case:
+    push edi
+    push ebp
+    mov ebp, esp
+    ;;
+    ;; let N0 = 2p + 1 = number of digits of the input bigint I,
+    ;;     M0 = N0 + 1 = 2p + 2 = its length (in dwords)
+    ;;            4*M0 = 8p + 8 = its length (in bytes)
+    ;;
+    ;; Allocate space for two temporary bigints on the stack:
+    ;;
+    ;; T ... (N + 2) digits, M0 + 2 dwords =  8p + 16 bytes
+    ;; S ....(N + 2) digits, M0 + 2 dwords =  8p + 16 bytes
+    ;;               total 2*M0 + 2 dwords = 16p + 32 bytes
+    ;;
+    mov eax, [esi + bigint.header]
+    mov ecx, eax         ; ECX := bigint_header(M0)
+    xor cl, cl           ; ECX := 256 * M0
+    shr ecx, 5           ; ECX := 8 * M0 = 16p + 16
+    sub esp, ecx         ; ESP := EBP - 8 * M0
+    lea esp, [esp - 16]  ; ESP := EBP - 8 * M0 - 16
+    shr ecx, 4           ; ECX := p + 1
+    dec ecx              ; ECX := p
+    ;; Now, ECX = p, and ESP points to the lowest address
+    ;; of the temporary space.
+    ;;
+    ;; header field of  S  is  [esp]
+    ;;                  T      [esp + 8p + 16]
+    ;;
+    add eax, 0x200
+    mov [esp], eax               ; header dword of S
+    mov [esp + 8*ecx + 16], eax  ; header dword of T
+    ;;
+    ;; denote the 30-bit digits of the bigints by
+    ;;
+    ;;     X = [X(0), X(1), ..., X(2p-1), X(2p)]
+    ;;     Y
+    ;;     T = [T(0), T(1), ..., T(2p), T(2p+1), T(2p+2)]
+    ;;     S = [S(0), S(1), ..., S(2p), S(2p+1), S(2p+2)]
+    ;;
+    ;;   T(2k) + 2^30 * T(2k+1) = X(2k) * Y, k = 0,1,..,p-1
+    ;;   T(2p) + 2^30 * T(2p+1) = sign extension of X(2p) * Y
+    ;;                  T(2p+2) = sign extension of X(2p)
+    ;;
+    ;;                     S(0) = 0
+    ;; S(2k+1) + 2^30 * S(2k+2) = X(2k+1) * Y, k = 0,1,..,p-1
+    ;;                  S(2p+1) = 0
+    ;;                  S(2p+2) = 0
+    ;;
+    ;; X(k) is [(original esi) + 4*k + 4], k = 0, ... ,2p,
+    ;; S(k) is [esp + 4*k + 4],            k = 0, ..., 2p + 2,
+    ;; T(k) is [esp + 8*p + 4*k + 20],     k = 0, ..., 2p + 2
+    ;;
+    ;; Compute S(0), ..., S(2p) first.
+    lea esi, [esi + 8*ecx + 8]      ; ESI := &X("2p+1")
+    lea edi, [esp + 8*ecx + 8]      ; EDI := &S(2p+1)
+    mov edx, fixint_value(0)
+    mov [esp + bigint.digit0], edx  ; S(0) := 0
+    mov [edi], edx                  ; S(2p+1) := 0
+    mov [edi + 4], edx              ; S(2p+2) := 0
+    call .sweep
+    ;; now compute T(0), ..., T(2p-2)
+    lea esi, [esi - 4]              ; ESI := &X(2p)
+    lea edi, [ebp - 12]             ; EDI := &T(2p)
+    call .sweep
+    ;; compute T(2p+2)
+    mov eax, [esi]                  ; EAX := X(2p)
+    mov edx, eax
+    bigint_extension edx            ; EDX := sign extension of X(2p)
+    mov [ebp - 4], edx              ; store in T(2p+2)
+    ;; compute T(2p) and T(2p+1)
+    and al, ~3                      ; untag
+    imul ebx                        ; multiply and sign extend
+    or al, 1                        ; tag
+    lea edx, [4*edx + 1]            ; tag
+    mov [ebp - 12], eax             ; T(2p)
+    mov [ebp - 8], edx              ; T(2p+1)
+    ;; add S and T
+    mov ebx, esp
+    lea ecx, [esp + 8*ecx + 16]
+    call rn_bigint_plus_bigint
+    mov esp, ebp
+    pop ebp
+    pop edi
+    ret
+  .sweep:
+    push ecx
+    neg ecx
+  .uloop:
+    mov eax, [esi + 8*ecx]
+    and al, ~3
+    mul ebx
+    or al, 1
+    lea edx, [4*edx + 1]
+    mov [edi + 8*ecx], eax
+    mov [edi + 8*ecx + 4], edx
+    inc ecx
+    jnz .uloop
+    pop ecx
+    ret
+
+;;
+;; rn_integer_shl_30 (native procedure)
+;;
+;; Multiply integer by 2^30.
+;;
+;; preconditions:  EBX = X = integer (bigint or fixint)
+;;
+;; postconditions: EAX = X * 2^30 (bigint or fixint)
+;;
+;; preserves:      EBX, ESI, EDI, EBP
+;; clobbers:       EAX, ECX, EDX, EFLAGS
+;; stack usage:    ??? (incl. call/ret)
+;;
+rn_integer_shl_30:
+    test bl, 3
+    jz .bigint
+    cmp ebx, fixint_value(0)
+    je .zero
+  .nonzero_fixint:
+    mov ecx, 4
+    call rn_allocate
+    mov ecx, ebx
+    bigint_extension ecx
+    mov [eax + bigint.header], dword bigint_header(4)
+    mov [eax + bigint.digit0], dword fixint_value(0)
+    mov [eax + bigint.digit1], ebx
+    mov [eax + bigint.digit2], ecx
+    ret
+  .zero:
+    mov eax, ebx
+    ret
+  .bigint:
+    push esi
+    push edi
+    mov edx, [ebx]
+    mov ecx, edx
+    shr ecx, 8
+    mov eax, [ebx + 4*ecx - 8]
+    bigint_extension eax
+    cmp [ebx + 4*ecx - 4], eax
+    jne .bigger
+  .same_size:
+    call rn_allocate
+    mov [eax + bigint.header], edx
+  .copy:
+    mov [eax + bigint.digit0], dword fixint_value(0)
+    lea esi, [ebx + bigint.digit0]
+    lea edi, [eax + bigint.digit1]
+    dec ecx
+    rep movsd
+    pop edi
+    pop esi
+    ret
+  .bigger:
+    lea ecx, [ecx + 2]
+    call rn_allocate
+    lea ecx, [ecx - 2]
+    add edx, 0x200
+    mov [eax + bigint.header], edx
+    mov edx, [ebx + 4*ecx - 4]
+    mov [eax + 4*ecx], edx
+    bigint_extension edx
+    mov [eax + 4*ecx + 4], edx
+    jmp .copy
+
+;;
+;; rn_bigint_times_fixint (native procedure)
+;;
+;; Multiply bigint by a fixint.
+;;
+;; preconditions:  EBX = 1st multiplicand (bigint)
+;;                 ECX = 2nd multiplicand (tagged fixint)
+;;
+;; postconditions: EAX = the product (bigint or zero)
+;;
+;; preserves:      ESI, EDI, EBP
+;; clobbers:       EAX, EBX, ECX, EDX, EFLAGS
+;; stack usage:    ??? (incl. call/ret)
+;;
+rn_fixint_times_bigint:
+    xchg ebx, ecx
+rn_bigint_times_fixint:
+    cmp ecx, fixint_value(0)
+    je .zero
+    cmp ecx, fixint_value(1)
+    je .plus1
+    cmp ecx, fixint_value(-1)
+    je rn_negate_bigint
+    push esi
+    test ecx, ecx
+    js .negative
+  .positive:
+    mov esi, ebx
+    mov ebx, ecx
+    shr ebx, 2
+  .multiply:
+    call rn_bigint_umul.regular_case
+    pop esi
+    ret
+  .negative:
+    push ecx
+    mov ecx, [ebx]
+    call rn_negate_bigint.no_fixint
+    mov esi, eax
+    pop ebx
+    sar ebx, 2
+    neg ebx
+    jmp .multiply
+  .zero:
+    mov eax, ecx
+    ret
+  .plus1:
+    mov eax, ebx
+    ret
+
+;;
+;; rn_bigint_times_bigint (native procedure)
+;;
+;; Multiply two bigints.
+;;
+;; preconditions:  EBX = X = 1st multiplicand (bigint)
+;;                 ECX = Y = 2nd multiplicand (bigint)
+;;
+;; postconditions: EAX = the product (bigint or zero)
+;;
+;; preserves:      ESI, EDI, EBP
+;; clobbers:       EAX, EBX, ECX, EDX, EFLAGS
+;; stack usage:    ??? (incl. call/ret)
+;;
+rn_bigint_times_bigint:
+    mov eax, [ebx]
+    mov edx, [ecx]
+    cmp eax, edx
+    jbe .ordered
+    xchg ebx, ecx               ; ensure length(X) <= length(Y)
+  .ordered:
+    push esi
+    push edi
+    push ebp
+    mov ebp, ebx                ; EBP := X
+    mov esi, ecx                ; ESI := Y
+    mov edi, [ebx]              ; EDI := header word of X
+    shr edi, 8                  ; EDI := object length of X
+    dec edi                     ; EDI := digit count of X
+    mov ecx, [ebp + 4*edi]      ; ECX := most signif. digit of X
+    cmp ecx, fixint_value(0)
+    je .skip_zero_terms
+    mov ebx, esi                ; EBX := Y
+    call rn_bigint_times_fixint ; EAX := Y * most signif. digit
+    dec edi                     ;   (compute with sign extension)
+  .next_unsigned_term:          ; EAX is a bigint, or nonzero fixint here
+    mov ebx, eax                ; EBX := accumulated value from h.o. terms
+    call rn_integer_shl_30      ; EAX := acc * 2^30
+    mov ebx, [ebp + 4*edi]      ; EBX := lower-order digit of X
+    cmp ebx, fixint_value(0)    ; skip multiply-add operation
+    je .noadd                   ;   if the digit is zero
+    push eax
+    shr ebx, 2                  ; untag
+    push esi
+    call rn_bigint_umul         ; EAX := digit * Y
+    pop esi
+    pop ebx                     ; EBX := acc
+    mov ecx, eax
+    call rn_bigint_plus_bigint  ; EAX := 2^30 * acc + digit * Y
+  .noadd:
+    dec edi                     ; move to next digit
+    jnz .next_unsigned_term
+    pop ebp
+    pop edi
+    pop esi
+    ret
+  .skip_zero_terms:
+    dec edi                     ; EDI := digit count of X
+    mov ebx, [ebp + 4*edi]      ; ECX := most signif. digit of X
+    cmp ebx, fixint_value(0)
+    je .skip_zero_terms
+    shr ebx, 2                  ; untag
+    call rn_bigint_umul         ; EAX := most signif. digit * Y
+    jmp .noadd
 
 ;;
 ;; rn_negate_fixint (native procedure)

@@ -48,6 +48,7 @@
     $define! $set! $binds?
     $let $letrec $let* $let-redirect $let-safe
     $vau $lambda
+    $lazy
     $let/cc)
   ($bounded-app 0 0
     get-current-environment
@@ -74,6 +75,7 @@
     error-object-message error-object-irritants error-object-source error-object-continuation
     open-binary-input-file open-binary-output-file
     make-keyed-dynamic-variable*
+    memoize
     shared-structure-indicator)
   ($bounded-app 1 2
     char-digit? char->digit

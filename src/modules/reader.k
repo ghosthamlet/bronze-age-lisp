@@ -387,14 +387,10 @@
 ;; (load FILE)
 ;;
 ($defun-privates!
-  (naive-reverse (a b)
-    ($if (pair? a)
-      (naive-reverse (cdr a) (cons (car a) b))
-      b))
   (read-all (p a)
     ($let1 x (read p)
       ($if (eof-object? x)
-        (naive-reverse a ())
+        (reverse a)
         (read-all p (cons x a)))))
   (read-file (s)
     ($let1 p (open-input-file s)

@@ -22,14 +22,11 @@
 
   ;; TEMPFIX: implementation of max and lcm
 
-  (max (x y) ($if (>? x y) x y))
-
   (naive-lcm (x0 y0 x y)
     ($cond
       ((=? x y) x)
       ((<? x y) (naive-lcm x0 y0 (+ x x0) y))
       (#t (naive-lcm x0 y0 x (+ y y0)))))
-                 
 )
 
 ($define-ground-lambda! lcm (x y)

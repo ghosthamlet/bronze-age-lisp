@@ -240,32 +240,79 @@ app_times:
     mov eax, ebx
     jmp [ebp + cont.program]
   .A2:
-    call check_fixint.app_2
-    call rn_fixint_times_fixint
+    call .multiply_two_numbers
     jmp [ebp + cont.program]
   .A3:
-    call check_fixint.app_2
     push edx
-    call rn_fixint_times_fixint
+    call .multiply_two_numbers
+    pop edx
     mov ebx, eax
-    pop ecx
-    call check_fixint.app_2
-    call rn_fixint_times_fixint
+    mov ecx, edx
+    call .multiply_two_numbers
     jmp [ebp + cont.program]
   .type_error:
     mov eax, err_not_a_number
     mov ecx, symbol_value(rom_string_X)
     jmp rn_error
   .operate:
-    push dword .multiply_two_fixints
+    push dword .multiply_two_numbers
     push dword symbol_value(rom_string_X)
     mov edi, fixint_value(1)
     jmp reduce_finite_list
-  .multiply_two_fixints:
-    call check_fixint.app_2
-    jmp rn_fixint_times_fixint
-    mov eax, err_not_implemented
+  .multiply_two_numbers:
+    call rn_numberP_procz
+    jne .type_error
+    mov dl, al
+    xchg ebx, ecx
+    call rn_numberP_procz
+    jne .type_error
+    shl dl, 2
+    or al, dl
+    and eax, 0xF
+    xchg ebx, ecx
+    jmp [.jump_table + eax*4]
+  .fixint_times_infinite:
+    xchg ebx, ecx
+  .infinite_times_fixint:
+    cmp ecx, fixint_value(0)
+    je .undefined
+  .transfer_sign:
+    mov eax, ebx
+    test ecx, ecx
+    jns .keep_sign
+    xor eax, 0xFFFFFE00
+  .keep_sign:
+    ret
+  .bigint_times_infinite:
+    xchg ebx, ecx
+  .infinite_times_bigint:
+    mov eax, [ecx]
+    shr eax, 8
+    mov ecx, [ecx + 4*eax - 4]
+    jmp .transfer_sign
+  .undefined:
+    mov eax, err_undefined_arithmetic_operation
+    mov ecx, symbol_value(rom_string_X)
     jmp rn_error
+    align 16
+  .jump_table:
+    dd rn_fixint_times_fixint
+    dd rn_fixint_times_bigint
+    dd .fixint_times_infinite
+    dd 0xDEAD0B10
+    dd rn_bigint_times_fixint
+    dd rn_bigint_times_bigint
+    dd .bigint_times_infinite
+    dd 0xDEAD0B20
+    dd .infinite_times_fixint
+    dd .infinite_times_bigint
+    dd .transfer_sign
+    dd 0xDEAD0B30
+    dd 0xDEAD0B40
+    dd 0xDEAD0B50
+    dd 0xDEAD0B60
+    dd 0xDEAD0B70
+
 
 app_div:
   .A2:

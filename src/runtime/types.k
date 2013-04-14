@@ -57,7 +57,9 @@
     (#b00101101 "bin-out" ("env" "close" "write" "flush") "var")
 
     ;; top two bits of bigint header tag must be zero
-    (#b00110001 "bigint" () "digit")))
+    (#b00110001 "bigint" () "digit")
+    (#b00110101 "promise" ("node"))
+    ))
 
 ;;
 ;; range of fixints

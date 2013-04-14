@@ -133,8 +133,10 @@
   "environments.k"
   ;"characters.k"
   "continuations.k"
+  "promises.k"
   ;"numbers.k"
   ;"symbols.k"
+  "_provisional.k"
   )
 
 ($when ($configured reader-and-printer)
@@ -248,6 +250,7 @@
     "numbers.asm"
     "pairs.asm"
     "ports.asm"
+    "promises.asm"
     "strings.asm"
     "shared-structures.asm"
     "symbols.asm"
