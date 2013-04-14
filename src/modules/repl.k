@@ -18,6 +18,9 @@
       (process-interpreter-arguments
         (cdr args) #f (make-kernel-standard-environment)))))
 
+($bind-private! script-arguments ())
+($define-ground-lambda! get-script-arguments () script-arguments)
+
 ($defun-privates!
   (repl-loop (env)
     ($unless (eof-object? (read-eval-print env))
@@ -62,8 +65,13 @@
           (write-char #\newline port)))
       (flush-output-port port))
     (divert))
+  (interpret-stdin (env)
+    . #9=(($define! x (copy-es-immutable (read)))
+          ($unless (eof-object? x)
+            (eval x env)
+            . #9#)))
   (print-usage-instructions ()
-    (write-string "usage: bronze [-l FILE] [-e EXPR] [-iv] [script]" stderr)
+    (write-string "usage: bronze [-l FILE] [-e EXPR] [-i] [-v] [SCRIPT [ARGS...]]" stderr)
     (newline stderr)
     #f)
   (print-version ()
@@ -88,7 +96,16 @@
         #1#)
       ((equal? (car args) "-i")
         (process-interpreter-arguments (cdr args) #t env))
+      ((equal? (car args) "-")
+        ($set! private-environment script-arguments args)
+        ($if interactive
+          ($sequence
+            (interpret-stdin env)
+            (newline)
+            (read-eval-print-loop env))
+          (interpret-stdin env)))
       (#t
+        ($set! private-environment script-arguments args)
         ($if interactive
           ($sequence
             #2=(eval (list load (car args)) env)
