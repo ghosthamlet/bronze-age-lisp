@@ -3,7 +3,9 @@
 ;;;
 ;;; Kernel number features - fixint only.
 ;;;
-;;; todo - overflow checks
+;;; TODO: cyclic argument lists
+;;;       bigint division
+;;;        min, max
 
 ;;
 ;; app_negate.A1 (continuation passing procedure)
@@ -92,10 +94,7 @@ check_fixint:
      jmp rn_error
 
 ;;
-;; (+) (+ N) (+ N N) (+ N N N)
-;; (*) (* N) (* N N) (* N N N)
-;; (- N N) (- N N N)
-;; (div N N) (mod N N) (div-and-mod N N)
+;; (+) (+ N) (+ N N) (+ N N N) (+ . <finite list>)
 ;;
 app_plus:
   .A0:
@@ -172,6 +171,9 @@ app_plus:
     dd 0xDEAD0A60
     dd 0xDEAD0A70
 
+;;
+;; (- N N) (- N N N) (- N . <finite list>
+;;
 app_minus:
   .A2:
     call .subtract_two_numbers
@@ -229,7 +231,9 @@ app_minus:
     mov eax, err_invalid_argument_structure
     mov ecx, symbol_value(rom_string__)
     jmp rn_error
-
+;;
+;; (*) (* N) (* N N) (* N N N) (* . <finite list>)
+;;
 app_times:
   .A0:
     mov eax, fixint_value(1)
@@ -313,7 +317,8 @@ app_times:
     dd 0xDEAD0B60
     dd 0xDEAD0B70
 
-
+;; (div N N) (mod N N) (div-and-mod N N) for fixint N
+;; TODO: bigints
 app_div:
   .A2:
     call check_fixint.app_2

@@ -134,7 +134,7 @@
   ;"characters.k"
   "continuations.k"
   "promises.k"
-  ;"numbers.k"
+  "numbers.k"
   ;"symbols.k"
   "_provisional.k"
   )
