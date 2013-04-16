@@ -55,11 +55,6 @@
   (f n)
   (get-output-string p))
 
-($define-ground-lambda! string-append args
-  ($let ((p (open-output-string)))
-    (for-each ($lambda (x) (write-string x p)) args)
-    (get-output-string p)))
-
 ($define-ground-lambda! list->string (chars)
   ($let ((p (open-output-string)))
     (for-each ($lambda (x) (write-char x p)) chars)
@@ -73,3 +68,11 @@
                      ()
                      (cons c (f)))))))
     (f)))
+
+($define-ground-lambda! filter (accept? ls)
+  (apply append
+    (map ($lambda (x)
+           ($if (apply accept? (list x))
+                (list x)
+                ()))
+         ls)))

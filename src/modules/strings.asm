@@ -124,3 +124,79 @@ app_string_ref:
     shl eax, 8
     mov al, char_tag
     jmp [ebp + cont.program]
+
+;;
+;; app_string_append (continuation passing procedure)
+;;
+;; Implementation of (string-append . STRINGS).
+;;
+app_string_append:
+  .A0:
+    mov eax, string_value(rom_empty_string)
+    jmp [ebp + cont.program]
+  .O1:
+    mov ebx, car(esi)
+  .A1:
+    cmp bl, string_tag
+    jne .type_error
+    mov eax, ebx
+    jmp [ebp + cont.program]
+  .type_error:
+    mov eax, err_invalid_argument
+    jmp .fail
+  .structure_error:
+    mov eax, err_invalid_argument_structure
+    jmp .fail
+  .overflow:
+    mov eax, err_out_of_blob_memory
+  .fail:
+    mov ecx, symbol_value(rom_string_string_append)
+    jmp rn_error
+  .operate:
+    mov esi, ebx           ; ESI := input list
+    call rn_list_metrics   ; EDX := list length
+    test eax, eax
+    jz .structure_error
+    test ecx, ecx
+    jnz .structure_error
+    cmp edx, 1
+    jb .A0
+    je .O1
+    ;; sum
+    push edx
+    mov edi, esi           ; EDI := input list
+    xor eax, eax           ; sum lengths in EAX
+  .add_next:
+    mov ebx, car(esi)
+    mov esi, cdr(esi)
+    cmp bl, string_tag
+    jne .type_error
+    call rn_get_blob_data
+    add eax, ecx
+    jo .overflow
+    dec edx
+    jnz .add_next
+    mov esi, edi           ; ESI := input list
+    pop edx                ; EDX := input list length
+    mov ecx, eax           ; ECX := total length
+    call rn_allocate_blob  ; EAX := new string (tagged)
+    push eax
+    mov ebx, eax
+    call rn_get_blob_data
+    mov edi, ebx           ; EDI := start of output string data
+  .copy_next:
+    mov ebx, car(esi)
+    mov esi, cdr(esi)
+    call rn_get_blob_data
+    mov eax, ebx           ; EAX := input string
+    mov ebx, edi           ; EBX := address in output string
+    add edi, ecx           ; EDI := address for next string
+    call rn_copy_blob_data
+    dec edx
+    jnz .copy_next
+    xor edi, edi           ; discard non-heap pointers
+    xor ebx, ebx           ;   ...
+  .done:
+    pop eax
+    mov al, string_tag
+    jmp [ebp + cont.program]

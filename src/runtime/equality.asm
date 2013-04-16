@@ -191,6 +191,8 @@ rn_equal:
     jmp .L1
 
   .header:
+    test cl, 3
+    jnz .not_equal
     mov eax, [ebx] ; get header fields
     mov edx, [ecx]
     cmp al, applicative_header(0)

@@ -19,9 +19,17 @@ rn_error:
     test edx, edx
     jnz .double
     mov [rn_error_active], dword 1
+    ;;
+    pop edx
+    mov esp, [stack_limit]
+    push edx
     push ecx
     push ebx
     push eax
+    ;;
+    mov esi, inert_tag
+    mov edi, inert_tag
+    ;;
     mov ecx, (error_header >> 8)
     call rn_allocate
     mov ecx, eax

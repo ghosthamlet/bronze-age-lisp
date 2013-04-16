@@ -63,6 +63,7 @@ rn_allocate_blob:
     jz .full
     mov edx, blob_address(eax)
     add edx, ecx
+    jc .fail
     cmp edx, blob_address(ebx)
     jae .full
   .available:

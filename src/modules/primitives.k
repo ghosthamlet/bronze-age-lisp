@@ -98,7 +98,7 @@
   ($unbounded-app 0 3
     (+ "plus") (* "times"))
   ($unbounded-app 0 1
-    error)
+    error string-append)
   ($unbounded-app 0 2
     make-environment append)
   ($unbounded-app 2 2

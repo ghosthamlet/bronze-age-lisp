@@ -5,5 +5,6 @@
   (string-length "a")
   (string-length "0123456789")
   (string-ref "a" 0)
-  (string-ref "0123456789" 5))
+  (string-ref "0123456789" 5)
+  (string-append "ab" "01" "xy"))
 

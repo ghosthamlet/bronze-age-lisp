@@ -632,7 +632,7 @@ app_make_environment:
     call rn_make_multiparent_environment
     mov ebx, eax
     call rn_make_list_environment
-    add esp, 4
+    add esp, 8
     jmp [ebp + cont.program]
   .operate:
     mov esi, ebx
@@ -656,6 +656,7 @@ app_make_environment:
     loop .L
     mov ecx, edx
     call rn_make_multiparent_environment
+    lea esp, [esp + 4*edx]
     jmp [ebp + cont.program]
   .type_error:
     mov eax, err_invalid_argument
