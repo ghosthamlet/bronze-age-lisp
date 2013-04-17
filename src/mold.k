@@ -235,6 +235,7 @@
 ($unless ($configured no-code-segment)
   ($for-each-src asm-include asm-prefix "modules/"
     "predicates.asm"
+    "bitwise-operations.asm"
     "booleans.asm"
     "characters.asm"
     "combiners.asm"

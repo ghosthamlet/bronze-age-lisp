@@ -76,6 +76,7 @@
     open-binary-input-file open-binary-output-file
     make-keyed-dynamic-variable*
     memoize
+    integer-length
     shared-structure-indicator)
   ($bounded-app 1 2
     char-digit? char->digit
