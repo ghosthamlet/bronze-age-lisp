@@ -374,13 +374,16 @@ scheme_div_mod:
     xor edx, edx
     mov eax, ebx
     div ecx
+    test edx, edx
+    jz .no_adjustment
     inc eax
-    neg eax
     sub ecx, edx
     mov edx, ecx
+  .no_adjustment:
+    neg eax
     ret
   .negative_divisor:
-    neg ebx
+    neg ecx
     call .positive_divisor
     neg eax
     ret

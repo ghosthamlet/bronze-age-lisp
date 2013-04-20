@@ -141,6 +141,7 @@ test_compare_bigint:
     check_lt bigint_neg_10, bigint_pos_6
     check_gt bigint_601_000_000, bigint_600_000_000
     check_lt bigint_600_000_000, bigint_601_000_000
+    check_lt bigint_10000000000, bigint_10600228229
     ret
 
 test_compare_mix:
@@ -248,5 +249,17 @@ bigint_601_000_000:
     dd 0x8F4A2101
     dd 0x00000001
     dd 0x00000001
+
+bigint_10600228229:
+    dd bigint_header(4)
+    dd fixint_value(936551813)
+    dd fixint_value(9)
+    dd fixint_value(0)
+
+bigint_10000000000:
+    dd bigint_header(4)
+    dd fixint_value(336323584)
+    dd fixint_value(9)
+    dd fixint_value(0)
 
 lisp_rom_limit:

@@ -74,10 +74,10 @@
         (write-char #\# p)
         ($if (pair? z)
           ($sequence
-            (write-number (cdr z) 10 p)
+            (print-integer (cdr z) 10 p)
             (write-char #\# p))
           ($sequence
-            (write-number n 10 p)
+            (print-integer n 10 p)
             (write-char #\= p)
             (set-car! (list-tail s 1) (cons (cons x n) a))
             (set-car! (list-tail s 2) (+ 1 n))
@@ -91,10 +91,8 @@
         (write-tail (cdr x) s p))
       ((number? x)
         ($cond
-          ((fixint? x)
-            (write-number x 10 p))
-          ((bigint? x)
-            (write-string "#[bigint]" p)) ;; TODO
+          ((integer? x)
+            (print-integer x 10 p))
           (#t
             ($if ($get-printer-flag unicode)
               ($sequence
@@ -182,7 +180,7 @@
       ((char<=? #\newline c #\x7D) (write-char c p))
       (#t
         (write-char #\x p)
-        (write-string (number-digits (char->integer c) 16) p))))
+        (print-integer (char->integer c) 16 p))))
   (write-string-char (c p)
     ($cond
       ((eq? c #\\) (write-string "\\\\" p))
@@ -191,19 +189,13 @@
       ((eq? c #\newline) (write-string "\\n" p))
       (#t
         (write-string "\\x" p)
-        (write-string (number-digits (char->integer c) 16) p)
+        (print-integer (char->integer c) 16 p)
         (write-char #\; p))))
   (write-string-data (p q)
     ($let1 c (read-char p)
       ($unless (eof-object? c)
         (write-string-char c q)
         (write-string-data p q))))
-  (write-number (n b p)
-    ($if (<? n 0)
-      ($sequence
-        (write-char #\- p)
-        (write-string (number-digits (- 0 n) b) p))
-      (write-string (number-digits n b) p)))
   (write-string-like-symbol (s p)
     ($if (simple-string? (open-input-string s))
       (write-string s p)
@@ -231,15 +223,6 @@
             ($or? (char-alphabetic? c)
                   (memq? c extended-identifier-characters))
             (simple-string-tail? p)))))))
-
-($bind-private! number-digits
-  (make-bounded-applicative
-    (list 2 2) (list "app_number_digits.A2") ()))
-
-($define-ground-lambda! number->string (x . r)
-  ($let1 p (open-output-string)
-    (write-number x ($if (pair? r) (car r) 10) p)
-    (get-output-string p)))
 
 ($define-ground-lambda! newline r
   ($let1 p ($if (pair? r) (car r) stdout)

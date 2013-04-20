@@ -293,7 +293,6 @@ app_bitwise_not:
     push ebp
     mov esi, ebx
     mov edi, ecx
-    rn_trace 1, 'op', lisp, esi, lisp, edi
     mov ecx, [ebx]
     mov edx, ecx
     shr ecx, 8
@@ -320,7 +319,6 @@ app_bitwise_not:
     loop .next_digit_pair
     pop ecx
     pop ebx
-    rn_trace 1, 'tail', hex, ebx, hex, ecx
   .next_digit:
     mov eax, [esi + 4 * edx]
     %3 eax, ebx

@@ -504,11 +504,18 @@ test_neg_big:
     ret
 
 test_selected:
+    mov ebx, bigint_2p64
+    call rn_negate_bigint
+    mov ebx, eax
+    mov ecx, bigint_m2p64
+    call rn_integer_compare
+    test eax, eax
+    call pass_if.z
+
     mov ebx, bigint_2684354560
     call rn_negate_bigint
     mov ebx, eax
     mov ecx, bigint_m2684354560
-    rn_trace 1, 'neg', lisp, ebx, lisp, ecx
     call rn_integer_compare
     test eax, eax
     call pass_if.z
@@ -554,5 +561,16 @@ bigint_2684354560:
     dd fixint_value(2)
     dd fixint_value(0)
 
+bigint_2p64:
+    dd bigint_header(4)
+    dd fixint_value(0)
+    dd fixint_value(0)
+    dd fixint_value(16)
+
+bigint_m2p64:
+    dd bigint_header(4)
+    dd fixint_value(0)
+    dd fixint_value(0)
+    dd fixint_value(-16)
 
 lisp_rom_limit:

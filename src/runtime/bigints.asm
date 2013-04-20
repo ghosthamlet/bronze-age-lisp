@@ -171,19 +171,26 @@ rn_integer_compare:
   .bigint:
     push esi
     push edi
-    std
     mov edx, [ebx]
     shr edx, 8
-    lea esi, [ebx + 4*edx - 4]
-    lea edi, [ecx + 4*edx - 4]
-    lea ecx, [edx - 1]
-    repe cmpsd
+    lea esi, [ebx + 4*edx - 8]
+    lea edi, [ecx + 4*edx - 8]
     mov eax, [esi + 4]
     mov ebx, [edi + 4]
+    sub eax, ebx               ; signed comparison
+    jnz .bigint_done
+    lea ecx, [edx - 2]
+    std
+    repe cmpsd
+    cld
+    mov eax, [esi + 4]
+    mov ebx, [edi + 4]
+    shr eax, 2                 ; unsigned comparison
+    shr ebx, 2
+    sub eax, ebx
+  .bigint_done:
     pop edi
     pop esi
-    cld
-    sub eax, ebx
     ret
 
 ;;
@@ -933,6 +940,7 @@ rn_negate_bigint:
     lea eax, [eax + 4]
     mov [edi], eax
     dec ecx
+    jecxz .done
   .invert:
     lea esi, [esi + 4]
     lea edi, [edi + 4]
