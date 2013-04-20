@@ -180,3 +180,168 @@ app_arithmetic_shift:
     dd .fix_fix, .fix_big, .fin_inf, 0xDEAD0C10
     dd .big_fix, .big_big, .fin_inf, 0xDEAD0C20
     dd .inf_fin, .inf_fin, .inf_inf, 0xDEAD0C30
+
+;;
+;; app_bitwise_not (continuation passing procedure)
+;;
+;; Implementation of (bitwise-not X), where X is an integer.
+;;
+;; compatibility: SRFI-60
+;;
+app_bitwise_not:
+  .A1:
+    call rn_integerP_procz
+    jnz .type_error
+    test al, al
+    jnz .bigint
+  .fixint:
+    mov eax, ebx
+    xor eax, ~3
+    jmp [ebp + cont.program]
+  .bigint:
+    call rn_shallow_copy
+    mov ecx, [eax]
+    shr ecx, 8
+    dec ecx
+    lea esi, [eax + 4]
+  .next_digit:
+    xor dword [esi], ~3
+    lea esi, [esi + 4]
+    loop .next_digit
+    xor esi, esi
+    jmp [ebp + cont.program]
+  .type_error:
+    mov eax, err_invalid_argument
+    mov ecx, symbol_value(rom_string_bitwise_not)
+    jmp rn_error
+
+;;
+;; (bitwise-and ...) (bitwise-ior ...)
+;;
+%macro define_bitwise_operation 3
+  .A0:
+    mov eax, fixint_value(%1)
+    jmp [ebp + cont.program]
+  .A1:
+    call rn_integerP_procz
+    jnz .type_error
+    mov eax, ebx
+    jmp [ebp + cont.program]
+  .A2:
+    call .bitop
+    jmp [ebp + cont.program]
+  .A3:
+    push edx
+    call .bitop
+    pop edx
+    mov ebx, eax
+    mov ecx, edx
+    call .bitop
+    jmp [ebp + cont.program]
+  .type_error:
+    mov eax, err_invalid_argument
+    mov ecx, symbol_value(%2)
+    jmp rn_error
+  .operate:
+    push dword .bitop
+    push dword symbol_value(%2)
+    mov edi, fixint_value(%1)
+    mov esi, ebx
+    call rn_list_metrics
+    test eax, eax
+    jz reduce_finite_list.structure_error
+    jmp reduce_finite_list.list_ok    ; allow cyclic_list
+  .bitop:
+    xor edx, edx
+    call rn_integerP_procz
+    jne .type_error
+    mov dl, al
+    xchg ebx, ecx
+    call rn_integerP_procz
+    jne .type_error
+    shl dl, 1
+    or dl, al
+    xchg ebx, ecx
+    jmp [.jump_table + edx*4]
+
+  .fix_big:
+    xchg ebx, ecx
+  .big_fix:
+    mov eax, ecx
+    bigint_extension eax
+    push eax
+    push eax
+    push ecx
+    push dword bigint_header(4)
+    mov ecx, esp
+    call .big_big
+    add esp, 16
+    ret
+  .fix_fix:
+    mov eax, ebx
+    %3 eax, ecx
+    ret
+  .big_big:
+    mov eax, [ebx]
+    mov edx, [ecx]
+    cmp eax, edx
+    jae .ordered
+    xchg ebx, ecx
+  .ordered:
+    push esi
+    push edi
+    push ebp
+    mov esi, ebx
+    mov edi, ecx
+    rn_trace 1, 'op', lisp, esi, lisp, edi
+    mov ecx, [ebx]
+    mov edx, ecx
+    shr ecx, 8
+    call rn_allocate
+    mov [eax], edx
+    mov ebp, eax
+    push eax
+    mov edx, [edi]
+    shr edx, 8
+    dec edx
+    mov eax, [edi + 4 * edx]
+    bigint_extension eax
+    push eax
+    sub ecx, edx
+    push ecx
+    mov ecx, edx
+    mov edx, 1
+  .next_digit_pair:
+    mov eax, [esi + 4 * edx]
+    mov ebx, [edi + 4 * edx]
+    %3 eax, ebx
+    mov [ebp + 4 * edx], eax
+    inc edx
+    loop .next_digit_pair
+    pop ecx
+    pop ebx
+    rn_trace 1, 'tail', hex, ebx, hex, ecx
+  .next_digit:
+    mov eax, [esi + 4 * edx]
+    %3 eax, ebx
+    mov [ebp + 4 * edx], eax
+    inc edx
+    loop .next_digit
+    pop ebx
+    pop ebp
+    pop edi
+    pop esi
+    jmp bi_normalize
+
+    align 16
+  .jump_table:
+    dd .fix_fix
+    dd .fix_big
+    dd .big_fix
+    dd .big_big
+%endmacro
+
+app_bitwise_and:
+  define_bitwise_operation -1, rom_string_bitwise_and, and
+app_bitwise_ior:
+  define_bitwise_operation 0, rom_string_bitwise_ior, or

@@ -946,9 +946,9 @@ rn_negate_bigint:
     pop esi
     ret
   .min_digit:
+    mov [edi], eax
     cmp ecx, 1
     jnz .invert
-    mov [edi], eax
   .append_more_digits:
     pop eax
     lea edx, [edx + (2 << 8)]
@@ -957,7 +957,7 @@ rn_negate_bigint:
     mov [edi + 4], ebx
     mov [edi + 8], ebx
     mov esi, [lisp_heap_pointer]
-    lea esi, [esi + 2]
+    lea esi, [esi + 8]
     mov [lisp_heap_pointer], esi
     pop edi
     pop esi

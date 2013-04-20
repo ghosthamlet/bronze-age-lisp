@@ -76,7 +76,7 @@
     open-binary-input-file open-binary-output-file
     make-keyed-dynamic-variable*
     memoize
-    integer-length
+    integer-length bitwise-not
     shared-structure-indicator)
   ($bounded-app 1 2
     char-digit? char->digit
@@ -98,7 +98,8 @@
   ($unbounded-app 2 3
     (- "minus"))
   ($unbounded-app 0 3
-    (+ "plus") (* "times"))
+    (+ "plus") (* "times")
+    bitwise-and bitwise-ior)
   ($unbounded-app 0 1
     error string-append)
   ($unbounded-app 0 2

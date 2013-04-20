@@ -45,7 +45,7 @@
 ;;
 ($eq (integer-length (* 256 256 256 256)) 33)
 ($eq (map integer-length (list 0 1 -1 7 -7 8 -8)) ; examples
-     (list 0 1  0 3  3 4  3))                     ; from SRFI-33
+     (list 0 1 0 3 3 4 3))                        ; from SRFI-33
 
 ;; arithmetic-shift
 ;;
@@ -79,5 +79,11 @@
     (list (integer-length (arithmetic-shift 1 i))
           (integer-length (arithmetic-shift -1 i)))
     (list (+ i 1) i)))
+
+;; bitwise-not
+;;
+($eq (map bitwise-not (list -7 -6 -5 -4 -3 -2 -1 0 1 2 3 4 5 6 7))
+     (list 6 5 4 3 2 1 0 -1 -2 -3 -4 -5 -6 -7 -8))
+($eq (+ 1 (bitwise-not 12345678901234567)) -12345678901234567)
 
 (summary)

@@ -43,6 +43,8 @@ _start:
 
     call test_neg_fix
     call test_neg_big
+
+    call test_selected
     jmp test_finished
 
 test_negative_fixint_constants:
@@ -501,6 +503,23 @@ test_neg_big:
     call pass_if.z
     ret
 
+test_selected:
+    mov ebx, bigint_2684354560
+    call rn_negate_bigint
+    mov ebx, eax
+    mov ecx, bigint_m2684354560
+    rn_trace 1, 'neg', lisp, ebx, lisp, ecx
+    call rn_integer_compare
+    test eax, eax
+    call pass_if.z
+
+    mov ebx, bigint_2882400001
+    mov ecx, bigint_m2684354560
+    call rn_bigint_plus_bigint
+    cmp eax, fixint_value(198045441)
+    call pass_if.z
+    ret
+
 section .lisp_rom
     align 8
 lisp_rom_base:
@@ -516,5 +535,24 @@ bigint_boundary_90:
     dd fixint_value(min_fixint)
     dd fixint_value(0)
     dd fixint_value(0)
+
+bigint_2882400001:
+    dd bigint_header(4)
+    dd fixint_value(734916353)
+    dd fixint_value(2)
+    dd fixint_value(0)
+
+bigint_m2684354560:
+    dd bigint_header(4)
+    dd fixint_value(536870912)
+    dd fixint_value(-3)
+    dd fixint_value(-1)
+
+bigint_2684354560:
+    dd bigint_header(4)
+    dd fixint_value(536870912)
+    dd fixint_value(2)
+    dd fixint_value(0)
+
 
 lisp_rom_limit:
