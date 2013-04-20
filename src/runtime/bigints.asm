@@ -75,8 +75,8 @@ rn_numberP_procz:
 ;;
 ;; preconditions:  EBX = object
 ;;
-;; postconditions: ZF = 1 if EBX represents integer (fixint or bigint)
-;;                 ZF = 0 if EBX is does not represent integer
+;; postconditions: ZF = 1 if EBX represents a number (fixint or bigint)
+;;                 ZF = 0 if EBX is does not represent any number
 ;;                 EAX = S * M (untagged signed integer)
 ;;
 ;; where: S = sign of the number represented by EBX (-1, 0, or 1)
@@ -962,3 +962,166 @@ rn_negate_bigint:
     pop edi
     pop esi
     ret
+
+;;
+;; bigint_shift_step TEMP-REG (macro)
+;;
+;; preconditions:  EAX = fixint_value(A1) & ~3
+;;                 EBX = fixint_value(A0) & ~3
+;;                 CL = K0, 0 <= K0 < 30
+;;                 CH = K1 = 30 - K0
+;;                 TMP-REG = register name EDX, ESI, EDI or EBP
+;;
+;; postconditions: EAX = fixint_value((A0 >> K0) | (A1 << K1)) & ~3
+;;                 EBX = fixint_value(A1) | P (for some P = 0,1,2,3)
+;;
+;; clobbers:  EAX, EBX, TEMP-REG (macro argument), EFLAGS
+;; preserves: ECX, {EDX, ESI, EDI, EBP} \ {TMP-REG}
+;;
+
+%macro bigint_shift_step 1
+    shr ebx, cl
+    xchg ch, cl
+    mov %1, eax
+    shl eax, cl
+    xchg ch, cl
+    or eax, ebx
+    mov ebx, %1
+%endmacro
+
+;;
+;; rn_bigint_shift_right (native procedure)
+;;
+;; preconditions:  EBX = input bigint
+;;                 ECX = H := shift (untagged, unsigned)
+;; postconditions: EAX = output bigint or fixint
+;;
+;; preserves:      EBP
+;; clobbers:       EAX, EBX, ECX, EDX, ESI, EDI, EFLAGS
+;;
+rn_bigint_shift_right:
+    mov esi, ebx                 ; ESI := input bigint
+    mov eax, ecx                 ; EAX = H
+    xor edx, edx                 ; EDX:EAX = H
+    mov ebx, 30
+    div ebx                      ; (EAX, EDX) := (H div 30, H mod 30)
+    mov ebx, eax                 ; EBX := H div 30
+    mov ecx, [esi]               ; ECX := header word of input bigint
+    shr ecx, 8                   ; ECX := length of input bigint object
+    mov edi, [esi + 4*ecx - 4]   ; EDI := most significant digit
+    bigint_extension edi         ; EDI := sign extension of input
+    sub ecx, ebx                 ; ECX := length of output object
+    mov eax, ecx                 ; EAX := ... necessary to hold the result
+    cmp ecx, 2
+    jl .shift_out
+    jg .not_too_small
+    inc ecx                      ; ensure length >= 4 dwords
+  .not_too_small:
+                                 ; reserve space for:
+    push edi                     ;   [esp + 12] = saved sign extension
+    push ebp                     ;   [esp + 8] = saved EBP
+    push ebp                     ;   [exp + 4] = pointer to new object
+    push ebp                     ;   [esp + 0] = # of digits - 1
+    inc ecx                      ; align length
+    and ecx, ~1                  ;   to a multiple of 2 dwords
+    sub eax, 2                   ; number of 30-bit digits - 1
+    mov [esp], eax               ; save number of digits
+    call rn_allocate             ; allocate output object
+    mov [esp + 4], eax           ; save pointer to the new object
+    xchg edi, eax                ; EDI := new object, EAX := sign extension
+    mov [edi + 4*ecx - 4], eax   ; write sign extension
+    mov [edi + 4*ecx - 8], eax   ;   in top 2 words
+    mov eax, ecx                 ; prepare object header
+    shl eax, 8                   ;  ...
+    mov al, bigint_header(0)     ;  ...
+    mov [edi], eax               ; write object header
+    lea esi, [esi + 4 * ebx + 8] ; pointer to least-significant-but-one used digit of input
+    mov ebx, [esi - 4]           ; get least significant digit
+    and ebx, ~3                  ; clear tag bits
+    mov ecx, edx                 ; ECX := H mod 30
+    mov ch, 30                   ; CH := 30 - (H mod 30)
+    sub ch, cl                   ;   ...
+    mov edx, [esp]               ; EDX = number of digits - 1
+    lea esi, [esi + 4*edx]
+    lea edi, [edi + 4*edx + 4]
+  .main:
+    test edx, edx
+    jz .last_digit
+    neg edx                      ; count up towards zero
+  .shift_next:
+    mov eax, [esi + 4*edx]
+    and eax, ~3                  ; clear tag bits
+    bigint_shift_step ebp
+    and eax, ~3                  ; add tag
+    or eax, 1                    ;   ...
+    mov [edi + 4*edx], eax       ; store digit
+    inc edx
+    jnz .shift_next
+  .last_digit:
+    mov eax, [esp + 12]          ; get sign extension
+    and eax, ~3                  ; clear tag bits
+    bigint_shift_step ebp        ; combine into last digit
+    and eax, ~3                  ; add tag
+    or eax, 1                    ;   ...
+    mov [edi], eax               ; store digit
+    mov ebx, [esp + 4]           ; new object
+    mov ebp, [esp + 8]           ; restore register EBP
+    add esp, 16                  ; restore stack
+    jmp bi_normalize            ; normalize bigint
+  .shift_out:
+    mov eax, edi
+    ret
+
+;;
+;; rn_bigint_shift_left (native procedure)
+;;
+;; preconditions:  EBX = input bigint
+;;                 ECX = H := shift (untagged, unsigned)
+;; postconditions: EAX = output bigint or fixint
+;;
+;; preserves:      EBP
+;; clobbers:       EAX, EBX, ECX, EDX, ESI, EDI, EFLAGS
+;;
+rn_bigint_shift_left:
+    mov esi, ebx                 ; ESI := input bigint
+    mov eax, ecx                 ; EAX = H
+    xor edx, edx                 ; EDX:EAX = H
+    mov ebx, 30
+    div ebx                      ; (EAX, EDX) := (H div 30, H mod 30)
+    mov ebx, eax                 ; EBX := H div 30
+    mov ecx, [esi]               ; ECX := header word of input bigint
+    shr ecx, 8                   ; ECX := length of input bigint object
+    mov edi, [esi + 4*ecx - 4]   ; EDI := most significant digit
+    bigint_extension edi         ; EDI := sign extension of input
+    add ecx, ebx                 ; ECX := length of output object
+    mov eax, ecx                 ; EAX := ... necessary to hold the result - 1
+                                 ; reserve space for:
+    push edi                     ;   [esp + 12] = saved sign extension
+    push ebp                     ;   [esp + 8] = saved EBP
+    push ebp                     ;   [exp + 4] = pointer to new object
+    push ebp                     ;   [esp + 0] = # of digits - 1
+    add eax, 2                   ; align length
+    and ecx, ~1                  ;   to a multiple of 2 dwords
+    dec eax                      ; number of 30-bit digits - 1
+    mov [esp], eax               ;   save it
+    call rn_allocate             ; allocate output object
+    mov [esp + 4], eax           ; save pointer to the new object
+    xchg edi, eax                ; EDI := new object, EAX := sign extension
+    mov [edi + 4*ecx - 4], eax   ; write sign extension
+    mov [edi + 4*ecx - 8], eax   ;   in top 2 words
+    mov eax, ecx                 ; prepare object header
+    shl eax, 8                   ;  ...
+    mov al, bigint_header(0)     ;  ...
+    stosd                        ; write object header
+    mov eax, fixint_value(0)     ; write (H div 30)
+    mov ecx, ebx                 ;   zero
+    rep stosd                    ;   digits
+    xor ebx, ebx                 ; value to shift in
+    mov ecx, edx                 ; ECX := H mod 30
+    mov ch, 30
+    sub ch, cl                   ; CL := 30 - (H mod 30)
+    xchg ch, cl                  ; CH := H (mod 30)
+    mov edx, [esp]               ; EDX = number of digits - 1
+    lea esi, [esi + 4*edx + 4]
+    lea edi, [edi + 4*edx]
+    jmp rn_bigint_shift_right.main

@@ -87,6 +87,7 @@
     set-car! set-cdr!
     string-ref vector-ref
     div mod div-and-mod
+    arithmetic-shift
     apply-continuation)
   ($bounded-app 2 3
     apply extend-continuation)

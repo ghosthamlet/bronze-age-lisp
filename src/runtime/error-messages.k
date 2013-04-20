@@ -50,4 +50,5 @@
     (unbound-dynamic-variable "Unbound keyed dynamic variable.")
     (undefined-arithmetic-operation "Undefined arithmetic operation.")
     (index-out-of-bounds "Index out of bounds.")
+    (numeric-overflow "Numeric overflow (the result is finite but cannot be represented).")
   ))
