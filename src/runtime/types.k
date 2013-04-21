@@ -264,6 +264,7 @@
   (make-standard-port
    make-builtin-continuation
    make-operative
+   make-lisp-vector
    make-rom-object rom-object? rom-object-set-field! rom-object-fields)
 
   ($define! (encapsulate-rom-object rom-object? rom-object-fields)
@@ -302,4 +303,16 @@
         (list*
           (operative-header* (+ 2 (length rest)))
           (make-nonlisp-value program-label)
-          rest)))))
+          rest))))
+
+  ($define! make-lisp-vector
+    ($lambda (v)
+      ($let* ((n (vector-length v))
+              ((h p)
+               ($if (=? 0 (mod (vector-length v) 2))
+                 (list (vector-header* (+ n 2))
+                       (list (make-tagged-value unbound-tag 0)))
+                 (list (vector-header* (+ n 1))
+                       ()))))
+      (apply make-rom-object
+        (append (list h) (vector->list v) p))))))

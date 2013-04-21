@@ -55,7 +55,7 @@
 
 ($define-ground-lambda! write (x . r)
   ($let1 p ($if (null? r) stdout (car r))
-    (write-aux
+    (write-shared
       x
       (list (shared-structure-indicator
               ($if ($get-printer-flag share) x #inert))
@@ -64,6 +64,9 @@
             ($if ($get-printer-flag color) 0 #f))
       p)
     (flush-output-port p)))
+
+(bind-private! ($quote color-chars)
+  (make-lisp-vector (vector #\1 #\3 #\5)))
 
 ($defun-privates!
   (write-shared (x s p)
@@ -142,7 +145,7 @@
       ((continuation? x)
         (write-named "continuation" x p))
       ((vector? x)
-        (write-string "#[vector]" p))
+        (write-vector x s p))
       ((error-object? x)
         (write-string "#[error " p)
         (write-shared (error-object-message x) s p)
@@ -157,18 +160,26 @@
         (write-shared (car x) s p)
         (write-tail (cdr x) s p))
       (#t
-        (write-string " . " p)
+        (write-char #\space p)
+        (write-colored-parenthesis #\. s p)
+        (write-char #\space p)
         (write-shared x s p)
         (write-colored-parenthesis #\) s p))))
   (write-colored-parenthesis (c s p)
     ($let ((k (list-ref s 3)))
       ($if (integer? k)
-        ($let (((a b) ($if (eq? c #\()
-                        (list k (+ k 1))
-                        (list (- k 1) (- k 1)))))
+        ($let (((a b)
+                ($cond
+                  ((eq? c #\() (list       k (+ k 1)))
+                  ((eq? c #\)) (list (- k 1) (- k 1)))
+                  ((eq? c #\#) (list       k       k))
+                  (#t          (list (- k 1)       k)))))
           (set-car! (list-tail s 3) b)
           (write-string "\x1B;[3" p)
-          (write-char (integer->char (+ #x31 (mod a 5))) p)
+          (write-char
+            (vector-ref color-chars
+                        (mod a (vector-length color-chars)))
+            p)
           (write-char #\m p)
           (write-char c p)
           (write-string "\x1B;[m" p))
@@ -230,7 +241,18 @@
       ($when (symbol? n)
         (write-char #\space p)
         (write-string (symbol->string n) p)))
-    (write-string "]" p)))
+    (write-string "]" p))
+  (write-vector (x s p)
+    (write-colored-parenthesis #\# s p)
+    (write-colored-parenthesis #\( s p)
+    ($letrec
+      ((f ($lambda (i)
+            ($unless (eq? i (vector-length x))
+              ($unless (eq? i 0) (write-char #\space p))
+              (write-shared (vector-ref x i) s p)
+              (f (+ i 1))))))
+      (f 0))
+    (write-colored-parenthesis #\) s p)))
 
 ($define-ground-lambda! newline r
   ($let1 p ($if (pair? r) (car r) stdout)

@@ -201,7 +201,7 @@ sh_package:
     shr ecx, 2
     test cl, 1
     jz .even
-    push dword inert_tag
+    push dword unbound_tag
     inc ecx
   .even:
     mov edx, ecx
