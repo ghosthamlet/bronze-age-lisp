@@ -90,7 +90,7 @@ rn_allocate_blob:
     pop edx
     pop ebx
     mov eax, err_out_of_blob_memory
-    jmp rn_error
+    jmp rn_out_of_memory
 
 rn_shrink_last_blob:
     ;; pre:  ecx = new size

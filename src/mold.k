@@ -260,4 +260,5 @@
   ($when ($configured character-predicates)
     ($for-each-src asm-include asm-prefix "unicode/"
       "unicode-lookup.asm"
-      "generated-code.asm")))
+      "generated-code.asm"))
+  (asm "program_segment_limit: nop"))

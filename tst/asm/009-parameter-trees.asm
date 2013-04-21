@@ -23,6 +23,7 @@ program_segment_base:
 rn_get_blob_data:
     call fail
     ret
+rn_out_of_memory:
 rn_error:
     jmp rn_fatal
 ground_private_lookup_table:

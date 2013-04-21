@@ -15,6 +15,7 @@ rn_asm_applicative:
   .L11:
     call fail
     ret
+rn_out_of_memory:
 rn_error:
     jmp rn_fatal
 

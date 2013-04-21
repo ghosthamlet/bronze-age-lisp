@@ -12,9 +12,13 @@ private_lookup_table_length equ 0
 rn_get_blob_data:
     call fail
     ret
+rn_out_of_memory:
 rn_error:
+rn_backup_cc:
+rn_restore_cc:
     call fail
     jmp rn_fatal
+
 ground_private_lookup_table:
     dd 0, 0, 0, 0
 

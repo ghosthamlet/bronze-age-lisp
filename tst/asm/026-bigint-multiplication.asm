@@ -12,9 +12,14 @@ private_lookup_table_length equ 0
 rn_get_blob_data:
     call fail
     ret
+rn_out_of_memory:
 rn_error:
     call fail
     jmp rn_fatal
+rn_backup_cc:
+rn_restore_cc:
+    ret
+
 ground_private_lookup_table:
     dd 0, 0, 0, 0
 
@@ -37,6 +42,7 @@ _start:
     call test_shift
     call test_bb_1
     call test_bb_2
+    call test_bb_3
     jmp test_finished
 
 %macro check_umul 3
@@ -181,6 +187,11 @@ test_bb_2:
     check_bb bigint_m98765432198765, bigint_m1975308643975300, bigint_195092211948176924449350504500
     ret
 
+test_bb_3:
+    call next_subtest
+    check_bb bigint_long_1, bigint_2p60, bigint_long_2
+    ret
+
 section .lisp_rom
     align 8
 lisp_rom_base:
@@ -322,5 +333,19 @@ bigint_m2120789811530006452927300:
     dd fixint_value(1016693948)
     dd fixint_value(67821006)
     dd fixint_value(1071902332)
+
+bigint_long_1:
+    dd bigint_header(62)
+    times 58 dd fixint_value(1)
+    dd fixint_value(1)
+    dd fixint_value(0)
+    dd fixint_value(0)
+
+bigint_long_2:
+    dd bigint_header(62)
+    dd fixint_value(0)
+    dd fixint_value(0)
+    times 58 dd fixint_value(1)
+    dd fixint_value(1)
 
 lisp_rom_limit:

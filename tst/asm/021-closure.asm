@@ -24,6 +24,7 @@ private_lookup_table_length     equ 0
 ground_lookup_table_length      equ 0
 
 program_segment_base:
+rn_out_of_memory:
 rn_error:
     jmp rn_fatal
 ground_private_lookup_table:

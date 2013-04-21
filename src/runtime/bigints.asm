@@ -324,7 +324,7 @@ bi_normalize:
 ;; preconditions:  EBX = first summand (bigint)
 ;;                 ECX = 2nd summand (bigint)
 ;;
-;; postconditions: EAX = 3rd summand (bigint)
+;; postconditions: EAX = the sum (freshly allocated bigint)
 ;;
 ;; preserves:      ESI, EDI, EBP
 ;; clobbers:       EAX, EBX, ECX, EDX, EFLAGS
@@ -563,7 +563,7 @@ rn_fixint_times_fixint:
 ;;
 ;; postconditions: EAX = the product (bigint or fixint in case EBX = 0)
 ;;
-;; preserves:      EDI, EBP
+;; preserves:      EDI, EBP (!! allocates with invalid EBP !!)
 ;; clobbers:       EAX, EBX, ECX, EDX, ESI, EFLAGS
 ;; stack usage:    O(size of input bigint)
 ;;
@@ -657,9 +657,11 @@ rn_bigint_umul:
     ;; add S and T
     mov ebx, esp
     lea ecx, [esp + 8*ecx + 16]
+    xor esi, esi                ; discard internal pointers, which
+    xor edi, edi                ;   are not valid for the GC
     call rn_bigint_plus_bigint
-    mov esp, ebp
-    pop ebp
+    mov esp, ebp                ; discard bigints allocated on the stack
+    pop ebp                     ; restore current cont.
     pop edi
     ret
   .sweep:
@@ -774,7 +776,9 @@ rn_bigint_times_fixint:
     mov ebx, ecx
     shr ebx, 2
   .multiply:
+    call rn_backup_cc
     call rn_bigint_umul.regular_case
+    call rn_restore_cc
     pop esi
     ret
   .negative:
@@ -814,6 +818,7 @@ rn_bigint_times_bigint:
     jbe .ordered
     xchg ebx, ecx               ; ensure length(X) <= length(Y)
   .ordered:
+    call rn_backup_cc
     push esi
     push edi
     push ebp
@@ -848,14 +853,17 @@ rn_bigint_times_bigint:
     pop ebp
     pop edi
     pop esi
+    call rn_restore_cc
     ret
   .skip_zero_terms:
     dec edi                     ; EDI := digit count of X
-    mov ebx, [ebp + 4*edi]      ; ECX := most signif. digit of X
+    mov ebx, [ebp + 4*edi]      ; EBX := most signif. digit of X
     cmp ebx, fixint_value(0)
     je .skip_zero_terms
     shr ebx, 2                  ; untag
+    push esi
     call rn_bigint_umul         ; EAX := most signif. digit * Y
+    pop esi
     jmp .noadd
 
 ;;

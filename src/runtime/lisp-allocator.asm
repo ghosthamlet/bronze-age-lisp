@@ -105,14 +105,12 @@ rn_allocate:
     test eax, 3 | ~(configured_lisp_heap_size - 1)  ; outside fromspace?
     jz .memory_available
     mov eax, err_out_of_lisp_memory
-    mov ebx, inert_tag
-    mov ecx, inert_tag
-    jmp rn_error
+    jmp rn_out_of_memory
   .wrong_size:
     mov eax, err_internal_error
     lea ebx, [ecx * 4 + 1]
     mov ecx, inert_tag
-    jmp rn_error
+    jmp rn_out_of_memory
 
 ;;
 ;; rn_cons (native procedure)
@@ -191,10 +189,10 @@ rn_allocate_transient:
     mov ebx, eax
     xor ebx, [lisp_heap_pointer]
     test ebx, 3 | ~(configured_lisp_heap_size - 1)
-    jnz .heap_full
+    jnz .transient_area_full
     pop ebx
     ret
-  .heap_full:
+  .transient_area_full:
     rn_trace configured_debug_gc_detail, 'transient-full', hex, eax, hex, ecx
     push ecx         ; save registers as roots
     push edx
@@ -202,8 +200,13 @@ rn_allocate_transient:
     push edi
     push ebp
     call gc_collect  ; estabilish new heap and move live objects there
-    pop ebp          ; restore registers
-    pop edi
+    pop ebp          ; restore current cont. for error handling
+    mov edi, [lisp_heap_pointer]
+    lea eax, [edi + configured_lisp_transient_size + configured_lisp_heap_threshold]      ; pointer past new object
+    xor eax, edi
+    test eax, 3 | ~(configured_lisp_heap_size - 1)  ; outside fromspace?
+    jnz .heap_full
+    pop edi          ; restore registers
     pop esi
     pop edx
     pop ecx
@@ -215,6 +218,9 @@ rn_allocate_transient:
     lea ebx, [ecx * 4 + 1]
     mov ecx, inert_tag
     jmp rn_error
+  .heap_full:
+    mov eax, err_out_of_lisp_memory
+    jmp rn_out_of_memory
 
 ;;
 ;; rn_transient_min (native procedure)

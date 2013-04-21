@@ -12,6 +12,7 @@ private_lookup_table_length     equ 0
 rn_get_blob_data:
     call fail
     ret
+rn_out_of_memory:
 rn_error:
     jmp rn_fatal
 

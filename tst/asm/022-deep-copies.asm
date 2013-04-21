@@ -10,6 +10,7 @@ err_internal_error          equ 0xDEAD0020
 rn_get_blob_data:
     call fail
     ret
+rn_out_of_memory:
 rn_error:
     call fail
     jmp rn_fatal

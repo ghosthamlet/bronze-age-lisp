@@ -14,7 +14,8 @@ lisp_heap_pointer       resd 1
 first_blob              resd 1
 free_blob               resd 1
 rn_error_active         resd 1
-
+backup_cc_address       resd 1
+backup_cc_count         resd 1
 last_combination        resd 1
 last_combiner           resd 1
 last_ptree              resd 1

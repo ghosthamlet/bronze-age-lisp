@@ -9,6 +9,7 @@ err_internal_error              equ 0xDEAD0500
 err_invalid_blob_heap_operation equ 0xDEAD0600
 private_lookup_table_length     equ 0
 
+rn_out_of_memory:
 rn_error:
     jmp rn_fatal
 ground_private_lookup_table:
