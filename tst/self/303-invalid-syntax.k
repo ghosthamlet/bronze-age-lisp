@@ -14,7 +14,9 @@
           (pass)
           (fail-with-report "read" ext read-result "error")))
       ((pair? err)
-        ($if (equal? read-result (eval (list* list "error" err) denv))
+        ($if ($and? (equal? (car read-result) "error")
+                    (equal? (cadr read-result) (eval (car err) denv))
+                    (equal? (caddr read-result) (eval (cadr err) denv)))
           (pass)
           (fail-with-report "read" ext read-result (list* "error" err))))
       (#t

@@ -215,8 +215,8 @@
   ($define! emit-error-handler
     ($lambda ()
       (asm-label ".error")
+      (asm "mov ecx, eax")
       (asm "mov eax, err_invalid_argument_structure")
-      (asm "mov ecx, inert_tag")
       (asm "jmp rn_error")))
 
   ($define! emit-applicative-support

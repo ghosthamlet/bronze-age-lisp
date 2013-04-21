@@ -9,7 +9,7 @@
     ($let
       ((a (protect-eval (cons $sequence exprs)
                         (make-kernel-standard-environment)))
-       (b (list "error" "Out of memory (lisp)." #inert)))
+       (b (list "error" "Out of memory (lisp)." #inert #inert)))
       ($if (equal? a b)
         (pass)
         (fail-with-report

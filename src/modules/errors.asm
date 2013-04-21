@@ -38,7 +38,19 @@ app_error_object_source:
     mov esi, symbol_value(rom_string_error_object_source)
     call check_error_object
     mov eax, [ebx + error.source]
+    cmp al, primitive_tag
+    jmp .guess
+    test al, 3
+    jz .guess
+  .done:
     jmp [ebp + cont.program]
+  .guess:
+    mov ebx, eax
+    call rn_guess_name
+    cmp al, symbol_tag
+    je .done
+    mov eax, ebx
+    jmp .done
 
 app_error_object_continuation:
   .A1:
@@ -58,3 +70,16 @@ check_error_object:
     mov eax, err_invalid_argument
     mov ecx, esi
     jmp rn_error
+
+app_guess_object_name:
+  .A2:
+    push ebx
+    call rn_guess_name
+    pop ebx
+    cmp al, symbol_tag
+    je .done
+    cmp ecx, boolean_value(1)
+    jne .done
+    ;; TODO: try harder, scan the whole heap!
+  .done:
+    jmp [ebp + cont.program]

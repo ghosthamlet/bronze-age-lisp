@@ -38,7 +38,8 @@
               ($lambda (x divert)
                 (divert "error"
                         (error-object-message x)
-                        (error-object-irritants x))))
+                        (error-object-irritants x)
+                        (error-object-source x))))
         (list root-continuation
               ($lambda (x divert) (divert "exit" x)))))))
 

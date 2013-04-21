@@ -89,7 +89,8 @@ rn_force_transient_continuation:
 ;;
 ;; Count parameters
 ;;
-;; preconditions:  EBX = argument list
+;; preconditions:  EAX = object for error reporting
+;;                 EBX = argument list
 ;;
 ;; postconditions if the argument is a finite list:
 ;;                 EBX = argument list
@@ -97,7 +98,7 @@ rn_force_transient_continuation:
 ;;                 EAX, EDX preserved
 ;;
 ;; postconditions if the argument is not a finite list:
-;;                 jump to rn_error
+;;                 jump to rn_error with ECX set to former EAX
 ;;
 ;; preserves: ESI, EDI, EBP
 ;; clobbers: EAX, EBX, ECX, EDX
@@ -118,8 +119,10 @@ rn_count_parameters:
     ret
   .improper:
   .cyclic:
+    pop edx
+    pop ebx
+    pop ecx
     mov eax, err_invalid_argument_structure
-    mov ecx, inert_tag
     jmp rn_error
 
 ;;
@@ -173,7 +176,7 @@ rn_generic_applicative:
     jmp rn_eval
   .improper:
     mov eax, err_invalid_argument_structure
-    mov ecx, inert_tag
+    mov ecx, esi
     jmp rn_error
   .noargs:
     mov eax, [esi + applicative.underlying]

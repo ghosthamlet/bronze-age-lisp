@@ -110,11 +110,15 @@
     and? or? list))
 
 ;;
-;; Table for assembler implementation of (number->string ...).
+;; private function (guess-object-name OBJECT TRY-HARDER),
+;; where OBJECT is arbitrary lisp value and TRY-HARDER
+;; is a boolean.
 ;;
-(rodata-extra-add!
-  ($lambda ()
-    (asm "hex_digits: db \"0123456789ABCDEF\"")))
+(bind-ground! ($quote guess-object-name) ;TODO: bind-private!
+  (make-bounded-applicative
+    (list 2 2)
+    (list "app_guess_object_name.A2")
+    ()))
 
 ;;
 ;; Make the private environment available for built-in

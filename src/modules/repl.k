@@ -58,7 +58,12 @@
           (write-string "\n    irritants: " port)
           (write (error-object-irritants x) port)
           (write-string "\n    source: " port)
-          (write (error-object-source x) port)
+          (write
+            ($let1 s (error-object-source x)
+              ($if (symbol? s)
+                s
+                (guess-object-name s #t)))
+             port)
           (write-char #\newline))
         ($sequence
           (write x port)

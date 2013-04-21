@@ -225,6 +225,7 @@
     "parameter-trees.asm"
     "runtime-errors.asm"
     "bigints.asm"
+    "object-names.asm"
     "platform-initialization.asm"
     "platform-ports.asm"))
 

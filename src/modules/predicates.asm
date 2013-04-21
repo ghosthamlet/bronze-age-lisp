@@ -53,7 +53,7 @@ op_immediate_type_predicate:
     setz ah
     jmp [ebp + cont.program]
   .error:
-    mov eax, err_invalid_argument
+    mov eax, err_invalid_argument_structure
     mov ecx, inert_tag
     jmp rn_error
 

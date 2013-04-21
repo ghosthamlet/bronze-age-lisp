@@ -11,7 +11,7 @@
 primop_%1:
     pair_nil_cases
   .case.nil:
-    mov eax, err_invalid_argument
+    mov eax, err_invalid_argument_structure
     mov ecx, symbol_value(rom_string_%1)
     jmp rn_error
   .case.pair:
