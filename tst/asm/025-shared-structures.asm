@@ -214,7 +214,7 @@ test_package:
     call pass_if.z
     cmp dword [eax + operative.program], sh_find.nonempty.operate
     call pass_if.z
-    cmp dword [eax + operative.var0], inert_tag
+    cmp dword [eax + operative.var0], unbound_tag
     call pass_if.z
     cmp dword [eax + operative.var1], rom_pair_value(list_1)
     call pass_if.z
