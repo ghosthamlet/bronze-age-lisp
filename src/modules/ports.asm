@@ -191,10 +191,12 @@ app_open_output_string:
     add ecx, edx
     call rn_allocate_blob  ; eax = new buffer
     mov ebx, eax
-    mov ebx, [esp - 4]
+    mov eax, [edi + txt_out.buffer]
     mov ecx, [edi + txt_out.usage]
     shr ecx, 2
     call rn_copy_blob_data
+    mov [edi + txt_out.buffer], ebx
+    mov ebx, [esp]
     jmp .write_restart
   .success:
     pop eax

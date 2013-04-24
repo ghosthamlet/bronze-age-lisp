@@ -51,13 +51,13 @@
       (list
         (list root-continuation
               ($lambda (x #ignore)
-                (set! private-environment symbol old)
+                (set! private-environment symbol new)
                 x)))
         proc
         (list
           (list root-continuation
                 ($lambda (x #ignore)
-                  (set! private-environment symbol new)
+                  (set! private-environment symbol old)
                    x)))))
   (set! private-environment symbol old)
   result)
