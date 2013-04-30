@@ -147,6 +147,7 @@ app_apply:
     jnz .error
     mov eax, [ebx]
     cmp al, environment_header(0)
+    jne .error
     mov edi, edx
     mov eax, [esi + applicative.underlying]
     mov ebx, ecx

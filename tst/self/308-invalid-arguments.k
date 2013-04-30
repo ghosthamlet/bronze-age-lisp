@@ -7,36 +7,36 @@
 ($define! check-error
   ($lambda (expr error-info)
     ($let*
-      (((msg irritants source) error-info)
+      (((msgs irritants source) error-info)
        (a (protect-eval expr
                         (make-kernel-standard-environment)))
        (b (cons "error" error-info))
        (ok ($and? (equal? (car a) "error")
-                  (equal? (cadr a) msg)
+                  (member? (cadr a) msgs)
                   (equal? (caddr a) irritants)
                   ($if (ignore? source) #t (equal? (cadddr a) source)))))
       ($if ok
         (pass)
-        (fail-with-report msg expr a b)))))
+        (fail-with-report (car msgs) expr a b)))))
 
 ;; Most combiners signal an error, if the parameter tree
 ;; is not a list (the only exception is the non-standard
 ;; operative $quote*)
 ;;
+
+($define! invalid-argument-structure-messages
+  (list "Invalid argument structure."
+        "Cannot traverse list structure."
+        "Match failure"))
+
 ($define! $nonlist-test
   ($vau symbols #ignore
     ($define! test-pair
       ($lambda (symbol nonlist)
-        ($let ((msg "Invalid argument structure."))
-          (check-error (cons symbol nonlist)
-                       (list msg nonlist symbol))
-        #| test also the underlying operative ?
-          ($when (applicative? (eval symbol (make-kernel-standard-environment)))
-            (check-error (cons (list ($quote unwrap) symbol)
-                               nonlist)
-                         (list msg nonlist #ignore)))
-         |#
-                         )))
+        (check-error (cons symbol nonlist)
+                     (list invalid-argument-structure-messages
+                           nonlist
+                           symbol))))
     (for-each
       ($lambda (arg)
         (for-each ($lambda (sym) (test-pair sym arg)) symbols))
@@ -133,9 +133,10 @@
   ($vau (n1 n2 . symbols) #ignore
     ($define! test-pair
       ($lambda (symbol arglist)
-        ($let ((msg "Invalid argument structure."))
-          (check-error (cons symbol arglist)
-                       (list msg arglist symbol)))))
+        (check-error (cons symbol arglist)
+                     (list invalid-argument-structure-messages
+                           arglist
+                           symbol))))
     ($define! genlist
       ($lambda (n)
         ($if (=? n 0)
@@ -167,5 +168,101 @@
 ($narg-test 1 #e+infinity $when $unless)
 ($narg-test 2 #e+infinity map for-each)
 
+;; Type errors in applicative arguments.
+;;
+($define! test-values
+  (list
+    ($quote* #:boolean #t #f)
+    ($quote* #:symbol blabla |1 x 3|)
+    ($quote* #:string "quaqua" "9 t")
+    (list #:environment (make-environment) (make-kernel-standard-environment))
+    (list #:combiner/applicative car $if)
+    (list #:continuation error-continuation root-continuation)
+    ($quote* #:number 0 1 999999999999999999999 #e+infinity)
+    ($quote* #:pair (1 2) (#t #f) (#inert ()) ((1 2) (3 4)))))
 
+($define! $type-test
+  ($vau (symbol . arg-types) #ignore
+    ($define! test-combination
+      ($lambda ((irritant arglist))
+        ;(write (list #:test-combination symbol arglist)) (newline)
+        (check-error (cons (list unwrap symbol) arglist)
+                     (list type-error-messages
+                           irritant
+                           symbol))))
+    ($define! good-instance
+      ($lambda (t)
+        ($if (eq? t #:any)
+          #:anything
+          (cadr (assoc t test-values)))))
+    ($define! genlist
+      ($lambda (pf sf)
+        ($cond
+          (($and? (pair? sf) (eq? (car sf) #:any))
+           (genlist
+             (append pf (list #:anything))
+             (cdr sf)))
+          ((pair? sf)
+           ($let ((bad-instances
+                   (apply append
+                     (map cdr
+                       (filter
+                         ($lambda (v) (not? (eq? (car sf) (car v))))
+                         test-values)))))
+            (append
+              (map
+                ($lambda (i)
+                  (list i
+                        (append pf
+                                (list i)
+                                (map
+                                  good-instance
+                                  (cdr sf)))))
+                bad-instances)
+              (genlist
+                (append pf (list (good-instance (car sf))))
+                (cdr sf)))))
+          (#t ()))))
+    (for-each
+      test-combination
+      (genlist () arg-types))))
+
+;($define! type-error-messages (list "Invalid argument."))
+;($type-test $if #:boolean #:any #:any)
+($define! type-error-messages (list "Invalid argument."))
+($type-test symbol->string #:symbol)
+($type-test string->symbol #:string)
+
+($define! type-error-messages
+  (list "Invalid argument."
+        "Cannot traverse list structure."))
+($type-test car #:pair)
+($type-test cdr #:pair)
+($type-test set-car! #:pair #:any)
+($type-test set-cdr! #:pair #:any)
+
+($define! type-error-messages (list "Expected environment argument(s)."))
+($type-test eval #:any #:environment)
+
+($define! type-error-messages (list "Invalid argument."))
+($type-test wrap #:combiner/applicative)
+($type-test unwrap #:combiner/applicative)
+($type-test apply #:combiner/applicative #:any)
+($type-test apply #:combiner/applicative #:any #:environment)
+
+($type-test extend-continuation #:continuation #:combiner/applicative)
+($type-test extend-continuation #:continuation #:combiner/applicative #:environment)
+($type-test guard-continuation #:pair #:continuation #:pair)
+($type-test guard-dynamic-extent #:pair #:combiner/applicative #:pair)
+
+($define! type-error-messages (list "Expected numeric argument(s)."))
+($type-test + #:number #:number)
+($type-test - #:number #:number)
+($type-test * #:number #:number)
+($type-test negate #:number)
+
+;; Type errors in deep arguments
+;;
+;; TODO: test (guard-continuation ( ..) ... (...))
+;;
 (summary)

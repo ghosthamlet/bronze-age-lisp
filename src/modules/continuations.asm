@@ -260,6 +260,12 @@ app_extend_continuation:
     cmp al, cont_header(0)
     jne .error
     mov esi, ebx                    ; ESI := CONT
+    mov ebx, edx                    ; EBX := ENV
+    test bl, 3
+    jnz .error
+    mov eax, [ebx]
+    cmp al, environment_header(0)
+    jne .error
     mov ebx, ecx                    ; EBX := APPV
     test bl, 3
     jnz .error
@@ -286,3 +292,22 @@ app_extend_continuation:
     mov edi, [ebp + cont.var1]
     mov ebp, [ebp + cont.parent]
     jmp rn_combine
+
+;;
+;; app_continuation_applicative (continuation passing procedure)
+;;
+;; Implementation of (continuation-applicative CONT)
+;;
+app_continuation_Gapplicative:
+  .A1:
+    test bl, 3
+    jnz .error
+    mov eax, [ebx]
+    cmp al, cont_header(0)
+    jne .error
+    call rn_continuation_applicative
+    jmp [ebp + cont.program]
+  .error:
+    mov eax, err_invalid_argument
+    mov ecx, symbol_value(rom_string_continuation_Gapplicative)
+    jmp rn_error

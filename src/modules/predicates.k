@@ -68,6 +68,7 @@
               (map ($lambda (x) (eval x denv)) more)))))))
 
   ($bind-native-predicate! operative? "pred_operative")
+  ($bind-native-predicate! combiner? "pred_combiner")
   ($bind-native-predicate! mutable-pair? "pred_mutable_pair")
   ($bind-native-predicate! immutable-pair? "pred_immutable_pair")
   ($bind-native-predicate! integer? "pred_integer")

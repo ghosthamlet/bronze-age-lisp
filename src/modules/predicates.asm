@@ -208,6 +208,23 @@ pred_operative:
     xor eax, eax
     ret
 
+pred_combiner:
+    cmp bl, primitive_tag
+    je .yes
+    test bl, 3
+    jnz .no
+    mov eax, [ebx]
+    cmp al, operative_header(0)
+    je .yes
+    cmp al, applicative_header(0)
+    jne .no
+  .yes:
+    mov eax, 1
+    ret
+  .no:
+    xor eax, eax
+    ret
+
 pred_mutable_pair:
     mov eax, ebx
     xor eax, 0x80000003

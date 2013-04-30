@@ -145,3 +145,32 @@ char_digit_aux:
     db '0', '9', '0' -  0, 0
     db 'A', 'F', 'A' - 10, 0
     db 'a', 'f', 'a' - 10, 0
+
+app_digit_Gchar:
+  .A1:
+    mov ecx, fixint_value(10)
+  .A2:
+    mov esi, symbol_value(rom_string_char_Gdigit)
+    call char_digit_error.check_base
+    mov eax, ebx
+    xor al, 1
+    test al, 3
+    jne .error
+    cmp ebx, fixint_value(0)
+    jl .error
+    cmp ebx, ecx
+    jge .error
+    mov eax, ebx
+    shr eax, 2
+    cmp eax, 10
+    jb .decimal
+    add al, 'A' - '0' - 10
+  .decimal:
+    add al, '0'
+    shl eax, 8
+    mov al, char_tag
+    jmp [ebp + cont.program]
+  .error:
+    mov eax, err_invalid_argument
+    mov ecx, esi
+    jmp rn_error

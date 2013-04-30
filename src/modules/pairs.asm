@@ -29,7 +29,7 @@ app_cons:
 ;; Implementation of (car X), ... (cddr X).
 ;;
 ;; preconditions:  EAX = closure
-;;                   operative.var2 = name
+;;                   operative.var1 = name
 ;;                 EBX = X
 ;;                 EBP = continuation
 ;;
@@ -57,7 +57,7 @@ app_cXr:
     mov eax, cdr(ebx)
     jmp [ebp + cont.program]
  .error:
-    mov ecx, [eax + operative.var2]
+    mov ecx, [eax + operative.var1]
     mov eax, err_cannot_traverse
     jmp rn_error
 
@@ -148,7 +148,7 @@ app_set_carB:
 app_set_cdrB:
   .A2:
     mov  edx, ecx
-    mov  ecx, symbol_value(rom_string_set_carB)
+    mov  ecx, symbol_value(rom_string_set_cdrB)
     mov  eax, ebx
     xor  eax, 0x80000003
     test eax, 0x80000003

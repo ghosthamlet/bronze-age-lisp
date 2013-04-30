@@ -75,11 +75,12 @@
     error-object-message error-object-irritants error-object-source error-object-continuation
     open-binary-input-file open-binary-output-file
     make-keyed-dynamic-variable*
+    continuation->applicative
     memoize
     integer-length bitwise-not
     shared-structure-indicator)
   ($bounded-app 1 2
-    char-digit? char->digit
+    char-digit? char->digit digit->char
     make-vector)
   ($bounded-app 2 2
     cons eval
