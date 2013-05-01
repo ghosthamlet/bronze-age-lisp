@@ -22,9 +22,9 @@
     "Size of blob heap descriptor table (entries).")
   ($param lisp-heap-size (* 128 1024)
     "Size of lisp heap (bytes, power of two).")
-  ($param lisp-transient-size 192
+  ($param lisp-transient-size (* 8 1024)
     "Size of transient environment area in the heap (bytes).")
-  ($param lisp-heap-threshold 256
+  ($param lisp-heap-threshold (* 9 1024)
     "Allocation threshold (bytes).")
 
   ($param stdio #t

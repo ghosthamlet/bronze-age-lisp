@@ -71,7 +71,7 @@
     copy-es-immutable
     get-output-string
     char->integer integer->char
-    open-utf-encoder open-utf-decoder
+    open-utf-decoder
     open-input-string
     string->symbol symbol->string string->keyword keyword->string
     error-object-message error-object-irritants error-object-source error-object-continuation
@@ -84,6 +84,7 @@
     shared-structure-indicator)
   ($bounded-app 1 2
     char-digit? char->digit digit->char
+    open-utf-encoder
     make-vector)
   ($bounded-app 2 2
     cons eval
