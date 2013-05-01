@@ -28,6 +28,13 @@
     (vector-set! v k (car l))
     (list->vector-helper (cdr l) v (+ k 1) n)))
 
+($define-ground-lambda! vector->list (v)
+  ($letrec ((f ($lambda (i a)
+                 ($if (<=? 0 i)
+                   (f (- i 1) (cons (vector-ref v i) a))
+                   a))))
+    (f (- (vector-length v) 1) ())))
+
 ($define-ground-lambda! make-list (n . opt)
   ($letrec* ((x ($if (pair? opt) (car opt) #inert))
              (aux ($lambda (k t) ($if (<? 0 k) (aux (- k 1) (cons x t)) t))))
