@@ -128,7 +128,7 @@
         ((integer? x) (* 2 x))
         ((string? x) (* 23 (hstr x)))
         ((symbol? x) (* 29 (hstr (symbol->string x))))
-        ((keyword? x) (* 29 (hst (keyword->string x))))
+        ((keyword? x) (* 29 (hstr (keyword->string x))))
         ((char? x) (* 31 (char->integer x)))
         ((boolean? x) ($if x 37 41))
         ((inert? x) 43)
