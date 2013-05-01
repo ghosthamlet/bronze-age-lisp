@@ -38,8 +38,8 @@
 ;;
 
 ($define-ground-lambda! get-current-input-port () stdin)
-($define-ground-lambda! get-current-output-port () stdin)
-($define-ground-lambda! get-current-error-port () stdin)
+($define-ground-lambda! get-current-output-port () stdout)
+($define-ground-lambda! get-current-error-port () stderr)
 
 ($define-private-vau! $with-dynamic-port (symbol new proc) denv
   ($define! new (eval new denv))
@@ -99,7 +99,6 @@
 
 ($define-ground-lambda! find-required-filename (x)
   (init-rq)
-  (write require-path-components)(newline)
   ($let (((path . port)
          (find-and-open-rq x require-path-components ())))
     (close-port port)

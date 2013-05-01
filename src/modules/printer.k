@@ -150,6 +150,10 @@
         (write-string "#[error " p)
         (write-shared (error-object-message x) s p)
         (write-string "]" p))
+      ((promise? x)
+        (write-string "#[promise]" p))
+      ((library? x)
+        (write-string "#[library]" p))
       (#t (write-string "#[encapsulation]" p))))
   (write-tail (x s p)
     ($cond

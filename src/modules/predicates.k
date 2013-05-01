@@ -52,6 +52,7 @@
   ($bind-header-predicate! environment? environment-header-tag #xFF)
   ($bind-header-predicate! port? txt-in-header-tag #b11110011)
   ($bind-header-predicate! promise? promise-header-tag #xFF)
+  ($bind-header-predicate! library? library-header-tag #xFF)
 
   ($define! $bind-native-predicate!
     ($vau (symbol procedure . more) denv
@@ -80,7 +81,8 @@
   ($bind-native-predicate! finite-list? "pred_finite_list")
   ($bind-native-predicate! countable-list? "pred_countable_list")
   ($bind-native-predicate! char-whitespace? "pred_char" (make-nonlisp-value "white_space_code"))
-  ($bind-native-predicate! char-alphabetic? "pred_char" (make-nonlisp-value "alphabetic_code")))
+  ($bind-native-predicate! char-alphabetic? "pred_char" (make-nonlisp-value "alphabetic_code"))
+  ($bind-native-predicate! library-name-component? "pred_library_name_component"))
 
 ($provide! ()
 

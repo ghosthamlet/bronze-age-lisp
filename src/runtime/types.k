@@ -59,6 +59,7 @@
     ;; top two bits of bigint header tag must be zero
     (#b00110001 "bigint" () "digit")
     (#b00110101 "promise" ("node"))
+    (#b00111001 "library" ("env"))
     ))
 
 ;;

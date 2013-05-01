@@ -136,6 +136,7 @@
   "promises.k"
   "numbers.k"
   "system.k"
+  "libraries.k"
   "_provisional.k"
   )
 
@@ -248,6 +249,7 @@
     "iterations.asm"
     "keyed-variables.asm"
     "lists.asm"
+    "libraries.asm"
     "misc.asm"
     "numbers.asm"
     "pairs.asm"

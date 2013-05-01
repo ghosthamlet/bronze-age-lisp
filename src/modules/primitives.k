@@ -79,6 +79,7 @@
     make-keyed-dynamic-variable*
     continuation->applicative
     memoize
+    get-library-export-list get-library-environment
     integer-length bitwise-not
     shared-structure-indicator)
   ($bounded-app 1 2

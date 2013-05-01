@@ -296,6 +296,23 @@ pred_finite_list:
 pred_countable_list:
     jmp rn_list_metrics
 
+pred_library_name_component:
+    cmp bl, symbol_tag
+    je .yes
+    cmp bl, einf_tag
+    je .no
+    call rn_siglog
+    jne .no
+    test eax, eax
+    setns al
+    ret
+  .no:
+    xor eax, eax
+    ret
+  .yes:
+    mov eax, 1
+    ret
+
 ;;
 ;; op_relational_predicate:
 ;;
