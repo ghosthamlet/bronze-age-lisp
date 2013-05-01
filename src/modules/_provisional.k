@@ -112,3 +112,6 @@
                      ((>=? k k2) (get-output-string q))
                      (#t (write-char c q) (f (+ k 1))))))))
     (f 0)))
+
+($define-ground-lambda! vector args
+  (list->vector args))
