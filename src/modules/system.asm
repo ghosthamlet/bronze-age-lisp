@@ -48,3 +48,14 @@ app_get_jiffies_per_second:
   .A0:
     mov eax, fixint_value(1000000)
     jmp [ebp + cont.program]
+
+op_init_environ:
+    mov edi, private_binding(rom_string_environ)
+    cmp edi, inert_tag
+    je .init
+    jmp [ebp + cont.program]
+  .init:
+    mov edi, nil_tag
+    call rn_list_environment_variables
+    mov private_binding(rom_string_environ), edi
+    jmp [ebp + cont.program]

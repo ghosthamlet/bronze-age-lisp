@@ -135,7 +135,7 @@
   "continuations.k"
   "promises.k"
   "numbers.k"
-  ;"symbols.k"
+  "system.k"
   "_provisional.k"
   )
 

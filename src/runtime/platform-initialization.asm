@@ -100,6 +100,82 @@ rn_interpreter_arguments:
     pop ebx
     ret
 
+;;
+;; rn_list_environment_variables (native procedure)
+;;
+;; preconditions:  EDI = list tail
+;;                 EBP = current continuation (for error reporting)
+;;
+;; postconditions: All environment variables are added
+;;                 to the environment.
+;;
+;; preserves:      ESI, EDI, EBP
+;; clobbers:       EAX, EBX, ECX, EDX, EFLAGS
+;;
+rn_list_environment_variables:
+    push esi
+    mov edx, [platform_info + linux.envp]
+    mov ebx, [edx]
+    test ebx, ebx
+    jz .done
+  .next_variable:
+    call .split
+    mov al, string_tag
+    mov bl, string_tag
+    push eax
+    push ebx
+    call rn_cons
+    push eax
+    push edi
+    call rn_cons
+    mov edi, eax
+    lea edx, [edx + 4]
+    mov ebx, [edx]
+    test ebx, ebx
+    jne .next_variable
+  .done:
+    pop esi
+    ret
+  .split:
+    mov esi, ebx
+  .split.scan_eq:
+    mov al, [esi]
+    test al, al
+    je .split.noeq
+    cmp al, '='
+    je .split.eq
+    inc esi
+    jmp .split.scan_eq
+  .split.eq:
+    mov ecx, esi
+    sub ecx, ebx
+    call rn_allocate_blob
+    xchg ebx, eax
+    call rn_copy_blob_data
+    push ebx
+    lea ebx, [esi + 1]
+  .split.scan_z:
+    inc esi
+    mov al, [esi]
+    test al, al
+    jne .split.scan_z
+    mov ecx, esi
+    sub ecx, ebx
+    call rn_allocate_blob
+    xchg ebx, eax
+    call rn_copy_blob_data
+    pop eax
+    ret
+  .split.noeq:
+    mov ecx, esi
+    sub ecx, ebx
+    call rn_allocate_blob
+    xchg ebx, eax
+    call rn_copy_blob_data
+    mov eax, ebx
+    mov ebx, rom_empty_string
+    ret
+
 global _start
 _start:
     mov [stack_limit], esp
