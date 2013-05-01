@@ -38,9 +38,6 @@
   ($param character-predicates #t
     "Enable (char-alphabetic?).")
 
-  ($param error-handling #t
-    "Enable handling of runtime errors using continuations.")
-
   ($param debug-evaluator #f
     "Enables debugging messages in the evaluator.")
   ($param debug-gc-cycle #f

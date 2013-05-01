@@ -27,14 +27,14 @@ prepare_asm_test()
     klisp ../src/mold.k \
     'no-data-segment=#t' 'no-code-segment=#t' 'no-macros=#f' 'no-applicative-support=#t' \
     $CONF_DEBUG \
-    'error-handling=#f' 'lisp-heap-size=1024' \
+    'lisp-heap-size=1024' \
     'blob-descriptor-capacity=16' 'blob-heap-size=4096' \
     'src-prefix="../src/"' > build/macros.inc
 
     klisp ../src/mold.k \
     'no-data-segment=#t' 'no-code-segment=#t' 'no-macros=#t' 'no-applicative-support=#f' \
     $CONF_DEBUG \
-    'error-handling=#f' 'lisp-heap-size=1024' \
+    'lisp-heap-size=1024' \
     'blob-descriptor-capacity=16' 'blob-heap-size=4096' \
     'src-prefix="../src/"' > build/applicative-support.inc
 }
