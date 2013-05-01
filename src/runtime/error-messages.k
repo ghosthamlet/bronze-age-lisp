@@ -51,4 +51,8 @@
     (undefined-arithmetic-operation "Undefined arithmetic operation.")
     (index-out-of-bounds "Index out of bounds.")
     (numeric-overflow "Numeric overflow (the result is finite but cannot be represented).")
+    (invalid-guard-list "Invalid guard list.")
+    (invalid-guard-clause "Invalid continuation guard specification.")
+    (invalid-selector "Invalid continuation guard selector.")
+    (invalid-interceptor "Invalid continuation guard interceptor.")
   ))

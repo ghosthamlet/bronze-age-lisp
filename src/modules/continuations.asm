@@ -63,6 +63,7 @@ primop_Slet_cc:
 ;;
 app_guard_continuation:
   .A3:
+    mov esi, symbol_value(rom_string_guard_continuation)
     test cl, 3
     jnz .error
     mov eax, [ecx]
@@ -83,7 +84,7 @@ app_guard_continuation:
   .error:
     mov eax, err_invalid_argument
     mov ebx, ecx
-    mov ecx, symbol_value(rom_string_guard_continuation)
+    mov ecx, esi
     jmp rn_error
 
 ;;
@@ -97,11 +98,16 @@ app_guard_continuation:
 ;;
 app_guard_dynamic_extent:
   .A3:
-    ;; allocate (COMBINER . ())
+    mov esi, symbol_value(rom_string_guard_dynamic_extent)
+    push ebx
+    mov ebx, ecx
+    call pred_combiner
+    test eax, eax
+    jz .not_a_combiner
+    call rn_fully_unwrap
+    mov ecx, eax
+    pop ebx
     push ecx
-    push dword nil_tag
-    call rn_cons
-    push eax
     push edx
     ;; capture current continuation
     mov eax, ebp
@@ -117,8 +123,14 @@ app_guard_dynamic_extent:
     call make_guard_continuation
     ;; change current continuation
     mov ebp, eax
-    pop ebx
-    jmp rn_eval
+    pop eax
+    mov ebx, nil_tag
+    jmp rn_combine
+  .not_a_combiner:
+    pop eax
+    mov eax, err_invalid_argument
+    mov ecx, symbol_value(rom_string_guard_dynamic_extent)
+    jmp rn_error
 
 ;;
 ;; make_guard_continuation (native procedure)
@@ -128,6 +140,7 @@ app_guard_dynamic_extent:
 ;; preconditions:  EBX = guard list
 ;;                 ECX = program pointer (cont_inner or cont_outer)
 ;;                 EDX = parent continuation
+;;                 ESI = symbol for error reporting
 ;;                 EDI = dynamic environment for interceptors
 ;;
 ;; postconditions: EAX = new continuation object
@@ -164,6 +177,7 @@ make_guard_continuation:
     lea esi, [eax + cont.var1]
   .next_clause:
     mov ebx, car(edx)
+    mov edx, cdr(edx)
     ;; each clause must be a two-element list
     push ebx
     push ecx
@@ -185,10 +199,15 @@ make_guard_continuation:
     cmp byte [eax], cont_header(0)
     jne .invalid_selector
     mov [esi], eax
-    ;; the second element must be an applicative
-    ;; TODO
+    ;; the second element must be an combiner
     mov ebx, cdr(ebx)
-    mov eax, car(ebx)
+    mov ebx, car(ebx)
+    call pred_combiner
+    test eax, eax
+    jz .invalid_interceptor
+    push ecx
+    call rn_fully_unwrap
+    pop ecx
     mov [esi + 4], eax
     call .dbg
     ;; move to the next element
@@ -206,8 +225,8 @@ make_guard_continuation:
     pop edx
     pop ecx
     pop ebx
-    mov eax, err_invalid_argument
-    mov ecx, symbol_value(rom_string_guard_continuation)
+    mov eax, err_invalid_guard_list
+    mov ecx, esi
     jmp rn_error
   .invalid_clause:
     pop edx
@@ -215,16 +234,24 @@ make_guard_continuation:
     pop ebx
     pop esi
     pop eax
-    pop ebx
-    mov eax, err_invalid_argument
-    mov ecx, symbol_value(rom_string_guard_continuation)
+    pop eax
+    mov eax, err_invalid_guard_clause
+    mov ecx, esi
     jmp rn_error
   .invalid_selector:
+    mov ebx, eax
     pop esi
     pop eax
-    pop ebx
-    mov eax, err_invalid_argument
-    mov ecx, symbol_value(rom_string_guard_continuation)
+    pop eax
+    mov eax, err_invalid_selector
+    mov ecx, esi
+    jmp rn_error
+  .invalid_interceptor:
+    pop esi
+    pop eax
+    pop eax
+    mov eax, err_invalid_interceptor
+    mov ecx, esi
     jmp rn_error
 
 

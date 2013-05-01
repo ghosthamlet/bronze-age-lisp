@@ -179,7 +179,8 @@
     (list #:combiner/applicative car $if)
     (list #:continuation error-continuation root-continuation)
     ($quote* #:number 0 1 999999999999999999999 #e+infinity)
-    ($quote* #:pair (1 2) (#t #f) (#inert ()) ((1 2) (3 4)))))
+    (list* #:pair (list (list root-continuation ($lambda () ())))
+      ($quote* (1 2) (#t #f) (#inert ()) ((1 2) (3 4))))))
 
 ($define! $type-test
   ($vau (symbol . arg-types) #ignore
@@ -252,6 +253,11 @@
 
 ($type-test extend-continuation #:continuation #:combiner/applicative)
 ($type-test extend-continuation #:continuation #:combiner/applicative #:environment)
+
+($define! type-error-messages
+  (list "Invalid argument."
+        "Invalid guard list."
+        "Invalid continuation guard specification."))
 ($type-test guard-continuation #:pair #:continuation #:pair)
 ($type-test guard-dynamic-extent #:pair #:combiner/applicative #:pair)
 
@@ -261,8 +267,45 @@
 ($type-test * #:number #:number)
 ($type-test negate #:number)
 
-;; Type errors in deep arguments
+;; Type errors in deep arguments of guard-dynamic-extent.
 ;;
-;; TODO: test (guard-continuation ( ..) ... (...))
-;;
+($define! $test-guard-dynamic-extent
+  ($vau (args (msg irritants)) denv
+    ($define! symbol ($quote guard-dynamic-extent))
+    ($define! (en comb ex) (eval (cons list args) denv))
+    (check-error
+      (list (list unwrap symbol)
+            en
+            comb
+            ex)
+      (list (list msg)
+            (eval irritants denv)
+            symbol))))
+
+($test-guard-dynamic-extent
+  ((list #t) ($lambda () ()) ())
+  ("Invalid continuation guard specification." #t))
+($test-guard-dynamic-extent
+  (() ($lambda () ()) (list #f))
+  ("Invalid continuation guard specification." #f))
+($test-guard-dynamic-extent
+  (()
+   ($lambda () ())
+   (list (list error-continuation ($lambda () ()))
+         (list 2345)))
+  ("Invalid continuation guard specification." (list 2345)))
+($test-guard-dynamic-extent
+  (()
+   ($lambda () ())
+   (list (list 3456 ($lambda () ()))))
+  ("Invalid continuation guard selector." 3456))
+($test-guard-dynamic-extent
+  (()
+   ($lambda () ())
+   (list (list error-continuation 4567)))
+  ("Invalid continuation guard interceptor." 4567))
+($test-guard-dynamic-extent
+  (() 1234 ())
+  ("Invalid argument." 1234))
+
 (summary)
