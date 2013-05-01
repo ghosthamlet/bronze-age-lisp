@@ -1141,3 +1141,37 @@ rn_bigint_shift_left:
     lea esi, [esi + 4*edx + 4]
     lea edi, [edi + 4*edx]
     jmp rn_bigint_shift_right.main
+
+;;
+;; rn_u64_to_bigint
+;;
+;; preconditions:  EAX = low 32-bits
+;;                 EDX = high 32-bits
+;;                 EBP = current continuation (for error handling)
+;;
+;; postconditions: EAX = bigint or fixint representation
+;;
+;; preserves: ESI, EDI, EBP
+;; clobbers: EAX, EBX, ECX, EDX, EFLAGS
+;;
+rn_u64_to_bigint:
+    push esi
+    push edi
+    mov esi, edx
+    mov edi, eax
+    mov ecx, 4
+    call rn_allocate
+    lea ebx, [4 * edi + 1]
+    shrd edi, esi, 30
+    shr esi, 30
+    lea ecx, [4 * edi + 1]
+    shrd edi, esi, 30
+    lea edx, [4 * edi + 1]
+    mov [eax + bigint.header], dword bigint_header(4)
+    mov [eax + bigint.digit0], ebx
+    mov [eax + bigint.digit1], ecx
+    mov [eax + bigint.digit2], edx
+    pop esi
+    pop edi
+    mov ebx, eax
+    jmp bi_normalize

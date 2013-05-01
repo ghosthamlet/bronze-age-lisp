@@ -56,7 +56,9 @@
     make-encapsulation-type
     make-keyed-dynamic-variable
     open-output-string
-    get-interpreter-arguments)
+    get-interpreter-arguments
+    rdtsc get-current-second
+    get-current-jiffy get-jiffies-per-second)
   ($bounded-app 0 1
     exit)
   ($bounded-app 1 1
