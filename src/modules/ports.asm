@@ -752,6 +752,55 @@ app_open_binary_output_file:
     jmp rn_error
 
 ;;
+;; get_linux_port (native procedure)
+;;
+;; preconditions:  EBX = port object
+;;                 ECX = symbol for error reporting
+;; postconditions: EAX = EBX = underlying linux port (with file descriptor)
+;;                 ZF = 1 success
+;;                 ZF = 0 failure
+get_linux_port:
+  .recurse:
+    test bl, 3
+    jnz .type_error
+    mov eax, [ebx + txt_out.header]
+    cmp al, txt_out_header(0)
+    je .txt_out
+    cmp al, txt_in_header(0)
+    je .txt_in
+    cmp al, bin_out_header(0)
+    je .bin_out
+    cmp al, bin_in_header(0)
+    je .bin_in
+  .type_error:
+    mov eax, err_invalid_argument
+    jmp rn_error
+  .no:
+    or al, 0xFF
+    ret
+  .txt_out:
+    mov eax, [ebx + txt_out.write]
+    cmp eax, primitive_value(app_open_utf_encoder.write_method)
+    jne .no
+    mov ebx, [ebx + txt_out.underlying_port]
+    jmp .recurse
+  .txt_in:
+    mov eax, [ebx + txt_in.read]
+    cmp eax, primitive_value(app_open_utf_decoder.read_method)
+    jne .no
+    mov ebx, [ebx + txt_in.underlying_port]
+    jmp .recurse
+  .bin_out:
+  .bin_in:
+    mov eax, [ebx + txt_out.env]
+    xor al, 1
+    test al, 3
+    jne .no
+  .has_file_descriptor:
+    mov eax, ebx
+    ret
+
+;;
 ;; pred_terminal_port (native procedure)
 ;;
 ;; preconditions: EBX = object
@@ -774,46 +823,13 @@ app_open_binary_output_file:
 ;;
 pred_terminal_port:
     ;; ebx = port object
-    test bl, 3
-    jnz .type_error
-    mov eax, [ebx + txt_out.header]
-    cmp al, txt_out_header(0)
-    je .txt_out
-    cmp al, txt_in_header(0)
-    je .txt_in
-    cmp al, bin_out_header(0)
-    je .bin_out
-    cmp al, bin_in_header(0)
-    je .bin_in
-  .type_error:
-    mov eax, err_invalid_argument
     mov ecx, [esi + operative.var0]
-    jmp rn_error
-  .no:
+    call get_linux_port
+    jz .file_descriptor
     xor eax, eax
     ret
-
-  .txt_out:
-    mov eax, [ebx + txt_out.write]
-    cmp eax, primitive_value(app_open_utf_encoder.write_method)
-    jne .no
-    mov ebx, [ebx + txt_out.underlying_port]
-    jmp pred_terminal_port
-  .txt_in:
-    mov eax, [ebx + txt_in.read]
-    cmp eax, primitive_value(app_open_utf_decoder.read_method)
-    jne .no
-    mov ebx, [ebx + txt_in.underlying_port]
-    jmp pred_terminal_port
-
-  .bin_out:
-  .bin_in:
-    mov eax, [ebx + txt_out.env]
-    xor al, 1
-    test al, 3
-    jne .no
   .file_descriptor:
-    mov edx, ebx
+    mov edx, eax
     mov eax, [edx + bin_out.var0]  ; cached isatty flag
     cmp al, boolean_value(0)
     je .done_tagged
@@ -824,5 +840,57 @@ pred_terminal_port:
     mov al, ah
     ret
 
+;;
+;; app_tcgetattr ... (tcgetattr PORT) => BYTEVECTOR
+;; app_tcsetattr ... (tcsetattr PORT BYTEVECTOR)
+;; app_tc_cbreak_noecho (tc-cbreak-noecho BYTEVECTOR) => BYTEVECTOR
+;;
+app_tcgetattr:
+  .A1:
+    mov ecx, symbol_value(rom_string_tcgetattr)
+    call get_linux_port
+    jne .error
+    mov ebx, [eax + bin_out.env]
+    call rn_tcgets
+    jmp [ebp + cont.program]
+  .error:
+    mov eax, err_invalid_argument
+    jmp rn_error
+
+app_tcsetattr:
+  .A2:
+    mov edx, ecx
+    mov ecx, symbol_value(rom_string_tcsetattr)
+    cmp dl, bytevector_tag
+    jne .type_error
+    call get_linux_port
+    jnz .type_error
+    mov ebx, [eax + bin_out.env]
+    mov ecx, edx
+    call rn_tcsets
+    jmp [ebp + cont.program]
+  .type_error:
+    mov eax, err_invalid_argument
+    mov ebx, edx
+    jmp rn_error
+
+app_tc_cbreak_noecho:
+  .A1:
+    mov ecx, symbol_value(rom_string_tc_cbreak_noecho)
+    cmp bl, bytevector_tag
+    jne .type_error
+    mov esi, ebx
+    call rn_get_blob_data
+    call rn_allocate_blob
+    mov edi, eax
+    mov ebx, eax
+    mov eax, esi
+    call rn_copy_blob_data
+    call rn_tc_cbreak_noecho
+    mov eax, edi
+    jmp [ebp + cont.program]
+  .type_error:
+    mov eax, err_invalid_argument
+    jmp rn_error
 
 %endif

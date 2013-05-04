@@ -215,3 +215,34 @@
         (cadr (error-object-irritants e)))
       (error msg
         (list path) e))))
+
+;; terminal attributes
+;;
+($bind-ground! tcgetattr
+  (make-bounded-applicative
+    (list 1 1) (list "app_tcgetattr.A1") ()))
+($bind-ground! tcsetattr
+  (make-bounded-applicative
+    (list 2 2) (list "app_tcsetattr.A2") ()))
+($bind-ground! tc-cbreak-noecho
+  (make-bounded-applicative
+    (list 1 1) (list "app_tc_cbreak_noecho.A1") ()))
+
+($define-ground-lambda! with-noncanonical-input (f)
+  ($define! p stdin)
+  ($define! old (tcgetattr p))
+  ($define! new (tc-cbreak-noecho old))
+  (tcsetattr p new)
+  ($define! r
+    (guard-dynamic-extent
+      (list (list root-continuation
+                  ($lambda (obj . #ignore)
+                    (tcsetattr p new)
+                    obj)))
+      ($lambda () (apply f ()))
+      (list (list root-continuation
+                  ($lambda (obj . #ignore)
+                    (tcsetattr p old)
+                    obj)))))
+  (tcsetattr p old)
+  r)

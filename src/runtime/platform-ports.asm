@@ -182,6 +182,29 @@ copy_blobz:
     pop ecx
     ret
 
+%define TCGETS  0x5401
+%define TCSETSF 0x5404
+%define NCCS    19
+
+struc termios
+  .c_iflag resd 1
+  .c_oflag resd 1
+  .c_cflag resd 1
+  .c_lflag resd 1
+  .c_line  resb 1
+  .c_cc    resb NCCS
+endstruc
+
+%define ISIG    0o0000001
+%define ICANON  0o0000002
+%define ECHO    0o0000010
+
+%define ICRNL   0o0000400
+%define IUTF8   0o0040000
+
+%define VTIME   5
+%define VMIN    6
+
 ;;
 ;; rn_isatty
 ;;
@@ -196,7 +219,7 @@ rn_isatty:
     push edx
     mov eax, 0x36             ; ioctl syscall
     shr ebx, 2                ;   fd (untag)
-    mov ecx, 0x5401           ;   cmd = TCGETS
+    mov ecx, TCGETS           ;   cmd = TCGETS
     mov edx, scratchpad_start ;   buffer for termios structure
     call call_linux
     mov ebx, boolean_value(0)
@@ -207,3 +230,116 @@ rn_isatty:
     pop ecx
     pop ebx
     ret
+
+;;
+;; rn_tcgets (native procedure)
+;;
+;; Copy current terminal settings to a bytevector.
+;;
+;; preconditions:  EBX = file descriptor (tagged fixint)
+;; postconditions: EAX = bytevector
+;;
+;; clobbers:  EAX, EBX, ECX, EDX, ESI, EDI, EFLAGS
+;; preserves: EBP
+;;
+rn_tcgets:
+    mov esi, ebx
+    mov ecx, termios_size
+    call rn_allocate_blob
+    mov edi, eax
+    mov ebx, eax
+    call rn_get_blob_data
+    mov edx, ebx              ;   buffer for termios structure
+    mov ecx, TCGETS           ;   cmd = TCGETS
+    mov ebx, esi              ;   fd
+    shr ebx, 2                ;    (untag)
+    mov eax, 0x36             ; ioctl syscall
+    call call_linux
+    test eax, eax
+    jnz .error
+    xor ebx, ebx
+    xor ecx, ecx
+    xor edx, edx
+    mov eax, edi
+    ret
+  .error:
+    mov eax, err_io
+    mov ebx, esi
+    mov ecx, inert_tag
+    jmp rn_error
+
+;;
+;; rn_tcsets (native procedure)
+;;
+;; Copy current terminal settings from a bytevector.
+;;
+;; preconditions:  EBX = file descriptor (tagged fixint)
+;;                 ECX = bytevector
+;;
+;; postconditions: EAX = #inert
+;;
+;; clobbers:  EAX, EBX, ECX, EDX, ESI, EDI, EFLAGS
+;; preserves: EBP
+;;
+rn_tcsets:
+    mov esi, ebx
+    mov ebx, ecx
+    call rn_get_blob_data
+    cmp ecx, termios_size
+    jne .error
+    mov edx, ebx              ;   termios structure
+    mov ecx, TCSETSF          ;   cmd = TCSETSF
+    mov ebx, esi              ;   fd
+    shr ebx, 2                ;    (untag)
+    mov eax, 0x36             ; ioctl syscall
+    call call_linux
+    test eax, eax
+    jnz .error
+    mov eax, inert_tag
+    xor ebx, ebx
+    xor ecx, ecx
+    xor edx, edx
+    ret
+  .error:
+    mov eax, err_io
+    mov ebx, esi
+    mov ecx, inert_tag
+    jmp rn_error
+
+;;
+;; rn_tc_cbreak_noecho (native procedure)
+;;
+;; Update the termios structure:
+;;
+;;    - disable echo
+;;    - enable noncanonical char-by-char processing
+;;    - enable signal on Ctrl-C
+;;
+;; preconditions:  EBX = bytevector with termios structure
+;; postconditions: EAX = #inert
+;;
+;; clobbers:  EAX, EBX, ECX, EDX, EFLAGS
+;; preserves: ESI, EDI, EBP
+;;
+rn_tc_cbreak_noecho:
+    mov eax, ebx
+    call rn_get_blob_data
+    cmp ecx, termios_size
+    jne .error
+    ;; modify termios structure
+    and dword [ebx + termios.c_iflag], ~ICRNL
+    mov eax, [ebx + termios.c_lflag]
+    and eax, ~ICANON & ~ECHO
+    or  eax, ISIG
+    mov [ebx + termios.c_lflag], eax
+    mov byte [ebx + termios.c_cc + VMIN], 1
+    mov byte [ebx + termios.c_cc + VTIME], 0
+    ;; discard native pointer and return #inert
+    xor ebx, ebx
+    mov eax, inert_tag
+    ret
+  .error:
+    mov ebx, eax
+    mov eax, err_invalid_argument
+    mov ecx, inert_tag
+    jmp rn_error

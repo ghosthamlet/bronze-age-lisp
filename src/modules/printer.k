@@ -160,7 +160,10 @@
         (write-string "#[promise]" p))
       ((library? x)
         (write-string "#[library]" p))
-      (#t (write-string "#[encapsulation]" p))))
+      ((bytevector? x)
+        (write-string "#[bytevector]" p))
+      (#t
+        (write-string "#[encapsulation]" p))))
   (write-tail (x s p)
     ($cond
       ((null? x)
@@ -198,7 +201,8 @@
     ($cond
       ((eq? c #\newline) (write-string "newline" p))
       ((eq? c #\space) (write-string "space" p))
-      ((char<=? #\newline c #\x7D) (write-char c p))
+      ((eq? c #\escape) (write-string "escape" p))
+      ((char<=? #\space c #\x7D) (write-char c p))
       (#t
         (write-char #\x p)
         (print-integer (char->integer c) 16 p))))
