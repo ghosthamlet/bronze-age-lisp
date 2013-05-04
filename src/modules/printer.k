@@ -40,6 +40,12 @@
 ($define-ground-vau! $get-printer-flag (flag) #ignore
   (eval flag (get-printer-flags)))
 
+($define-ground-lambda! color-port? (p)
+  ($let1 color ($get-printer-flag color)
+    ($or? (eq? color #t)
+          ($and? (eq? color #:if-terminal)
+                 (terminal-port? p)))))
+
 ($define-ground-vau! $with-printer-flags (flags . body) denv
   (bind-printer-flags
     (make-environment
@@ -61,7 +67,7 @@
               ($if ($get-printer-flag share) x #inert))
             ()
             0
-            ($if ($get-printer-flag color) 0 #f))
+            ($if (color-port? p) 0 #f))
       p)
     (flush-output-port p)))
 

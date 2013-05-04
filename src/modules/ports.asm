@@ -265,7 +265,7 @@ app_open_utf_encoder:
     call rn_allocate
     mov [eax + txt_out.header], dword txt_out_header(8)
     mov [eax + txt_out.env], eax
-    mov [eax + txt_out.close], dword primitive_value(.flush_method)
+    mov [eax + txt_out.close], dword primitive_value(.close_method)
     mov [eax + txt_out.write], dword primitive_value(.write_method)
     mov [eax + txt_out.flush], dword primitive_value(.flush_method)
     mov [eax + txt_out.buffer], ebx
@@ -354,6 +354,17 @@ app_open_utf_encoder:
   .no_op:
     mov eax, dword inert_tag
     jmp [ebp + cont.program]
+
+  .close_method:
+    mov edx, .close_continue
+    call make_helper_continuation
+    jmp .flush_method
+  .close_continue:
+    call discard_helper_continuation
+    mov edi, [edi + txt_out.underlying_port]
+    mov eax, [edi + bin_out.close]
+    mov edi, [edi + bin_out.env]
+    jmp rn_combine
 
 txt_out_try_buffer:
     ;; pre:   esi = textual output port object with buffer
@@ -739,5 +750,79 @@ app_open_binary_output_file:
     mov eax, err_invalid_argument
     mov ecx, symbol_value(rom_string_open_binary_input_file)
     jmp rn_error
+
+;;
+;; pred_terminal_port (native procedure)
+;;
+;; preconditions: EBX = object
+;;                [ESI + operative.var0] = symbol for error reporting
+;;                EBP = current continuation (for error reporting)
+;;
+;; postconditions: AL = 1 if EBX is a terminal port
+;;                    = 0 if EBX is a port, but not a terminal port
+;;                 raise error if EBX is not a port
+;;
+;; preserves: ESI, EDI, EBP
+;; clobbers: EAX, EBX, EDX, EFLAGS
+;;
+;; A port is a terminal port, if it is
+;;
+;;     1) binary input or output port which wraps a linux
+;;        file descriptor FD, and ioctl(FD, TCGETS, ...) = 0.
+;;
+;;  or 2) UTF-8 encoder or decoder port on top of a terminal port
+;;
+pred_terminal_port:
+    ;; ebx = port object
+    test bl, 3
+    jnz .type_error
+    mov eax, [ebx + txt_out.header]
+    cmp al, txt_out_header(0)
+    je .txt_out
+    cmp al, txt_in_header(0)
+    je .txt_in
+    cmp al, bin_out_header(0)
+    je .bin_out
+    cmp al, bin_in_header(0)
+    je .bin_in
+  .type_error:
+    mov eax, err_invalid_argument
+    mov ecx, [esi + operative.var0]
+    jmp rn_error
+  .no:
+    xor eax, eax
+    ret
+
+  .txt_out:
+    mov eax, [ebx + txt_out.write]
+    cmp eax, primitive_value(app_open_utf_encoder.write_method)
+    jne .no
+    mov ebx, [ebx + txt_out.underlying_port]
+    jmp pred_terminal_port
+  .txt_in:
+    mov eax, [ebx + txt_in.read]
+    cmp eax, primitive_value(app_open_utf_decoder.read_method)
+    jne .no
+    mov ebx, [ebx + txt_in.underlying_port]
+    jmp pred_terminal_port
+
+  .bin_out:
+  .bin_in:
+    mov eax, [ebx + txt_out.env]
+    xor al, 1
+    test al, 3
+    jne .no
+  .file_descriptor:
+    mov edx, ebx
+    mov eax, [edx + bin_out.var0]  ; cached isatty flag
+    cmp al, boolean_value(0)
+    je .done_tagged
+    mov ebx, [edx + txt_out.env]
+    call rn_isatty
+    mov [edx + bin_out.var0], eax
+  .done_tagged:
+    mov al, ah
+    ret
+
 
 %endif

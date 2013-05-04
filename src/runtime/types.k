@@ -284,11 +284,13 @@
   ($define! make-standard-port
     ($lambda (header* filedes close-method io-method flush-method)
       (make-rom-object
-        (header* 5)
+        (header* 6)
         filedes
         (make-primitive-operative close-method)
         (make-primitive-operative io-method)
-        (make-primitive-operative flush-method))))
+        (make-primitive-operative flush-method)
+        #inert ; place for isatty flag
+        )))
 
   ($define! make-builtin-continuation
     ($lambda (program-label parent)

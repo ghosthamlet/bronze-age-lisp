@@ -11,7 +11,7 @@
             (error "User interupt (caught SIGINT).")))
     ($lambda ()
       ($with-printer-flags
-        ((color #t)  ;; TODO: disable ansi terminal colors when user program prints to file
+        ((color #:if-terminal)
          (unicode #t))
         (repl-loop env))))
   (newline))
@@ -36,7 +36,7 @@
       ($lambda ()
         (flush-output-port stderr)
         (write-string
-          ($if ($get-printer-flag color)
+          ($if (color-port? stdout)
             "\x1B;[1m>>\x1B;[m "
             ">> "))
         (flush-output-port stdout)
@@ -52,7 +52,7 @@
   (repl-error (x divert)
     ($let1 port stdout ;stderr
       (write-string
-        ($if ($get-printer-flag color)
+        ($if (color-port? port)
           "\x1B;[31;1mERROR:\x1B;[m "
           "ERROR: ")
         port)

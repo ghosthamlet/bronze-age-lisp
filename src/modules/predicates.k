@@ -82,7 +82,9 @@
   ($bind-native-predicate! countable-list? "pred_countable_list")
   ($bind-native-predicate! char-whitespace? "pred_char" (make-nonlisp-value "white_space_code"))
   ($bind-native-predicate! char-alphabetic? "pred_char" (make-nonlisp-value "alphabetic_code"))
-  ($bind-native-predicate! library-name-component? "pred_library_name_component"))
+  ($bind-native-predicate! library-name-component? "pred_library_name_component")
+  ($when ($configured stdio)
+    ($bind-native-predicate! terminal-port? "pred_terminal_port")))
 
 ($provide! ()
 

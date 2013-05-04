@@ -181,3 +181,29 @@ copy_blobz:
     pop ebx
     pop ecx
     ret
+
+;;
+;; rn_isatty
+;;
+;; Terminal detection.
+;;
+;; preconditions:  EBX = file descriptor (tagged fixint)
+;; postconditions: EAX = #t or #f
+;;
+rn_isatty:
+    push ebx
+    push ecx
+    push edx
+    mov eax, 0x36             ; ioctl syscall
+    shr ebx, 2                ;   fd (untag)
+    mov ecx, 0x5401           ;   cmd = TCGETS
+    mov edx, scratchpad_start ;   buffer for termios structure
+    call call_linux
+    mov ebx, boolean_value(0)
+    test eax, eax
+    setz bh
+    mov eax, ebx
+    pop edx
+    pop ecx
+    pop ebx
+    ret
