@@ -246,3 +246,11 @@
                     obj)))))
   (tcsetattr p old)
   r)
+
+;; char-ready?
+;;
+($bind-ground! char-ready?
+  (make-bounded-applicative
+    (list 0 1)
+    (list "app_char_readyP.A0" "app_char_readyP.A1")
+    ()))

@@ -146,7 +146,8 @@
     "ports.k"
     "printer.k"
     "reader.k"
-    "repl.k"))
+    "repl.k"
+    "tui.k"))
 
 ;; add version string and user bindings
 ($bind-ground! interpreter-version "Bronze Age Lisp 0.1")

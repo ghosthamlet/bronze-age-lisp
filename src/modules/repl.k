@@ -35,12 +35,7 @@
       ()
       ($lambda ()
         (flush-output-port stderr)
-        (write-string
-          ($if (color-port? stdout)
-            "\x1B;[1m>>\x1B;[m "
-            ">> "))
-        (flush-output-port stdout)
-        ($let1 input (read)
+        ($let1 input (repl-read env)
           ($if (eof-object? input)
             input
             ($let1 result (eval input env)
@@ -49,6 +44,35 @@
               (write-char #\newline)))))
       (list
         (list error-continuation (unwrap repl-error)))))
+  (repl-read (env)
+    ($if ($and? (color-port? stdout)
+                (terminal-port? stdin))
+      ($let* ((history ($if ($binds? env %history)
+                         ($remote-eval %history env)
+                         ()))
+              (line (read-edit ">> " history)))
+        ($if (eof-object? line)
+          line
+          ($sequence
+            ($set! env %history (repl-add-to-history line history))
+            ($let1 value (with-input-from-string line read)
+              ($if (eof-object? value)
+                (repl-read)
+                value)))))
+      ($sequence
+        (write-string ">> ")  ; dumb mode
+        (flush-output-port stdout)
+        (read))))
+  (repl-add-to-history (h hs)
+    ($if ($or? (equal? h "%")
+               (equal? h "%history")
+               (member? h (take-at-most-n 3 hs)))
+      hs
+      (take-at-most-n 32 (cons h hs))))
+  (take-at-most-n (n xs)
+    ($if ($and? (pair? xs) (<? 0 n))
+      (cons (car xs) (take-at-most-n (- n 1) (cdr xs)))
+      ()))
   (repl-error (x divert)
     ($let1 port stdout ;stderr
       (write-string

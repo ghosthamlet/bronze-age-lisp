@@ -893,4 +893,38 @@ app_tc_cbreak_noecho:
     mov eax, err_invalid_argument
     jmp rn_error
 
+;;
+;; app_char_readyP
+;;
+;; Implementation of (char-ready? [PORT])
+;;
+app_char_readyP:
+  .A0:
+    mov ebx, private_binding(rom_string_stdin)
+  .A1:
+    mov ecx, symbol_value(rom_string_char_readyP)
+    mov esi, ebx
+    call get_linux_port
+    jnz .type_error
+    mov edi, eax
+    mov eax, [esi + txt_in.read]
+    cmp eax, primitive_value(app_open_utf_decoder.read_method)
+    jne .ask_the_system
+  .ask_the_decoder:
+    mov ecx, [esi + txt_in.accum]
+    cmp cl, char_tag
+    jz .yes
+    push .yes
+    call txt_in_try_buffer
+  .ask_the_system:
+    mov ebx, [edi + bin_out.env]
+    call rn_file_descriptor_ready
+    jmp [ebp + cont.program]
+  .yes:
+    mov eax, boolean_value(1)
+    jmp [ebp + cont.program]
+  .type_error:
+    mov eax, err_invalid_argument
+    jmp rn_error
+
 %endif

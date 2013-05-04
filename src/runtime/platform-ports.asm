@@ -182,6 +182,42 @@ copy_blobz:
     pop ecx
     ret
 
+%define POLLIN  0x0001
+
+;;
+;; preconditions:  EBX = file descriptor (tagged fixint)
+;; postconditions: EAX = #t or #f
+;;
+rn_file_descriptor_ready:
+    push ebx
+    push ecx
+    push edx
+    ;; create struct pollfd on the stack
+    shr ebx, 2
+    push dword POLLIN
+    push ebx
+    ;; call poll()
+    mov eax, 0xA8  ; poll() syscall
+    mov ebx, esp   ;  pointer to struct pollfd
+    mov ecx, 1     ;  number of structures
+    mov edx, 0     ;  timeout
+    call call_linux
+    add esp, 8
+    mov ebx, boolean_value(0)
+    test eax, eax
+    js .error
+    setnz bh
+    mov eax, ebx
+    pop edx
+    pop ecx
+    pop ebx
+    ret
+  .error:
+    mov eax, err_io
+    lea ebx, [4 * eax + 1]
+    mov ecx, inert_tag
+    jmp rn_error
+
 %define TCGETS  0x5401
 %define TCSETSF 0x5404
 %define NCCS    19
