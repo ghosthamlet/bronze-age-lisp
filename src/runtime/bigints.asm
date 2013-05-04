@@ -354,7 +354,8 @@ rn_bigint_plus_bigint:
     ;; The variables nshort and ndiff are negative multiples
     ;; of two.
     ;;
-    sub esp, 8
+    push dword 0
+    push dword 0
     shr eax, 8                      ; object length
     shr ebx, 8
     mov edx, ebx                    ; EDX := length of shorter obj

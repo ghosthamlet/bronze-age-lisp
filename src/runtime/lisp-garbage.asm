@@ -4,6 +4,8 @@
 ;;; Garbage collector of lisp values.
 ;;;
 
+%define enable_gc_checks 1
+
 ;;
 ;; gc_copy_loop REG (macro)
 ;;
@@ -159,6 +161,10 @@ gc_evacuate_header:
     mov [edi], ecx      ; copy header word
     lea esi, [ebx + 4]  ; pointer to the body of the original object
     lea edi, [edi + 4]  ; pointer to the body of the copy
+%if enable_gc_checks
+    test ecx, ((~(configured_lisp_heap_size/8 - 1) | 1) << 8) | 2
+    jnz .bad
+%endif
     shr ecx, 8          ; extract object size (in DWORDs)
     dec ecx             ; account for the header
     rep movsd           ; copy object body into TOSPACE
@@ -167,6 +173,14 @@ gc_evacuate_header:
     rn_trace configured_debug_gc_detail, 'f/hdr', hex, ebx, hex, ecx, hex, ebp
     mov [ebp], ecx      ; copy forwarding pointer to the slot
     ret
+%if enable_gc_checks
+  .bad:
+    mov eax, [edi - 4]
+    rn_trace 1, 'BADGC/H', hex, eax, hex, ecx
+    mov [ebx], eax
+    rn_trace 1, 'BADGC/L', lisp, ebx, lisp, ebx
+    ret
+%endif
 
 ;;
 ;; gc_collect (native procedure)

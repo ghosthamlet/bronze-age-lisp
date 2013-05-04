@@ -226,6 +226,8 @@ rn_trace_print_lisp:
     neg eax
     jmp rn_trace_print_hex
   .case.pair:
+    test ebx, 0x40000000
+    jnz .case.fwd_pair
     mov eax, '('
     call rn_trace_print_char
   .tail:
@@ -431,6 +433,18 @@ rn_trace_print_lisp:
     loop .case.bigint.L1
     pop edx
     mov al, ']'
+    jmp rn_trace_print_char
+  .case.fwd_pair:
+    mov eax, '['
+    call rn_trace_print_char
+    push dword cdr(ebx)
+    mov ebx, car(ebx)
+    call rn_trace_print_lisp
+    mov eax, '|'
+    call rn_trace_print_char
+    pop ebx
+    call rn_trace_print_lisp
+    mov eax, ']'
     jmp rn_trace_print_char
 
   .header_string db '#[header '

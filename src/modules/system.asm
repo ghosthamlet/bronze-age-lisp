@@ -59,3 +59,18 @@ op_init_environ:
     call rn_list_environment_variables
     mov private_binding(rom_string_environ), edi
     jmp [ebp + cont.program]
+
+app_collect_garbage:
+  .A0:
+    xor eax, eax
+    xor ebx, ebx
+    xor ecx, ecx
+    xor edx, edx
+    xor esi, esi
+    xor edi, edi
+    push ebp
+    call gc_collect
+    pop ebp
+    call bl_collect
+    mov eax, inert_tag
+    jmp [ebp + cont.program]

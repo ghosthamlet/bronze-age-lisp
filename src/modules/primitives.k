@@ -58,7 +58,8 @@
     open-output-string
     get-interpreter-arguments
     rdtsc get-current-second
-    get-current-jiffy get-jiffies-per-second)
+    get-current-jiffy get-jiffies-per-second
+    collect-garbage)
   ($bounded-app 0 1
     exit)
   ($bounded-app 1 1

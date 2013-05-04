@@ -249,7 +249,8 @@ rn_select_all_guards:
     push ecx
     push eax
     push ebx
-    sub esp, 8
+    push dword inert_tag
+    push dword inert_tag
     ;; [esp + 0]  = exit list tail ptr
     ;; [esp + 4]  = exit list head
     ;; [esp + 8]  = destination
