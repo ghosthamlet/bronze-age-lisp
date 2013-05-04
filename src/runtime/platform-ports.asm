@@ -4,6 +4,8 @@
 ;;; Linux file descriptors wrapped as port objects.
 ;;;
 
+EINTR    equ 4
+
 O_RDONLY equ 0o0000000  ; octal, see linux headers
 O_WRONLY equ 0o0000001
 O_CREAT  equ 0o0000100
@@ -31,6 +33,7 @@ linux_close:
     shl ebx, 2
     or bl, fixint_tag
     mov eax, err_io
+    mov ecx, inert_tag
     jmp rn_error
 
     align 4
@@ -39,6 +42,7 @@ linux_read:
     ;;       edi = file descriptor (tagged fixint)
     ;;       ebp = continuation
     ;; post: eax = number of bytes read (tagged fixint) or eof-object
+    push ebx
     mov ecx, ebx
     shr ecx, 2
     call rn_allocate_blob
@@ -58,20 +62,27 @@ linux_read:
     pop ebx
     call rn_shrink_last_blob
     mov eax, ebx
+    pop ecx
     jmp [ebp + cont.program]
   .eof:
-    add esp, 4
+    add esp, 8
     mov eax, eof_tag
     jmp [ebp + cont.program]
   .error:
-    add esp, 4
     pop edx
+    cmp eax, -EINTR
+    je .eintr
     mov ebx, eax
     neg ebx
     shl ebx, 2
     or bl, fixint_tag
     mov eax, err_io
+    mov ecx, inert_tag
     jmp rn_error
+  .eintr:
+    mov eax, primitive_value(linux_read)
+    pop ebx
+    jmp rn_combine.reflect
 
     align 4
 linux_write:
@@ -79,7 +90,7 @@ linux_write:
     ;;       edi = file descriptor (tagged fixint)
     ;;       ebp = continuation
     ;; post: eax = #inert
-    ;;       eip = edx
+    mov esi, ebx
     call rn_get_blob_data
     mov edx, ecx    ; buffer length
     mov ecx, ebx    ; buffer address
@@ -92,12 +103,19 @@ linux_write:
     lea eax, [fixint_tag + 4*eax] ; tag
     jmp [ebp + cont.program]
   .error:
+    cmp eax, -EINTR
+    je .eintr
     mov ebx, eax
     neg ebx
     shl ebx, 2
     or bl, fixint_tag
     mov eax, err_io
+    mov ecx, inert_tag
     jmp rn_error
+  .eintr:
+    mov eax, primitive_value(linux_write)
+    mov ebx, esi
+    jmp rn_combine.reflect
 
     align 4
 linux_nop:

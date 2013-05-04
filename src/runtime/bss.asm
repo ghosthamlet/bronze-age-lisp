@@ -24,6 +24,18 @@ last_ptree              resd 1
 ;;
 platform_info           resb 256
 
+;; ring buffer of signals caught by native code but
+;; not yet processed by lisp code
+;;
+struc sigring_element
+  .signo resd 1
+endstruc
+sigring_initialized     resd 1
+sigring_wp              resd 1
+sigring_rp              resd 1
+sigring_overflow        resd 1
+sigring_buffer          resd (configured_signal_ring_capacity * sigring_element_size)
+
 ;; auxilliary buffer
 ;;
 scratchpad_start        resb 256
@@ -34,3 +46,8 @@ scratchpad_end:
 lisp_heap_area:
     resb (4 * configured_lisp_heap_size + configured_blob_heap_size)
 lisp_heap_area_end:
+
+;; space for signal stack
+;;
+signal_stack_base:      resb 8192
+signal_stack_limit:

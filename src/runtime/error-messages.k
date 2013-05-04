@@ -55,4 +55,5 @@
     (invalid-guard-clause "Invalid continuation guard specification.")
     (invalid-selector "Invalid continuation guard selector.")
     (invalid-interceptor "Invalid continuation guard interceptor.")
+    (signal-initialization "Error while initializing signal handling.")
   ))

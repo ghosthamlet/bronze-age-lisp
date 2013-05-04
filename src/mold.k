@@ -135,6 +135,7 @@
   "continuations.k"
   "promises.k"
   "numbers.k"
+  "signals.k"
   "system.k"
   "libraries.k"
   "_provisional.k"
@@ -228,7 +229,8 @@
     "bigints.asm"
     "object-names.asm"
     "platform-initialization.asm"
-    "platform-ports.asm"))
+    "platform-ports.asm"
+    "platform-signals.asm"))
 
 ($unless ($configured no-applicative-support)
   (emit-applicative-support))
@@ -257,6 +259,7 @@
     "promises.asm"
     "strings.asm"
     "shared-structures.asm"
+    "signals.asm"
     "symbols.asm"
     "system.asm"
     "vectors.asm")

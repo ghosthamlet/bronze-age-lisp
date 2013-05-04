@@ -38,6 +38,9 @@
   ($param character-predicates #t
     "Enable (char-alphabetic?).")
 
+  ($param signal-ring-capacity 16
+    "Capacity of ring buffer for information on caught signals.")
+
   ($param debug-evaluator #f
     "Enables debugging messages in the evaluator.")
   ($param debug-gc-cycle #f
@@ -113,6 +116,9 @@
                 ($configured lisp-heap-threshold))
              256)
         (error "lisp heap is too small"))
+      ($unless ($and? (<=? 2 ($configured signal-ring-capacity) 256)
+                      (power-of-two? ($configured signal-ring-capacity)))
+        (error "signal-ring-capacity must be a power of two in the range 2..256"))
       ($when ($configured reader-and-printer)
         ($unless ($configured character-predicates)
           (error "reader depends on character predicates")))

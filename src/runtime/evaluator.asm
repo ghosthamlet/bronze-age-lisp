@@ -67,6 +67,16 @@ rn_eval:
     jmp rn_combine
 
 ;;
+;; rn_interrupt_evaluator (native procedure)
+;;
+;; Replace the next call of rn_combine with a call
+;; to rn_handle_evaluator_interrupt.
+;;
+rn_interrupt_evaluator:
+    mov [rn_combine], word 0xEEEB
+    ret
+
+;;
 ;; rn_combine (continuation passing procedure)
 ;;
 ;; Combines a combiner with an argument list.
@@ -83,7 +93,16 @@ rn_eval:
 ;;                 EBP = current continuation
 ;;                 EIP = combiner program address
 ;;
+    align 16
+rn_combine.reflect:
+    mov [rn_combine], word 0x9090
+    jmp rn_handle_evaluator_interrupt
+    align 16
 rn_combine:
+    nop   ; These two NOPs (hex: 0x90 0x90) are replaced by
+    nop   ;  "jmp short .reflect" (hex: 0xEB 0xEE) by a signal
+          ; handler.
+  .begin:
     mov [last_combiner], eax
     mov [last_ptree], ebx
     mov esi, eax
@@ -111,3 +130,40 @@ rn_combine:
     mov ecx, inert_tag
     push dword rn_combine
     jmp rn_error
+
+;;
+;; rn_handle_evaluator_interrupt (continuation passing procedure)
+;;
+;; preconditions:  (EAX . EBX) = interrupted combination
+;;                 EDI = environment
+;;                 EBP = current continuation
+;;
+rn_handle_evaluator_interrupt:
+    mov edx, eax
+    mov eax, ebp
+    call rn_capture
+    mov eax, edi
+    call rn_capture
+    mov ecx, 6
+    call rn_allocate
+    mov [eax + cont.header], dword cont_header(6)
+    mov [eax + cont.program], dword .continue
+    mov [eax + cont.parent], ebp
+    mov [eax + cont.var0], edx
+    mov [eax + cont.var1], ebx
+    mov [eax + cont.var2], edi
+    mov ebp, eax
+    mov eax, private_binding(rom_string_signal_handler)
+    mov ebx, nil_tag
+    mov edi, empty_env_object
+    jmp rn_combine
+  .continue:
+    rn_trace configured_debug_evaluator, 'sig/cont', lisp, eax
+    mov eax, [ebp + cont.var0]
+    mov ebx, [ebp + cont.var1]
+    xor ecx, ecx
+    xor edx, edx
+    xor esi, esi
+    mov edi, [ebp + cont.var2]
+    mov ebp, [ebp + cont.parent]
+    jmp rn_combine                 ; continue from the point of interruption

@@ -5,10 +5,15 @@
 ;;;
 
 ($define-ground-lambda! read-eval-print-loop (env)
-  ($with-printer-flags
-    ((color #t)  ;; TODO: disable ansi terminal colors when user program prints to file
-     (unicode #t))
-    (repl-loop env))
+  (with-signal-handler
+    (list #:sigint
+          ($lambda #ignore
+            (error "User interupt (caught SIGINT).")))
+    ($lambda ()
+      ($with-printer-flags
+        ((color #t)  ;; TODO: disable ansi terminal colors when user program prints to file
+         (unicode #t))
+        (repl-loop env))))
   (newline))
 
 ($define-ground-lambda! stand-alone-interpreter ()

@@ -19,6 +19,7 @@ err_not_a_combiner              equ 0xDEAD0F00
 err_unbound_symbol              equ 0xDEAD1000
 err_match_failure               equ 0xDEAD1100
 rom_string_Ssequence            equ 0x00DEAD00
+rom_string_signal_handler       equ 0xDEAD1100
 
 private_lookup_table_length     equ 0
 ground_lookup_table_length      equ 0
@@ -31,6 +32,7 @@ rn_out_of_memory:
 rn_error:
     jmp rn_fatal
 ground_private_lookup_table:
+empty_env_object:
     dd 0, 0, 0, 0
 
 %include "runtime/debug.asm"

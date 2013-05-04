@@ -33,6 +33,9 @@ rn_error:
 ground_private_lookup_table:
     dd 0, 0, 0, 0
 
+%define private_binding(x) 0xDEAD1100
+%define empty_env_object   0xDEAD1200
+
 %include "runtime/debug.asm"
 %include "runtime/lisp-garbage.asm"
 %include "runtime/lisp-allocator.asm"
