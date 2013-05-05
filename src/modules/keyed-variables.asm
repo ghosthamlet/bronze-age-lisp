@@ -162,3 +162,86 @@ app_bind_dynamic_variable:
     mov [edi + operative.var1], ecx   ;   in the accessor object
     mov eax, car(ebx)                 ; pass forth the value which is
     jmp [ebp + cont.program]          ;   is being abnormally pased
+
+;; app_make_keyed_static_variable (continuation passing procedure)
+;;
+;; Implementation of (make-keyed-static-variable)
+;;
+;; Value of the static variable is stored in the environment
+;; like ordinary binding, but the key is not a symbol,
+;; but the accessor operative.
+;;
+app_make_keyed_static_variable:
+  .A0:
+    ;; allocate memory for accessor and binder
+    mov ecx, 14
+    call rn_allocate
+    ;; initialize operative underlying the accessor
+    mov [eax + operative.header], dword operative_header(2)
+    mov [eax + operative.program], dword app_access_static_variable.operate
+    mov edx, eax
+    ;; initialize accessor applicative
+    lea eax, [eax + 8]
+    mov [eax + applicative.header], dword applicative_header(4)
+    mov [eax + applicative.program], dword rn_asm_applicative.L00
+    mov [eax + applicative.underlying], edx
+    mov [eax + applicative.var0], dword app_access_static_variable.A0
+    mov edi, eax
+    ;; initialize operative underlying the binder
+    lea eax, [eax + 16]
+    mov [eax + operative.header], dword operative_header(4)
+    mov [eax + operative.program], dword rn_asm_operative.L22
+    mov [eax + operative.var0], dword app_bind_static_variable.A2
+    mov [eax + operative.var1], edx
+    mov edx, eax
+    ;; initialize binder applicative
+    lea eax, [eax + 16]
+    mov [eax + applicative.header], dword applicative_header(4)
+    mov [eax + applicative.program], dword rn_asm_applicative.L22
+    mov [eax + applicative.underlying], edx
+    mov [eax + applicative.var0], dword app_bind_static_variable.A2
+    mov esi, eax
+    ;; return the list (binder accessor)
+    push edi
+    push dword nil_tag
+    call rn_cons
+    push esi
+    push eax
+    call rn_cons
+    jmp [ebp + cont.program]
+
+app_access_static_variable:
+  .A0:
+    mov ebx, eax                   ; use the operative as the key
+    push .unbound_variable         ; jump there if lookup fails
+    push edi                       ; save original environment
+    jmp [edi + environment.program]
+  .unbound_variable:
+    mov eax, err_unbound_static_variable
+    mov ebx, inert_tag
+    mov ecx, inert_tag
+    jmp rn_error
+  .operate:
+    cmp ebx, nil_tag
+    je .A0
+  .error:
+    mov eax, err_invalid_argument_structure
+    mov ecx, inert_tag
+    jmp rn_error
+
+app_bind_static_variable:
+  .A2:
+    xchg ebx, ecx                      ; use EBX (for error reporting)
+    test bl, 3
+    jnz .error
+    cmp byte [ebx], environment_header(0)
+    jne .error
+    call rn_make_list_environment
+    mov ebx, [esi + operative.var1]    ; use the acessor operative
+    mov [eax + environment.key0], ebx  ;  as the key
+    mov [eax + environment.val0], ecx
+    jmp [ebp + cont.program]
+  .error:
+    mov eax, err_invalid_argument
+    mov ecx, inert_tag
+    jmp rn_error

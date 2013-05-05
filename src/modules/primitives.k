@@ -55,6 +55,7 @@
     make-kernel-standard-environment
     make-encapsulation-type
     make-keyed-dynamic-variable
+    make-keyed-static-variable
     open-output-string
     get-interpreter-arguments
     rdtsc get-current-second

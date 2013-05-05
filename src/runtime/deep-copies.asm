@@ -93,8 +93,8 @@ rn_copy_es_immutable:
     ;; Initialize 2 words as a pair (#inert . #inert).
     ;; The pair becomes the clone.
     lea eax, [eax + 24]                ; pointer to last 2 words
-    mov [eax + 24], ecx                ; CAR of clone
-    mov [eax + 28], ecx                ; CDR of clone
+    mov [eax], ecx                     ; CAR of clone
+    mov [eax + 4], ecx                 ; CDR of clone
     shr eax, 1                         ; tag as
     or  al, 3                          ;   immutable pair
     ;; mark the original pair and store forwarding pointer
