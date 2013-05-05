@@ -164,6 +164,7 @@ bl_collect:
     push edx
     push esi
     push ebp
+    perf_time begin, blob_gc
     rn_trace configured_debug_gc_blobs, 'bl_collect', hex, [first_blob], hex, [free_blob]
     ;; mark roots on stack
     mov ebx, esp
@@ -188,6 +189,7 @@ bl_collect:
     pop edi
     ;;
     rn_trace configured_debug_gc_blobs, 'end', hex, [first_blob], hex, [free_blob]
+    perf_time end, blob_gc
     ;; restore registers
     pop ebp
     pop esi

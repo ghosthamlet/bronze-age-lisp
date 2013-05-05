@@ -33,6 +33,7 @@ rn_check_ptree:
     push edx                ; save registers
     push esi
     push ebp
+    perf_time begin, check_ptree
     mov ebp, esp            ; save stack pointer for early aborts
     call rn_mark_base_1     ; esi = base of 1-bit marks
     push edi
@@ -49,6 +50,7 @@ rn_check_ptree:
     xor eax, eax            ; return value 0
   .abort:
     mov esp, ebp            ; restore stack pointer
+    perf_time end, check_ptree, save_regs
     pop ebp
     pop esi
     pop edx

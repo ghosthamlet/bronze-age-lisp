@@ -55,7 +55,7 @@
         ($define! (key value) (split-arg arg))
         ($if (string=? key "")
           ($when strict
-            (print-usage)
+            (print-usage (get-current-error-port))
             (exit 1))
           ($sequence
             ($define! key (string->symbol key))
@@ -98,14 +98,14 @@
 
 ;; print command line help
 ($define! print-usage
-  ($lambda ()
-    (display "usage: klisp mold.k ['PARAM=VALUE' ...] > OUT.asm\n")
-    (display "parameters:\n\n")
+  ($lambda (port)
+    (display "usage: klisp mold.k ['PARAM=VALUE' ...] > OUT.asm\n" port)
+    (display "parameters:\n\n" port)
     (for-each
       ($lambda ((sym val help))
-        (display (string-append* "  " sym " = "))
-        (write val)
-        (display (string-append* "\n    " help "\n\n")))
+        (display (string-append* "  " sym " = ") port)
+        (write val port)
+        (display (string-append* "\n    " help "\n\n") port))
       configuration-help)))
 
 ;; Now we have default configuration parameters. Let command
@@ -121,7 +121,8 @@
   "data-segments.k"
   "applicatives.k"
   "mark-bits.k"
-  "platform.k")
+  "platform.k"
+  "performance-statistics.k")
 
 ;; load primitives
 ($for-each-src load src-prefix "modules/"
@@ -181,8 +182,10 @@
         (asm "%define" i w)))
     configuration-help)
   (emit-type-macros)
+  (emit-performance-statistics-macros)
   ($for-each-src asm-include asm-prefix "runtime/"
-    "types.asm"))
+    "types.asm"
+    "performance-statistics.asm"))
 
 ;; define data and bss segments
 ($define! rodata-size

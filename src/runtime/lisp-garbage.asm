@@ -201,6 +201,7 @@ gc_evacuate_header:
 ;; stack usage:    5 dwords (incl. call/ret)
 ;;
 gc_collect:
+    perf_time begin, lisp_gc
     mov esi, [lisp_heap_pointer]
     call gc_get_tospace
     push edi
@@ -213,6 +214,7 @@ gc_collect:
     pop ebp
     call gc_copy_objects
     mov [lisp_heap_pointer], edi
+    perf_time end, lisp_gc
 %if configured_debug_gc_cycle
     mov eax, [lisp_heap_pointer]
     sub eax, [transient_limit]

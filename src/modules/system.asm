@@ -74,3 +74,24 @@ app_collect_garbage:
     call bl_collect
     mov eax, inert_tag
     jmp [ebp + cont.program]
+
+app_perf_time:
+  .A1:
+    mov eax, ebx
+    xor al, 1
+    test al, 3
+    jnz .error
+    cmp ebx, fixint_value(0)
+    jl .error
+    cmp ebx, fixint_value(perf_time_section_count)
+    jge .error
+    shr ebx, 2
+    mov eax, [perf_time_buffer + 8*ebx]
+    mov edx, [perf_time_buffer + 8*ebx + 4]
+    xor ebx, ebx
+    call rn_u64_to_bigint
+    jmp [ebp + cont.program]
+  .error:
+    mov eax, err_invalid_argument
+    mov ecx, symbol_value(rom_string_perf_time)
+    jmp rn_error

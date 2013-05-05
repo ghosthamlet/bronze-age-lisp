@@ -7,16 +7,18 @@ struc linux
 endstruc
 
 call_linux:
+    perf_time begin, system_call, save_regs
     push esi
     push edi
     call [platform_info + linux.vsyscall]
     pop edi
     pop esi
+    perf_time end, system_call, save_regs
     xor ebx, ebx
     xor ecx, ecx
     xor edx, edx
     ret
-             
+
 AT_SYSINFO equ 32
 
 rn_platform_init:

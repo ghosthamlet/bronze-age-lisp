@@ -16,15 +16,15 @@
       (set! configuration name (eval value denv))
       (configuration-help-add! (list name value help))))
 
-  ($param blob-heap-size (* 16 1024)
+  ($param blob-heap-size (* 512 1024)
     "Size of blob heap (bytes).")
-  ($param blob-descriptor-capacity 1024
+  ($param blob-descriptor-capacity 8192
     "Size of blob heap descriptor table (entries).")
-  ($param lisp-heap-size (* 128 1024)
+  ($param lisp-heap-size (* 2 1024 1024)
     "Size of lisp heap (bytes, power of two).")
-  ($param lisp-transient-size (* 8 1024)
+  ($param lisp-transient-size (* 16 1024)
     "Size of transient environment area in the heap (bytes).")
-  ($param lisp-heap-threshold (* 9 1024)
+  ($param lisp-heap-threshold (* 17 1024)
     "Allocation threshold (bytes).")
 
   ($param stdio #t

@@ -20,6 +20,10 @@ CONF_DEBUG_OFF='
   debug-continuations=#f
   debug-environments=#f'
 
+CONF_SMALLER_HEAP='
+  lisp-heap-size=262144
+  blob-heap-size=65536'
+
 prepare_asm_test()
 {
     echo "preparing asm tests..."
@@ -74,6 +78,7 @@ prepare_dual_test()
     echo "preparing dual tests..."
     klisp ../src/mold.k \
         $CONF_DEBUG \
+        $CONF_SMALLER_HEAP \
         'src-prefix="../src/"' > build/dual.asm
     nasm -g -f elf32 -o build/dual.o -i ../src/ -i asm/ -i build/ build/dual.asm
     ld -o build/dual.bin build/dual.o -Tasm/linker-script.ld

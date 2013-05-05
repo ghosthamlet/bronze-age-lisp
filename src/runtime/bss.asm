@@ -36,6 +36,10 @@ sigring_rp              resd 1
 sigring_overflow        resd 1
 sigring_buffer          resd (configured_signal_ring_capacity * sigring_element_size)
 
+;; buffer for performance statistics
+;;
+perf_time_buffer        resd (perf_time_section_count * 8)
+
 ;; auxilliary buffer
 ;;
 scratchpad_start        resb 256

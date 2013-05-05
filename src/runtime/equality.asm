@@ -121,6 +121,7 @@ rn_equal:
     push edi
     push ebp
     mov ebp, esp                      ; save stack pointer
+    perf_time begin, equal
     call rn_mark_base_32
     mov edx, esi
     add esi, 5 * all_mark_slots       ; esi = base of 1-bit marks
@@ -133,6 +134,7 @@ rn_equal:
     jmp .L2
 
   .equal:
+    perf_time end, equal
     mov eax, 1
   .done:
     mov esp, ebp                      ; restore stack pointer
@@ -157,6 +159,7 @@ rn_equal:
     jz .header          ; is the first value an object with header?
     jp .pair            ; is the first value a pair?
   .not_equal:           ; if not (eq? ...), then not (equal? ...)
+    perf_time end, equal
     xor eax, eax
     jmp .done
 
@@ -224,7 +227,9 @@ rn_equal:
     jmp .L1
 
   .error:
+    perf_time end, equal
     mov eax, err_not_implemented
+    mov ecx, inert_tag
     mov esp, ebp
     pop ebp
     jmp rn_error
