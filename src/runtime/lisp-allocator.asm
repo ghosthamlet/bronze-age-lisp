@@ -4,7 +4,7 @@
 ;;; Allocator for lisp values.
 ;;;
 
-%define enable_allocator_checks (configured_debug_gc_cycle || configured_debug_gc_detail || configured_debug_evaluator)
+%define enable_allocator_checks 1 ;(configured_debug_gc_cycle || configured_debug_gc_detail || configured_debug_evaluator)
 
 ;;
 ;; init_lisp_heap (native procedure)
@@ -255,7 +255,7 @@ rn_transient_min:
     mov eax, edi
   .L2:
     ;; eax = min(max(edi, heap_base), max(ebp, heap_base), transient_limit)
-    rn_trace configured_debug_gc_detail, 'transient_min', hex, eax, hex, ebp, hex, edi, hex, [transient_limit]
+    ;rn_trace configured_debug_gc_detail, 'transient_min', hex, eax, hex, ebp, hex, edi, hex, [transient_limit]
     ret
 
 ;;

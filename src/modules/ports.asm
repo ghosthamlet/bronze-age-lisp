@@ -748,7 +748,7 @@ app_open_binary_output_file:
     jmp [ebp + cont.program]
   .error:
     mov eax, err_invalid_argument
-    mov ecx, symbol_value(rom_string_open_binary_input_file)
+    mov ecx, symbol_value(rom_string_open_binary_output_file)
     jmp rn_error
 
 ;;

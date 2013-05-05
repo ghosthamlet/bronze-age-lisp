@@ -184,10 +184,15 @@ test_package:
     mov edi, esi              ; EDI = base of 32-bit mark values
     mov ebx, nil_tag
     call sh_package
-    cmp esi, edi
+    cmp ebx, 0
     call pass_if.z
-    call rn_mark_base_32
-    cmp esi, edi
+    cmp ecx, 0
+    call pass_if.z
+    cmp edx, 0
+    call pass_if.z
+    cmp esi, 0
+    call pass_if.z
+    cmp edi, 0
     call pass_if.z
 
     test al, 3
@@ -197,15 +202,22 @@ test_package:
     cmp dword [eax + operative.program], sh_find.empty.operate
     call pass_if.z
 
+    call rn_mark_base_32
+    mov edi, esi              ; EDI = base of 32-bit mark values
     mov ebx, rom_pair_value(list_1)
     mov ecx, nil_tag
     call set_mark_value
     mov ebx, rom_pair_value(list_1)
     call sh_package
-    cmp esi, edi
+    cmp ebx, 0
     call pass_if.z
-    call rn_mark_base_32
-    cmp esi, edi
+    cmp ecx, 0
+    call pass_if.z
+    cmp edx, 0
+    call pass_if.z
+    cmp esi, 0
+    call pass_if.z
+    cmp edi, 0
     call pass_if.z
 
     test al, 3
@@ -219,6 +231,8 @@ test_package:
     cmp dword [eax + operative.var1], rom_pair_value(list_1)
     call pass_if.z
 
+    call rn_mark_base_32
+    mov edi, esi              ; EDI = base of 32-bit mark values
     mov ebx, rom_pair_value(list_1)
     mov ecx, rom_pair_value(list_2)
     call set_mark_value
@@ -227,11 +241,17 @@ test_package:
     call set_mark_value
     mov ebx, rom_pair_value(list_1)
     call sh_package
-    cmp esi, edi
+    cmp ebx, 0
     call pass_if.z
-    call rn_mark_base_32
-    cmp esi, edi
+    cmp ecx, 0
     call pass_if.z
+    cmp edx, 0
+    call pass_if.z
+    cmp esi, 0
+    call pass_if.z
+    cmp edi, 0
+    call pass_if.z
+
     test al, 3
     call pass_if.z
     cmp dword [eax], operative_header(4)

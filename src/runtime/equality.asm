@@ -109,11 +109,130 @@ rn_shallow_compare:
 ;; preserves:      EBX, ECX, EDX, ESI, EDI, EBP
 ;; clobbers:       EAX, EFLAGS
 ;;
+;;
+rn_equal:
+    perf_time begin, equal, save_regs
+    call rn_equal_quick
+    perf_time end, equal, save_regs
+    ret
+
+;;
+;; rn_equal_quick (native procedure)
+;;
+;; preconditions & postconditions same as for rn_equal
+;;
+;; Algorithm: Compare all fields and follow all pointers
+;; naively, but define artificial limit on number of objects
+;; visited. If the limit is reached, switch to the full
+;; algorithm.
+;;
+rn_equal_quick:
+    push ebx            ; save registers
+    push ecx
+    push edx
+    push esi
+    push edi
+    push ebp
+    mov ebp, esp        ; save stack pointer
+    mov edi, 32         ; define the limit
+    jmp .L2
+  .equal:
+    mov eax, 1
+  .done:
+    mov esp, ebp        ; restore stack pointer
+    pop ebp             ; restore register
+    pop edi
+    pop esi
+    pop edx
+    pop ecx
+    pop ebx
+    ret
+  .abort:
+    mov esp, ebp        ; restore stack pointer
+    pop ebp             ; restore registers
+    pop edi
+    pop esi
+    pop edx
+    pop ecx
+    pop ebx
+    jmp rn_equal_full   ; try again using general but slower algorithm
+
+  .L1:
+    cmp ebp, esp        ; is the stack empty?
+    je .equal
+    pop ebx             ; load next pair of values to compare
+    pop ecx
+  .L2:
+    dec edi             ; limit reached?
+    je .abort
+    cmp ebx, ecx        ; identical representation?
+    je  .L1
+    cmp bl, string_tag  ; is the first value a string?
+    je .string
+    test bl, 3
+    jz .header          ; is the first value an object with header?
+    jp .pair            ; is the first value a pair?
+  .not_equal:           ; if not (eq? ...), then not (equal? ...)
+    xor eax, eax
+    jmp .done
+
+  .pair:
+    test cl, 3
+    jz .not_equal            ; if the second value is not a pair,
+    jnp .not_equal           ;   then the values cannot be equal
+    push dword cdr(ebx)      ; push CDR fields on the stack
+    push dword cdr(ecx)
+    mov ebx, car(ebx)        ; CAR fields will be compared next
+    mov ecx, car(ecx)
+    jmp .L2
+
+  .header:
+    test cl, 3
+    jnz .not_equal
+    mov eax, [ebx] ; get header fields
+    mov edx, [ecx]
+    cmp al, applicative_header(0)
+    je .applicative
+    cmp al, bigint_header(0)
+    je .bigint
+    cmp eax, edx
+    jne .not_equal
+    cmp al, vector_header(0)
+    jne .not_equal
+  .vector:
+    ;; vectors will be handled by the general algorithm only
+    jmp .abort
+  .applicative:
+    cmp dl, applicative_header(0)
+    jne .not_equal
+    mov ebx, [ebx + applicative.underlying]
+    mov ecx, [ecx + applicative.underlying]
+    jmp .L2
+  .bigint:
+    call rn_shallow_compare
+    jne .not_equal
+    jmp .L1
+  .string:
+    cmp cl, string_tag
+    jne .not_equal
+    mov eax, ecx
+    call rn_compare_blob_data
+    jne .not_equal
+    jmp .L1
+
+;;
+;; rn_equal_full (native procedure)
+;;
+;; preconditions & postconditions same as for rn_equal
+;;
 ;; The algorithm is based on implementation of (equal? ...)
 ;; in klisp.
 ;;
+;; N.B. This procedure clears all O(heap-size) mark bits
+;; at startup.
+;;
 
-rn_equal:
+rn_equal_full:
     push ebx                          ; save registers
     push ecx
     push edx
@@ -121,7 +240,6 @@ rn_equal:
     push edi
     push ebp
     mov ebp, esp                      ; save stack pointer
-    perf_time begin, equal
     call rn_mark_base_32
     mov edx, esi
     add esi, 5 * all_mark_slots       ; esi = base of 1-bit marks
@@ -134,7 +252,6 @@ rn_equal:
     jmp .L2
 
   .equal:
-    perf_time end, equal
     mov eax, 1
   .done:
     mov esp, ebp                      ; restore stack pointer
@@ -159,7 +276,6 @@ rn_equal:
     jz .header          ; is the first value an object with header?
     jp .pair            ; is the first value a pair?
   .not_equal:           ; if not (eq? ...), then not (equal? ...)
-    perf_time end, equal
     xor eax, eax
     jmp .done
 

@@ -188,15 +188,15 @@
         r-lst)
       ;; output ground, private and empty environment objects
       (asm "ground_env_object:")
-      (asm " dd" (asm-repr (environment-header* 3)) ","
-           "ground_env_lookup" "," inert-tag)
+      (asm " dd" (asm-repr (environment-header* 4)) ","
+           "ground_env_lookup" "," inert-tag "," inert-tag)
       (asm "private_env_object:")
-      (asm " dd" (asm-repr (environment-header* 3)) ","
-           "private_env_lookup" "," "ground_env_object")
+      (asm " dd" (asm-repr (environment-header* 4)) ","
+           "private_env_lookup" "," "ground_env_object" "," inert-tag)
       (asm "empty_env_object:")
-      (asm " dd" (asm-repr (environment-header* 3)) ","
-           "empty_env_lookup" "," inert-tag)
-      (rodata-size-add! (* 3 3 4))
+      (asm " dd" (asm-repr (environment-header* 4)) ","
+           "empty_env_lookup" "," inert-tag "," inert-tag)
+      (rodata-size-add! (* 3 4 4))
       (asm-label "lisp_rom_limit")
       ;; output assembler reference to root and error continuations
       (asm "root_continuation equ " (asm-repr (cdr (assoc ($quote root-continuation) ground-bindings))))

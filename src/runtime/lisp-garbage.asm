@@ -162,6 +162,8 @@ gc_evacuate_header:
     lea esi, [ebx + 4]  ; pointer to the body of the original object
     lea edi, [edi + 4]  ; pointer to the body of the copy
 %if enable_gc_checks
+    test ecx, ~0xFF
+    jz .bad
     test ecx, ((~(configured_lisp_heap_size/8 - 1) | 1) << 8) | 2
     jnz .bad
 %endif
@@ -179,6 +181,7 @@ gc_evacuate_header:
     rn_trace 1, 'BADGC/H', hex, eax, hex, ecx
     mov [ebx], eax
     rn_trace 1, 'BADGC/L', lisp, ebx, lisp, ebx
+    int 3
     ret
 %endif
 

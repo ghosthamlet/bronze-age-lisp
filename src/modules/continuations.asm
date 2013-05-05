@@ -95,6 +95,7 @@ app_guard_continuation:
 ;; preconditions:  EBX = entry guard list
 ;;                 ECX = target combiner
 ;;                 EDX = exit guard list
+;;                 EDI = 
 ;;
 app_guard_dynamic_extent:
   .A3:
@@ -152,6 +153,9 @@ make_guard_continuation:
     push ebx
     push ecx
     push edx
+    ;; capture the dynamic environment
+    mov eax, edi
+    call rn_capture
     ;; check guard list
     call rn_list_metrics
     test eax, eax

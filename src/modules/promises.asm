@@ -38,7 +38,8 @@ primop_Slazy:
     cmp eax, nil_tag
     jne .error
     mov ebx, car(ebx)
-    mov edx, edi
+    mov eax, edi               ; capture dynamic environment
+    call rn_capture
     jmp app_memoize.allocate_promise
   .error:
     mov eax, err_invalid_argument_structure

@@ -180,15 +180,18 @@ sh_explore:
 ;;                 EDI = base of array of 32-bit mark values
 ;;
 ;; postconditions: EAX = operative closure
+;;                 EBX = 0
+;;                 ECX = 0
+;;                 EDX = 0
+;;                 ESI = 0
+;;                 EDI = 0
 ;;
-;; preserves:      ESI, EDI, EBP
-;; clobbers:       EAX, EBX, ECX, EDX, EFLAGS
+;; preserves:      EBP
+;; clobbers:       EAX, EBX, ECX, EDX, ESI, EDI, EFLAGS
 ;;
 sh_package:
     cmp ebx, nil_tag
     je .empty
-    push esi
-    push edi
     mov ecx, esp
   .next:
     push ebx
@@ -204,6 +207,9 @@ sh_package:
     push dword unbound_tag
     inc ecx
   .even:
+    xor ebx, ebx   ; destroy pointers in unused halfspace
+    xor esi, esi   ; of the heap, in case rn_allocate trigger
+    xor edi, edi   ; garbage collection
     mov edx, ecx
     add ecx, 2
     call rn_allocate
@@ -216,15 +222,19 @@ sh_package:
     lea edi, [eax + operative.var0]
     lea esp, [esp + 4*ecx]
     rep movsd
-    pop edi
-    pop esi
+  .clobber:
+    xor ebx, ebx   ; destroy pointers which
+    xor ecx, ecx   ; are not valid for the GC
+    xor edx, edx
+    xor esi, esi
+    xor edi, edi
     ret
   .empty:
     mov ecx, 2
     call rn_allocate
     mov dword [eax + operative.header], operative_header(2)
     mov [eax + operative.program], dword sh_find.empty.operate
-    ret
+    jmp .clobber
 
 sh_find:
   .nonempty.A1:

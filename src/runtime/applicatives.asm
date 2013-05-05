@@ -155,10 +155,8 @@ rn_generic_applicative:
     lea ecx, [4 * ecx + 1]  ; tag
     lea edx, [4 * edx + 1]
     push ecx
-    push ebx
     mov ecx, -10
     call rn_allocate_transient
-    pop ebx
     pop ecx
     mov [eax + cont.header], dword cont_header(10)
     mov [eax + cont.program], dword .cont

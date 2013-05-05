@@ -295,9 +295,10 @@
   ($define! make-builtin-continuation
     ($lambda (program-label parent)
       (make-rom-object
-        (cont-header* 3)
+        (cont-header* 4)
         (make-nonlisp-value program-label)
-        parent)))
+        parent
+        #inert)))
 
   ($define! make-operative
     ($lambda (program-label . rest)
