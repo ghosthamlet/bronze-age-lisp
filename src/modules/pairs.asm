@@ -92,9 +92,11 @@ app_list_ref:
 
 list_tail_helper:
     mov eax, ecx
+    xchg ebx, ecx          ; temporarily move to EBX for error reporting
     xor eax, 1
     test eax, 0x80000003
     jnz .invalid_argument
+    xchg ebx, ecx
     shr ecx, 2
     jecxz .done
   .next:

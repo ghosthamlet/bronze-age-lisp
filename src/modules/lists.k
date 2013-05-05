@@ -91,6 +91,13 @@
                 (bin (reduce-n ls bin a)
                      reduced-cycle))))))
 
+;; append! adapted from Kernel Report.
+;;
+($define-ground-lambda! append! lss
+  (for-each
+    ($lambda ((a b)) (set-cdr! (list-tail a (- (length a) 1)) b))
+    (list-neighbors (filter ($lambda (x) (not? (null? x))) lss))))
+
 ;; copy-es adapted from Kernel Report, but using
 ;; assq instead of assoc.
 ;;

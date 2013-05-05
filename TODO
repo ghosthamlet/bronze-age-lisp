@@ -2,19 +2,16 @@ TODO
 ----
 
 - add tests
-- SRFI-38 compatible reader
-- fix arithmetic applicatives
+- fix arithmetic applicatives, esp. max and min
+- implement integer division on bigints
 - add missing ground bindings from Kernel Report
 - add ground bindings for Klisp compatibility
-- add numeric tower
 - improve unicode support
 - improve REPL (TAB completion)
 - add comments, write documentation
+- consider extending the numeric tower with rationals and floats (low priority)
 
 -------
-
-Pairs mutation:
-  append!
 
 Ports:
   read-line
@@ -23,4 +20,4 @@ Ports:
   textual-input-port? ...
 
 Everything from modules:
-  vectors, strings, characters, system
+  vectors, strings, characters, bytevectors, system
