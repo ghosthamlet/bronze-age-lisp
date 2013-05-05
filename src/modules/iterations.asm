@@ -9,6 +9,8 @@
 
 app_map:
   .A2:
+    push ebx
+    push ecx
     mov esi, symbol_value(rom_string_map)
     call aux_check_two_argument_map
     test edx, edx
@@ -18,14 +20,13 @@ app_map:
     push aux_map_simple.map.continue
     jmp aux_map_simple
   .empty:
+    add esp, 8
     mov eax, nil_tag
     jmp [ebp + cont.program]
   .cyclic:
-    push ecx
-    push dword nil_tag
+    push dword nil_tag       ; 2nd arg already on the stack
     call rn_cons
-    push ebx
-    push eax
+    push eax                 ; 1st arg already on the stack
     call rn_cons
     mov ebx, eax
   .operate:
@@ -86,7 +87,7 @@ aux_check_two_argument_map:
     pop eax
     ret
   .invalid_argument:
-    mov eax, err_not_implemented
+    mov eax, err_invalid_argument
     mov ecx, [esp]
     mov [esp], dword .invalid_argument
     jmp rn_error

@@ -3,31 +3,24 @@ TODO
 
 - add tests
 - SRFI-38 compatible reader
-- fix predicates, arithmetic applicatives
+- fix arithmetic applicatives
 - add missing ground bindings from Kernel Report
 - add ground bindings for Klisp compatibility
 - add numeric tower
 - improve unicode support
-- improve REPL (history, sytax higlighting on ANSI terminals)
+- improve REPL (TAB completion)
 - add comments, write documentation
 
 -------
 
-Pairs and lists:
-  list-neighbors filter
-  reduce
-
 Pairs mutation:
-  append! copy-es
+  append!
 
 Ports:
-  display
   read-line
   input-port? output-port?
   textual-port? binary-port?
   textual-input-port? ...
-  require ...
 
 Everything from modules:
-  promises, keyed static variables,
-  vectors, strings, characters, libraries, system
+  vectors, strings, characters, system
