@@ -109,7 +109,7 @@
             ((eq? c #:home)
               (edit () (append (reverse left) right)))
             ((eq? c #:end)
-              (edit (append left (reverse right)) ()))
+              (edit (append (reverse right) left) ()))
             (($and? (eq? c #:up) (<? history-index (- history-length 1)))
               ($set! env history-index (+ 1 history-index))
               (edit (reverse (string->list (list-ref history history-index))) ()))
