@@ -53,38 +53,40 @@
     (#\x7F                  . #:backspace)
     (#\x08                  . #:backspace)
     (#\x09                  . #:tab)
+    (#\x0D                  . #:return)
     (#\x1B                  . #:escape)))
 
 ;;
 ;; reading string with parenthesis higlighting
 ;; and simple history buffer
 ;;
-;; (read-edit PROMPT HISTORY) => string or eof-object
+;; (read-edit PROMPT HISTORY COMPLETIONS) => string or eof-object
 ;;
 ;; where PROMPT is a string
-;;   and HISTORY is list of strings
+;;   and HISTORY and COMPLETIONS are lists of strings
 ;;
 ;; assuming that stdin is a terminal
 ;;
-($define-ground-lambda! read-edit (prompt history)
+($define-ground-lambda! read-edit (prompt history completion-strings)
   ($letrec
     ((env (get-current-environment))
       (history-index -1)
       (history-length (length history))
+      (completion-lists ($lazy (map string->list completion-strings)))
       (show
-      ($lambda (left right)
-        (write-string "\x1B;[0G\x1B;[K")
-        (write-string "\x1B;[1m")
-        (write-string prompt)
-        (write-string "\x1B;[0m")
-        ($define! (left right) (highlight-parentheses left right))
-        (for-each print-highlighted (reverse left))
-        (for-each print-highlighted right)
-        ($when (pair? right)
-          (write-string "\x1B;[")
-          (display (length right))
-          (write-char #\D))
-        (flush-output-port)))
+        ($lambda (left right)
+          (write-string "\x1B;[0G\x1B;[K")
+          (write-string "\x1B;[1m")
+          (write-string prompt)
+          (write-string "\x1B;[0m")
+          ($define! (left right) (highlight-parentheses left right))
+          (for-each print-highlighted (reverse left))
+          (for-each print-highlighted right)
+          ($when (pair? right)
+            (write-string "\x1B;[")
+            (display (length right))
+            (write-char #\D))
+          (flush-output-port)))
       (show-final
         ($lambda (s)
         (write-string "\x1B;[0G\x1B;[K")
@@ -118,10 +120,24 @@
               ($if (negative? history-index)
                 (edit () ())
                 (edit (reverse (string->list (list-ref history history-index))) ())))
-            ((eq? c #\xD)
-              ($let ((final (list->string (append (reverse left) right))))
-                (show-final final)
-                final))
+            ((eq? c #:return)
+              ($if (null? left right)
+                (edit left right)
+                ($let1 final (final-fix (append (reverse left) right))
+                  (show-final final)
+                  final)))
+            ((eq? c #:tab)
+              ($let1 prefix (take-word-chars-reversed left ())
+                ($let1 completions
+                       (filter pair?
+                         (map ($lambda (x) (discard-prefix prefix x))
+                           (force completion-lists)))
+                  ($if (=? 1 (length completions))
+                    (edit (append (list #\space)
+                                  (reverse (car completions))
+                                  left)
+                          right)
+                    (edit left right)))))
             ((eq? c #\x4)
               ($if (null? left right)
                 ($sequence
@@ -171,4 +187,34 @@
                     (highlight-one-parenthesis (cdr left) #\( 0))
               right))
       (#t
-        (list left right)))))
+        (list left right))))
+  (take-word-chars-reversed (cs acc)
+    ($if ($and? (pair? cs)
+                ($or? (char-alphabetic? (car cs))
+                      (memq? (car cs) extended-identifier-characters)
+                      (eq? (car cs) #\#)))
+        (take-word-chars-reversed (cdr cs) (cons (car cs) acc))
+        acc))
+  (discard-prefix (prefix lst)
+    ($cond
+      ((null? prefix) lst)
+      ((null? lst) #f)
+      ((char=? (car prefix) (car lst))
+        (discard-prefix (cdr prefix) (cdr lst)))
+      (#t #f)))
+  (final-fix (cs)
+    ($let ((str (list->string cs)))
+      ($if (char=? (car cs) #\()
+        str
+        (guard-dynamic-extent
+          ()
+          ($lambda ()
+            ($let1 rs (read-all (open-input-string str) ())
+              ($if ($and? (>=? (length rs) 2) (symbol? (car rs)))
+                ($let1 p (open-output-string)
+                  (write rs p)
+                  (get-output-string p))
+                str)))
+          (list (list error-continuation
+                      ($lambda (obj divert)
+                        (apply divert str)))))))))

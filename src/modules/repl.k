@@ -26,6 +26,16 @@
 ($bind-private! script-arguments ())
 ($define-ground-lambda! get-script-arguments () script-arguments)
 
+($bind-private! repl-completion-strings
+  ($quote* "#:inert"
+           "#:ignore"
+           "#e+infinity"
+           "#e-infinity"
+           "$define!"
+           "load"
+           "$vau"
+           "$lambda"))
+
 ($defun-privates!
   (repl-loop (env)
     ($unless (eof-object? (read-eval-print env))
@@ -50,7 +60,7 @@
       ($let* ((history ($if ($binds? env %history)
                          ($remote-eval %history env)
                          ()))
-              (line (read-edit ">> " history)))
+              (line (read-edit ">> " history repl-completion-strings)))
         ($if (eof-object? line)
           line
           ($sequence
