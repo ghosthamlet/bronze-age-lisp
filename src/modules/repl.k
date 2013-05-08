@@ -3,7 +3,27 @@
 ;;;
 ;;; Stand-alone interpreter and read-eval-print-loop.
 ;;;
-
+;;; Command line usage is mostly compatible with klisp:
+;;;
+;;;   bronze.bin [OPTIONS] [SCRIPT.k [SCRIPT-ARGS]]
+;;;
+;;;    -e EXPR        evaluate EXPR
+;;;
+;;;    -l FILE        load FILE and continue processing arguments,
+;;;                   equivalent to -e '(load "FILE")'
+;;;
+;;;    -r FILE        equivalent to -e '(require "FILE")'
+;;;
+;;;    -i             force interactive REPL
+;;;
+;;;    -b             disable color output and line editing in REPL
+;;;
+;;;    -              read expressions from STDIN and evaluate
+;;;                   one-by-one
+;;;
+;;;    -v, --version  print version string
+;;;    -h, --help     print short help
+;;;
 ($define-ground-lambda! read-eval-print-loop (env)
   (with-signal-handler
     (list #:sigint
@@ -11,8 +31,13 @@
             (error "User interupt (caught SIGINT).")))
     ($lambda ()
       ($with-printer-flags
-        ((color #:if-terminal)
-         (unicode #t))
+        ((color
+          ($if ($and? ($binds? env %dumb)
+                      (eq? ($remote-eval %dumb env) #t))
+            #f
+            #:if-terminal))
+         (unicode
+            #t))
         (repl-loop env))))
   (newline))
 
@@ -115,7 +140,7 @@
             (eval x env)
             . #9#)))
   (print-usage-instructions ()
-    (write-string "usage: bronze [-l FILE] [-e EXPR] [-i] [-v] [SCRIPT [ARGS...]]" stderr)
+    (write-string "usage: bronze [-l FILE] [-e EXPR] [-i] [-b] [-v] [SCRIPT [ARGS...]]" stderr)
     (newline stderr)
     #f)
   (print-version ()
@@ -142,6 +167,9 @@
         (eval (read (open-input-string (cadr args))) env)
         #1#)
       ((equal? (car args) "-i")
+        (process-interpreter-arguments (cdr args) #t env))
+      ((equal? (car args) "-b")
+        ($set! env %dumb #t)
         (process-interpreter-arguments (cdr args) #t env))
       ((equal? (car args) "-")
         ($set! private-environment script-arguments args)

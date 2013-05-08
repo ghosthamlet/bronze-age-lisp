@@ -9,7 +9,7 @@
 ;; key names.
 ;;
 ;; (read-key [PORT]) => char,    e.g. #\x0D
-;;                      keyword, e.g. #:up)
+;;                      keyword, e.g. #:up
 ;;                      list,    e.g. (#\escape ...)
 ;;
 ($define-ground-lambda! read-key r
