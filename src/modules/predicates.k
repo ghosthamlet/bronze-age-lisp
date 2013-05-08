@@ -104,7 +104,6 @@
 
   ($bind-relational-predicate! eq? "rn_eq")
   ($bind-relational-predicate! equal? "rn_equal")
-  ($bind-relational-predicate! char<=? "rel_char_leq")
 
   ($define! $bind-order-predicate!
     ($vau (symbol procedure on-le on-eq on-gt) denv
@@ -125,4 +124,16 @@
   ($bind-order-predicate! <=? "rel_integer" #t #t #f)
   ($bind-order-predicate!  =? "rel_integer" #f #t #f)
   ($bind-order-predicate! >=? "rel_integer" #f #t #t)
-  ($bind-order-predicate!  >? "rel_integer" #f #f #t))
+  ($bind-order-predicate!  >? "rel_integer" #f #f #t)
+
+  ($bind-order-predicate!  char<? "rel_char" #t #f #f)
+  ($bind-order-predicate! char<=? "rel_char" #t #t #f)
+  ($bind-order-predicate!  char=? "rel_char" #f #t #f)
+  ($bind-order-predicate! char>=? "rel_char" #f #t #t)
+  ($bind-order-predicate!  char>? "rel_char" #f #f #t)
+
+  ($bind-order-predicate!  string<? "rel_string" #t #f #f)
+  ($bind-order-predicate! string<=? "rel_string" #t #t #f)
+  ($bind-order-predicate!  string=? "rel_string" #f #t #f)
+  ($bind-order-predicate! string>=? "rel_string" #f #t #t)
+  ($bind-order-predicate!  string>? "rel_string" #f #f #t))

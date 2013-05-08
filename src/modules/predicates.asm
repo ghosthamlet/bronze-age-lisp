@@ -382,19 +382,102 @@ op_relational_predicate:
     mov ecx, [esi + operative.var0]
     call rn_error
 
-rel_char_leq:
+rel_char:
     cmp bl, char_tag
     jne .error
-    cmp cl, char_tag
+    xchg ebx, ecx
+    cmp bl, char_tag
     jne .error
-    xor eax, eax
-    cmp ebx, ecx
-    setbe al
+    xchg ebx, ecx
+    mov eax, ebx
+    sub eax, ecx
+    test eax, eax
+    jz .signum
+    sar eax, 31
+    lea eax, [2*eax + 1]
+  .signum:
+    add eax, 3
+    push ebx
+    mov ebx, [esi + operative.var2]
+    bt ebx, eax
+    setc al
+    and eax, 0xFF
+    pop ebx
     ret
   .error:
     mov eax, err_invalid_argument
     mov ecx, [esi + operative.var0]
     call rn_error
+
+rel_string:
+    cmp bl, string_tag
+    jne .error
+    xchg ebx, ecx
+    cmp bl, string_tag
+    jne .error
+    xchg ebx, ecx
+    push ebx
+    push ecx
+    push edx
+    call .compare
+    lea eax, [eax + 3]
+    mov ebx, [esi + operative.var2]
+    bt ebx, eax
+    setc al
+    and eax, 0xFF
+    pop edx
+    pop ecx
+    pop ebx
+    ret
+  .error:
+    mov eax, err_invalid_argument
+    mov ecx, [esi + operative.var0]
+    call rn_error
+  .compare:
+    push ebx
+    push ecx
+    call rn_get_blob_data
+    mov eax, ecx
+    mov ebx, [esp]
+    call rn_get_blob_data
+    mov edx, ecx
+    pop ecx
+    pop ebx
+    cmp eax, edx
+    jl .ebx_shorter
+    jg .ecx_shorter
+  .same_length:
+    mov eax, ebx
+    mov ebx, ecx
+    call rn_compare_blob_bits
+    jz .eq
+    setc al
+  .sgn:
+    and eax, 0x000000FF
+    lea eax, [2*eax - 1]
+    ret
+  .eq:
+    xor eax, eax
+    ret
+  .ebx_shorter:
+    push eax
+    mov eax, ebx
+    mov ebx, ecx
+    call rn_compare_blob_bits
+    setc al
+    pop edx
+    lea edx, [8*edx]
+    cmp ecx, edx
+    jb .sgn
+  .lt:
+    mov eax, -1
+    ret
+  .ecx_shorter:
+    xchg ebx, ecx
+    xchg eax, edx
+    call .ebx_shorter
+    neg eax
+    ret
 
 rel_integer:
     push ebx

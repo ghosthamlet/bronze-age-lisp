@@ -96,6 +96,29 @@ self_test()
     build/dual.bin -l self/self-test-support.k $1
 }
 
+prepare_bootstrap_test()
+{
+    echo "preparing bootstrap test..."
+    klisp ../src/mold.k \
+        $CONF_DEBUG \
+        'src-prefix="../src/"' > build/bootstrap.asm
+    nasm -g -f elf32 -o build/bootstrap.o -i ../src/ -i asm/ -i build/ build/bootstrap.asm
+    ld -o build/bootstrap.bin build/bootstrap.o -Tasm/linker-script.ld
+}
+
+run_bootstrap_test()
+{
+    echo -n "bootstrap test ..."
+    build/bootstrap.bin ../src/mold.k \
+        $CONF_DEBUG \
+        'src-prefix="../src/"' > build/bootstrap-out.asm
+    if diff -i build/bootstrap-out.asm build/bootstrap.asm ; then
+      echo 'PASS'
+    else
+      echo 'FAIL'
+    fi
+}
+
 run_all_tests()
 {
     prepare_asm_test
@@ -113,6 +136,8 @@ run_all_tests()
     for t in self/[0-9]*.k ; do
         self_test $t
     done
+    prepare_bootstrap_test
+    run_bootstrap_test
 }
 
 case "$1" in
@@ -139,6 +164,9 @@ if [ $# -ne 0 ] ; then
          ;;
     3??) prepare_dual_test
          self_test self/$1-*.k
+         ;;
+    400) prepare_bootstrap_test
+         run_bootstrap_test
          ;;
     *)   echo "usage: test.sh [NUMBER]" 1>&2
          exit 1
