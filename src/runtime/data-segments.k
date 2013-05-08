@@ -249,6 +249,9 @@
         ($for (i 1 n)
           ($let (((s . t) (vector-ref v i)))
             (asm " dd" (asm-repr t) "; " i s "=>" t))))
+      ;; output definition of port objects
+      ($when ($configured stdio)
+        (emit-platform-ports))
       ;; output initial contents of string heap
       (asm)
       (s-descriptors)

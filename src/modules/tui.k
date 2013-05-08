@@ -43,18 +43,33 @@
 
 ($bind-private! control-sequence-table
   ($quote*
-    ((#\escape #\[ #\A)     . #:up)
-    ((#\escape #\[ #\B)     . #:down)
-    ((#\escape #\[ #\C)     . #:right)
-    ((#\escape #\[ #\D)     . #:left)
-    ((#\escape #\[ #\H)     . #:home)
-    ((#\escape #\[ #\F)     . #:end)
-    ((#\escape #\[ #\3 #\~) . #:delete)
-    (#\x7F                  . #:backspace)
-    (#\x08                  . #:backspace)
-    (#\x09                  . #:tab)
-    (#\x0D                  . #:return)
-    (#\x1B                  . #:escape)))
+    ((#\escape #\[ #\A)       . #:up)
+    ((#\escape #\[ #\B)       . #:down)
+    ((#\escape #\[ #\C)       . #:right)
+    ((#\escape #\[ #\D)       . #:left)
+    ((#\escape #\[ #\H)       . #:home) ; xterm
+    ((#\escape #\[ #\F)       . #:end)
+    ((#\escape #\[ #\1 #\x7E) . #:home) ; linux console
+    ((#\escape #\[ #\4 #\x7E) . #:end)
+    ((#\escape #\[ #\3 #\~)   . #:delete)
+    (#\x7F                    . #:backspace)
+    (#\x08                    . #:backspace)
+    (#\x09                    . #:tab)
+    (#\x0D                    . #:return)
+    (#\x1B                    . #:escape)))
+
+($defun-privates!
+  (parse-cursor-position-report (p)
+    ($let1 c (peek-char p)
+      ($cond
+        ((eof-object? c)
+          ())
+        ((char-digit? c)
+          (cons (read-unsigned-number p 10)
+                (parse-cursor-position-report p)))
+        (#t
+          (read-char p)
+          (parse-cursor-position-report p))))))
 
 ;;
 ;; reading string with parenthesis higlighting
@@ -70,16 +85,18 @@
 ($define-ground-lambda! read-edit (prompt history completion-strings)
   ($letrec
     ((env (get-current-environment))
-      (history-index -1)
-      (history-length (length history))
-      (completion-lists ($lazy (map string->list completion-strings)))
-      (show
+     (history-index -1)
+     (history-length (length history))
+     (completion-lists ($lazy (map string->list completion-strings)))
+     (edit-width 60)
+     (show
         ($lambda (left right)
           (write-string "\x1B;[0G\x1B;[K")
           (write-string "\x1B;[1m")
           (write-string prompt)
           (write-string "\x1B;[0m")
           ($define! (left right) (highlight-parentheses left right))
+          ($define! (left right) (trim-display left right edit-width))
           (for-each print-highlighted (reverse left))
           (for-each print-highlighted right)
           ($when (pair? right)
@@ -95,9 +112,10 @@
         (write-string s)
         (write-string "\x1B;[0m")
         (newline)))
-      (edit
+     (edit
       ($lambda (left right)
-        (show left right)
+        ($unless (char-ready?)
+          (show left right))
         ($let ((c (read-key)))
           ($cond
             (($and? (eq? c #:backspace) (pair? left))
@@ -147,10 +165,27 @@
                 (edit () ())))
             (($and? (char? c) (char<=? #\space c))
               (edit (cons c left) right))
+            (($and? (pair? c)
+                    (eq? (car c) #\escape)
+                    (memq? #\; c)
+                    (memq? #\R c))
+              ($let* (((rows cols) (parse-cursor-position-report
+                                     (open-input-string (list->string c))))
+                      (cols (min 160 (max 20 cols))))
+                ($set! env edit-width
+                  (- cols 1 (string-length prompt))))
+              (edit left right))
             (#t
               (edit left right)))))))
     (with-noncanonical-input
-      ($lambda () (edit () ())))))
+      ($lambda ()
+        ;; Read terminal width. Attempt to move the cursor to invalid
+        ;; column 999 and then read the cursor position. The terminal
+        ;; responds with CSI sequence, which is read out in the main
+        ;; loop of the line editor.
+        (write-string "\x1B;[199G\x1B;[6n")
+        (flush-output-port)
+        (edit () ())))))
 
 ($defun-privates!
   (highlight-one-parenthesis (xs y n)
@@ -217,4 +252,19 @@
                 str)))
           (list (list error-continuation
                       ($lambda (obj divert)
-                        (apply divert str)))))))))
+                        (apply divert str))))))))
+  (take (xs n)
+    ($if (<? 0 n)
+      (cons (car xs) (take (cdr xs) (- n 1)))
+      ()))
+  (trim-display (left right w)
+    ($let ((nl (length left)) (nr (length right)))
+      ($cond
+        ((<=? (+ nl nr) w)
+          (list left right))
+        ((<=? nl nr)
+          ($if (<? (* 2 nl) w)
+            (list left (take right (- w nl)))
+            (list (take left (div w 2)) (take right (- w (div w 2))))))
+        (#t
+          (reverse (trim-display right left w)))))))
