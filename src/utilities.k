@@ -111,10 +111,11 @@
   ($define! hstr
     ($lambda (s)
       ($let ((p (open-input-string s)))
-        (+
-          (* 157 (hchr (read-char p)))
-          (* 163 (hchr (read-char p)))
-          (* 167 (hchr (read-char p)))))))
+        (mod (+
+               (* 157 (hchr (read-char p)))
+               (* 163 (hchr (read-char p)))
+               (* 167 (hchr (read-char p))))
+             size))))
 
   ($define! hash-structure
     ($lambda (x n)

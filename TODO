@@ -10,6 +10,7 @@ TODO
 - improve REPL (TAB completion)
 - add comments, write documentation
 - consider extending the numeric tower with rationals and floats (low priority)
+- improve performance of check_ptree
 
 -------
 

@@ -4,6 +4,28 @@
 ;;; Implementation of arithmetic features, lisp part.
 ;;;
 
+;; min, max
+;;
+($let ()
+  ($define! make-minmax
+    ($vau (impl neutral symbol) #ignore
+      (bind-ground! symbol
+        (make-unbounded-applicative
+          (list 0 3)
+          (list "app_min_max.A0"
+                "app_min_max.A1"
+                "app_min_max.A2"
+                "app_min_max.A3")
+          (make-operative
+            "app_min_max.operate"
+            (make-nonlisp-value impl)
+            neutral
+            symbol)))))
+  (make-minmax "app_min_max.do_min" #e+infinity min)
+  (make-minmax "app_min_max.do_max" #e-infinity max))
+
+;; abs
+;;
 ($define-ground-lambda! abs (x)
   ($if (negative? x) (negate x) x))
 

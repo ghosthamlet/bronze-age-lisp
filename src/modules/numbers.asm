@@ -73,6 +73,72 @@ reduce_finite_list:
     push dword reduce_finite_list.structure_error
     jmp rn_error
 
+;;
+;; app_min_max
+;;
+;; Implementation of (min ...) and (max ...)
+;;
+;;  preconditions: ESI = operative closure
+;;                 [ESI + operative.var0] = binary operator implementation
+;;                 [ESI + operative.var1] = neutral value
+;;                 [ESI + operative.var2] = symbol for error reporting
+;;
+app_min_max:
+  .A0:
+    mov eax, [esi + operative.var1]
+    jmp [ebp + cont.program]
+  .A1:
+    call rn_numberP_procz
+    jnz .type_error
+    mov eax, ebx
+    jmp [ebp + cont.program]
+  .A2:
+    call dword [esi + operative.var0]
+    jmp [ebp + cont.program]
+  .A3:
+    push edx
+    call dword [esi + operative.var0]
+    pop edx
+    mov ebx, eax
+    mov ecx, edx
+    call dword [esi + operative.var0]
+    jmp [ebp + cont.program]
+  .operate:
+    push dword [esi + operative.var0]
+    push dword [esi + operative.var2]
+    mov edi, [esi + operative.var1]
+    mov esi, ebx
+    call rn_list_metrics
+    test eax, eax
+    jz reduce_finite_list.structure_error
+    jmp reduce_finite_list.list_ok
+  .type_error:
+    mov eax, err_not_a_number
+    mov ecx, [esi + operative.var2]
+    jmp rn_error
+
+  .do_min:
+    push ebx
+    push ecx
+    call rn_integer_compare
+    pop ebx
+    pop ecx
+    jmp .select
+  .do_max:
+    push ebx
+    push ecx
+    call rn_integer_compare
+    pop ecx
+    pop ebx
+  .select:
+    test eax, eax
+    js .negdiff
+    mov eax, ebx
+    ret
+  .negdiff:
+    mov eax, ecx
+    ret
+
 check_fixint:
   .app_3:
     xchg ebx, edx

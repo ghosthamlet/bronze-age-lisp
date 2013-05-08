@@ -40,18 +40,6 @@
              (aux ($lambda (k t) ($if (<? 0 k) (aux (- k 1) (cons x t)) t))))
     (aux n ())))
 
-($define-ground-lambda! max args
-  ($let1 n (length args)
-    ($cond ((=? n 1) (car args))
-           ((=? n 2) ($let (((x y) args)) ($if (<? x y) y x)))
-           (#t (error "max - not yet implemented" args)))))
-
-($define-ground-lambda! min args
-  ($let1 n (length args)
-    ($cond ((=? n 1) (car args))
-           ((=? n 2) ($let (((x y) args)) ($if (<? x y) x y)))
-           (#t (error "min - not yet implemented" args)))))
-
 ($define-ground-lambda! make-string (n . opt)
   ($define! c ($if (pair? opt) (car opt) #\space))
   ($define! p (open-output-string))
