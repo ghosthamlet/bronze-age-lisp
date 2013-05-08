@@ -71,7 +71,7 @@
                 ($lambda (obj . #ignore)
                   (signal s h)
                   obj)))
-    f
+    ($lambda () (apply f ()))
     (list (list root-continuation
                 ($lambda (obj . #ignore)
                   (signal s old-h)

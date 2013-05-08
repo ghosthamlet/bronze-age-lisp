@@ -1,0 +1,830 @@
+
+          ================================
+          Bronze Age Lisp Reference Manual
+          ================================
+
+Part I - Ground bindings
+========================
+
+Abbreviations
+-------------
+
+  arguments and types:
+
+    APPLICATIVE    applicative combiner
+    BINDING        pair (PTREE VALUE)
+    CONT           continuation
+    ENV            environment
+    FORM or BODY   any object
+    GUARD          pair (CONTINUATION APPLICATIVE)
+    INTEGER        integer number (finite number)
+    LIST           list of objects
+    NUM            number (integer or exact infinity)
+    OBJECT or KEY  any object
+    PTREE          formal parameter tree
+    [ X ] or ...   optional arguments
+    Xs             list of X
+
+  compatibility notes:
+
+    klisp      the feature is compatible with klisp
+
+    r5rs       the feature is taken from Scheme Report
+    r7rs       ... from Scheme Report draft
+    SRFI-NN    ... from Scheme Requests for Implementation
+
+    ext        the feature is nonportable
+               extension of Bronze Age Lisp
+
+      Note that environments returned by
+      (make-kernel-standard-environments)
+      contain all bindings, even if they
+      are not standard.
+
+List of non-combiner ground bindings
+------------------------------------
+
+  error-continuation     ; CONT
+  interpreter-version    ; STRING, ext
+  root-continuation      ; CONT
+  stderr                 ; PORT, ext
+  stdin                  ; PORT, ext
+  stdout                 ; PORT, ext
+
+List of combiners bound in the ground environment
+-------------------------------------------------
+
+  (+ . NUMs)
+  (- . NUMs)
+  (* . NUMs)
+  (<? . NUMs)
+  (<=? . NUMs)
+  (=? . NUMs)
+  (>=? . NUMs)
+  (>? . NUMs)
+
+  (abs NUM)
+  (and . FORMs)
+  ($and . FORMs)
+  (append! LIST . LISTs)
+  (append . LISTs)
+  (applicative? . OBJECTs)
+  (apply-continuation CONT OBJECT)
+  (apply APPLICATIVE OBJECT [ENV])
+  (arithmetic-shift NUM NUM)                         ; SRFI-60
+  (assoc KEY LIST)
+  (assq KEY LIST)
+
+  (bigint? . OBJECTs)                                ; ext
+  ($bindings->environment BINDINGs)
+  ($binds? ENV . SYMBOLs)
+  (bitwise-and . INTEGERs)                           ; SRFI-60
+  (bitwise-ior . INTEGERs)                           ; SRFI-60
+  (bitwise-not INTEGER)                              ; SRFI-60
+  (boolean? . OBJECTs)
+  (bytevector? . OBJECTs)                            ; klisp
+
+  (caaar PAIR)
+  (caaaar PAIR)
+  (caaadr PAIR)
+  (caaar PAIR)
+  (caadar PAIR)
+  (caaddr PAIR)
+  (caadr PAIR)
+  (caar PAIR)
+  (cadaar PAIR)
+  (cadadr PAIR)
+  (cadar PAIR)
+  (caddar PAIR)
+  (cadddr PAIR)
+  (caddr PAIR)
+  (cadr PAIR)
+  (call/cc APPLICATIVE)
+  (call-with-input-file STRING COMBINER)
+  (call-with-output-file STRING COMBINER)
+  (call-with-port PORT COMBINER)                     ; ?
+  (car PAIR)
+  ($case-lambda (PTREE . BODY) ...)                  ; ?
+  (cdaaar PAIR)
+  (cdaadr PAIR)
+  (cdaar PAIR)
+  (cdadar PAIR)
+  (cdaddr PAIR)
+  (cdadr PAIR)
+  (cdar PAIR)
+  (cddaar PAIR)
+  (cddadr PAIR)
+  (cddar PAIR)
+  (cdddar PAIR)
+  (cddddr PAIR)
+  (cdddr PAIR)
+  (cddr PAIR)
+  (cdr PAIR)
+  (char? . OBJECTs)
+  (char<? . CHARs)
+  (char<=? . CHARs)
+  (char=? . CHARs)
+  (char>=? . CHARs)
+  (char>? . CHARs)
+  (char-alphabetic? . CHARs)                         ; klisp
+  (char->digit CHAR [RADIX])
+  (char-digit? CHAR [RADIX])
+  (char->integer CHAR)
+  (char-ready? [PORT])
+  (char-whitespace? . CHARs)                         ; klisp
+  (close-input-port PORT)
+  (close-output-port PORT)
+  (close-port PORT)
+  (close-port-ignore-errors PORT)                    ; ext
+  (collect-garbage)                                  ; ext
+  (color-port? PORT)                                 ; ext
+  (combiner? . OBJECTs)
+  ($cond (BOOLEAN . BODY) ...)
+  (cons OBJECT OBJECT)
+  (continuation->applicative CONT)
+  (continuation? . OBJECTs)
+  (copy-es OBJECT)
+  (copy-es-immutable OBJECT)
+  (countable-list? OBJECT)
+
+  ($define! PTREE FORM)
+  (defined-environment-variable? STRING)             ; klisp
+  (digit->char INTEGER RADIX)
+  (display OBJECT [PORT])
+  (div-and-mod INTEGER INTEGER)
+  (div INTEGER INTEGER)
+
+  (encycle! LIST INDEX INDEX)
+  (environment? . OBJECTs)
+  (eof-object? . OBJECTs)
+  (eq? . OBJECTs)
+  (equal? . OBJECTs)
+  (error MESSAGE . IRRITANT-OBJECTs)                 ; klisp
+  (error-object-message ERROR-OBJECT)                ; klisp
+  (error-object-irritants ERROR-OBJECT)              ; klisp
+  (error-object-source ERROR-OBJECT)                 ; ext
+  (eval OBJECT ENV)
+  (exit OBJECT)
+  (extend-continuation CONT APPLICATIVE [ENV])
+
+  (filter PREDICATE LIST)
+  (find-required-filename STRING)                    ; klisp
+  (finite-list? . OBJECTs)
+  (fixint? . OBJECTs)                                ; ext
+  (flush-output-port [PORT])
+  (force PROMISE)
+  (for-each APPLICATIVE . LISTs)
+
+  (get-current-environment)
+  (get-current-error-port)                           ; klisp
+  (get-current-input-port)
+  (get-current-jiffy)                                ; klisp
+  (get-current-output-port)
+  (get-current-second)                               ; klisp
+  (get-environment-variable STRING)                  ; klisp
+  (get-environment-variables)                        ; klisp
+  (get-interpreter-arguments)                        ; klisp
+  (get-library-environment LIBRARY)                  ; klisp
+  (get-library-export-list LIBRARY)                  ; klisp
+  (get-list-metrics OBJECT)
+  (get-module FILENAME)
+  (get-output-string STRING-PORT)                    ; klisp
+  (get-performance-statistics)                       ; ext
+  ($get-printer-flag SYMBOL)                         ; ext
+  ($get-registered-library LIBRARY-NAME)             ; klisp
+  (get-script-arguments)                             ; klisp
+  (guard-continuation GUARDs CONT GUARDs)
+  (guard-dynamic-extent GUARDs COMBINER GUARDs)
+  (guess-object-name OBJECT BOOLEAN)                 ; ext
+
+  ($if BOOLEAN FORM FORM)
+  (ignore? . OBJECTs)
+  (immutable-pair? . OBJECTs)
+  ($import! ENV . SYMBOLs)
+  ($import-library! IMPORT-SPECIFICATIONs)
+  (inert? . OBJECTs)
+  (integer? . OBJECTs)
+  (integer->char INTEGER)
+  (integer-length INTEGER)
+
+  (keyword? . OBJECTs)                               ; klisp
+  (keyword->string KEYWORD)                          ; klisp
+
+  ($lambda PTREE . BODY)
+  ($lazy FORM)
+  (lcm . NUMBERs)                                    ; TODO
+  (length STRING)
+  ($let BINDINGS . BODY)
+  ($let* BINDINGS . BODY)
+  ($let1 SYMBOL OBJECT . BODY)                       ; ext
+  ($let/cc SYMBOL . BODY)
+  ($letrec BINDINGS . BODY)
+  ($letrec* BINDINGS . BODY)
+  ($let-redirect ENV BINDINGS . BODY)
+  ($let-safe BINDINGS . BODY)
+  (library? . OBJECTs)                               ; klisp
+  (library-name-component? . OBJECTs)                ; klisp
+  (list . OBJECTs)
+  (list* . OBJECTs)
+  (list->string LIST)
+  (list->vector LIST)                                ; klisp
+  (list-neighbors LIST)
+  (list-ref LIST INDEX)
+  (list-tail LIST INTEGER)
+  (load FILENAME)
+
+  (make-encapsulation-type)
+  (make-environment . ENVs)
+  (make-kernel-standard-environment)
+  (make-keyed-dynamic-variable)
+  (make-keyed-dynamic-variable* DEFAULT-VALUE)       ; ext
+  (make-keyed-static-variable)
+  (make-library . BINDINGs)                          ; klisp
+  (make-list INTEGER [OBJECT])
+  (make-string INTEGER [CHAR])
+  (make-vector INTEGER [OBJECT])
+  (map APPLICATIVE . LISTs)
+  (max . NUMs)
+  (member? OBJECT LIST)
+  (memoize OBJECT)
+  (memq? OBJECT LIST)
+  (min . NUMs)
+  (mod INTEGER INTEGER)
+  (mutable-pair? . OBJECTs)
+
+  (negate NUM)
+  (negative? . NUMs)
+  (newline [PORT])
+  (not? BOOLEAN)
+  (null? . OBJECTs)
+  (number? . OBJECTs)
+  (number->string NUMBER [RADIX])                    ; klisp
+
+  (open-binary-input-file FILENAME)
+  (open-binary-output-file FILENAME)
+  (open-input-file FILENAME)
+  (open-input-string STRING)
+  (open-output-file FILENAME)
+  (open-output-string [INITIAL-BUFFER-SIZE])
+  (open-utf-decoder PORT)                            ; ext
+  (open-utf-encoder PORT)                            ; ext
+  (operative? . OBJECTs)
+  (or? . BOOLEANs)
+  ($or? . FORMs)
+
+  (pair? . OBJECTs)
+  (peek-char [PORT])
+  (port? . OBJECTs)
+  (positive? . NUMs)
+  (promise? . OBJECTs)
+  ($provide SYMBOLS . BODY)
+  ($provide-library! LIBRARY-NAME EXPOR-SPEC BODY)   ; klisp
+
+  ($quote OBJECT)                                    ; ext
+  ($quote* . OBJECT)                                 ; ext
+
+  (rdtsc)                                            ; ext
+  (read [PORT])
+  (read-char [PORT])
+  (read-edit PROMPT HISTORY COMPLETIONS)             ; ext
+  (read-key [PORT])                                  ; ext
+  (reduce LIST BIN ID [PRE INT POST])
+  ($register-library! LIBRARY-NAME LIBRARY)          ; klisp
+  ($registered-library? LIBRARY-NAME)                ; klisp
+  (register-requirement! STRING)                     ; klisp
+  (registered-requirement? STRING)                   ; klisp
+  ($remote-eval FORM ENV)
+  (require STRING)                                   ; klisp
+  (reverse LIST)                                     ; klisp, r5rs
+
+  ($sequence . FORMs)
+  (set! ENV SYMBOL OBJECT)                           ; ext
+  ($set! ENV SYMBOL FORM)
+  (set-car! PAIR OBJECT)
+  (set-cdr! PAIR OBJECT)
+  (shared-structure-indicator OBJECT)                ; ext
+  (string? . STRINGs)
+  (string<? . STRINGs)
+  (string<=? . STRINGs)
+  (string=? . STRINGs)
+  (string>=? . STRINGs)
+  (string>? . STRINGs)
+  (string->keyword STRING)                           ; klisp
+  (string->list STRING)
+  (string->number STRING [RADIX])
+  (string->symbol STRING)
+  (string-append . STRINGs)
+  (string-length STRING)
+  (string-ref STRING INDEX)
+  (string-size STRING)
+  (substring STRING INDEX INDEX)
+  (symbol? . OBJECTs)
+  (symbol->string SYMBOL)
+
+  (tc-cbreak-noecho BYTEVECTOR)                      ; ext
+  (tcgetattr PORT)                                   ; ext
+  (tcsetattr PORT BYTEVECTOR)                        ; ext
+  (terminal-port? . OBJECTs)                         ; ext
+
+  ($unless BOOLEAN . FORMs)                          ; klisp
+  ($unregister-library LIBRARY-NAME)                 ; klisp
+  (unregister-requirement! STRING)                   ; klisp
+  (unwrap APPLICATIVE)
+
+  ($vau PTREE SYMBOL . BODY)
+  (vector . OBJECTs)                                 ; klisp, r7rs
+  (vector? . OBJECTs)                                ; klisp, r7rs
+  (vector->list VECTOR)                              ; klisp, r7rs
+  (vector-length VECTOR)                             ; klisp, r7rs
+  (vector-ref VECTOR INDEX)                          ; klisp, r7rs
+  (vector-set! VECTOR INDEX)                         ; klisp, r7rs
+
+  (with-input-from-file FILENAME COMBINER)
+  (with-input-from-port FILENAME COMBINER)
+  (with-input-from-string FILENAME COMBINER)         ; ext
+  (with-noncanonical-input COMBINER)                 ; ext
+  (with-output-to-file FILENAME COMBINER)
+  (with-output-to-port FILENAME COMBINER)
+  (with-output-to-string COMBINER)                   ; ext
+  ($with-printer-flags BINDINGS COMBINER)            ; ext
+  (with-signal-handler (SIGSPEC HANDLER) COMBINER)   ; ext
+  (wrap COMBINER)
+  (write OBJECT [PORT])
+  (write-bytevector BYTEVECTOR [PORT])               ; klisp
+  (write-char CHAR [PORT])
+  (write-simple OBJECT [PORT])                       ; klisp, r7rs
+  (write-string STRING [PORT])
+  (write-utf8 STRING [PORT])                         ; ext
+
+  (zero? . NUMs)
+
+Bronze Age Lisp Extensions
+--------------------------
+
+ 1) type predicates
+    ---------------
+
+  (bigint? . OBJECTs)
+  (fixint? . OBJECTs)
+
+ 2) extended standard bindings
+    --------------------------
+
+  (make-keyed-dynamic-variable* DEFAULT-VALUE)
+      => (BIND ACCESS)
+
+    Like make-keyed-dynamic-variable, but the variable
+    is bound to DEFAULT-VALUE in continuations which
+    are not descendant of the ones introduced by BIND.
+
+  (set! ENV SYMBOL OBJECT)
+      => #inert
+
+    Fully applicative version of $set!. Evaluates all
+    arguments in the dynamic environment, and binds
+    SYMBOL to OBJECT in the environment ENV.
+
+ 3) convenience combiners
+    ---------------------
+
+  ($quote OBJECT) => OBJECT
+  ($quote* . OBJECT) => OBJECT
+
+    Quoting operatives. Bad style, but useful.
+
+  ($let1 SYMBOL OBJECT . BODY)
+
+    Equivalent to ($let ((SYMBOL OBJECT)) . BODY),
+    but it is more efficient, because it does not
+    need to check validity of general parameter
+    trees. Morever, the environment created is
+    allocated in the "transient" area of the heap,
+    and may be reclaimed more quickly.
+
+  (shared-structure-indicator START-OBJECT)
+    => PREDICATE?
+
+    Returns an applicative PREDICATE?, which reveals
+    sharing among sub-structures of OBJECT.
+
+      (PREDICATE? X)
+
+    evaluates to #t, if these three conditions hold:
+
+      (i) X appears at two or more places in OBJECT
+
+     (ii) X is a pair, vector or error-object
+
+    (iii) X is reachable from START-OBJECT by following
+          - car and cdr fields of pairs,
+          - vector elements,
+          - message and irritants of error objects
+
+ 4) interpreter control and diagnostics
+    -----------------------------------
+
+  (collect-garbage)
+      => #inert
+
+    Forces garbage collector run.
+
+  (get-performance-statistics)
+      => ((#:perf-time ("lisp-gc" . INTEGER)
+                       ("blob-gc" . INTEGER)
+                       ("equal" . INTEGER)
+                       ("check-ptree" . INTEGER)
+                       ("system-call" . INTEGER)))
+
+    Returns nested association list with information
+    useful for estimating performance of the interpreter.
+
+    The elements defined so far are times (measured
+    by RDTSC instruction) spent in various parts
+    of the interpreter.
+
+    #:perf-time
+      "lisp-gc"     ... GC for structured objects
+      "blob-gc"     ... GC for blobs
+      "equal"       ... (equal? ...)
+      "check-ptree" ... checking validity of parameter trees
+      "system-call" ... time spent in system calls
+
+  (error-object-source ERROR-OBJECT)
+      => symbol or #inert
+
+    Returns a symbol denoting the built-in combiner
+    which raised the error.
+
+  (guess-object-name OBJECT BOOLEAN)
+      => symbol or #inert
+
+    Searches the ground environment to determine
+    the name of OBJECT. The boolean parameter
+    is not used yet.
+
+  (rdtsc)
+      => integer (bigint)
+
+    Returns value of the processor time stamp counter.
+    (uses RDTSC instruction internally).
+
+  (with-signal-handler (SIGSPEC HANDLER) APPLICATIVE)
+
+    HANDLER must be either applicative, or one of
+    the keywords #:default and #:ignore. SIGSPEC
+    must be a number or one of the keywords #:sigint,
+    #:sigterm, #:sigusr1, #:sigusr2.
+
+    The APPLICATIVE is called with empty parameter tree
+    in the dynamic extent of a newly created child C of
+    the continuation of (with-signal-handler ...). While
+    the program is running in the dynamic extent of C,
+    handling of the signal specified by SIGSPEC is determined
+    by HANDLER.
+
+    If HANDLER is an applicative and the signal specified
+    by SIGSPEC arrives while the interpreter is running]
+    in the dynamic extent of C, the current continuation
+    C' is captured and HANDLER is called in dynamic extent
+    of C', with the signal number as the argument.
+
+    If HANDLER passes a value normally to C', the value
+    is discarded and the evaluation of APPLICATIVE
+    resumes. If HANDLER passes a value abnormally to
+    another continuation, the usual processing of guarded
+    continuations takes place.
+
+    If HANDLER is the keyword #:ignore, the signal
+    is ignored. If HANDLER is #:default, the default
+    signal handling specified by the Linux operating
+    system is used (the default usually means
+    termination).
+
+    Note that the REPL uses (with-signal-handler ...)
+    to catch SIGINT (i.e. Ctrl-C).
+
+ 5) low-level input and output
+
+  (close-port-ignore-errors PORT)
+      => #inert
+
+  (open-utf-decoder BINARY-INPUT-PORT)
+      => TEXTUAL-INPUT-PORT
+
+    Creates a textual input port on top of an existing
+    binary input port. UTF-8 encoding is assumed.
+    Closing the textual port causes closing of the
+    underlying binary port.
+
+  (open-utf-encoder BINARY-OUTPUT-PORT [BUFFER-SIZE])
+      => TEXTUAL-OUTPUT-PORT
+
+    Creates a textual output port on top of an existing
+    binary output port. UTF-8 encoding is assumed.
+    Closing the textual port causes closing of the
+    underlying binary port.
+
+  (write-utf8 STRING [BINARY-OUTPUT-PORT])
+      => #inert
+
+    Writes UTF-8 representation of STRING in
+    a binary output port.
+
+ 6) Terminal interface
+
+  (terminal-port? . OBJECTs) => BOOLEAN
+
+    Returns #t, iff all arguments are ports connected
+    to a terminal. The ports created by open-utf-decoder
+    open-utf-encoder are terminal ports, if the underlying
+    binary port is a terminal port. The function is
+    analogous to POSIX function isatty().
+
+  (tcgetattr PORT) => BYTEVECTOR
+
+    Returns low-level terminal attributes of PORT as
+    a bytevector. The function is analogous to
+    POSIX function tcgetattr().
+
+  (tcsetattr PORT BYTEVECTOR) => #inert
+
+    Changes low-level terminal attributes of PORT
+    according to BYTEVECTOR.
+
+  (tc-cbreak-noecho BYTEVECTOR) => BYTEVECTOR
+
+    Turns off echo and canonical processing. The resulting
+    bytevector must be applied to the port by
+    (tcsetattr ...). The function is analogous to ncurses
+    functions cbreak() and noecho().
+
+  (with-noncanonical-input COMBINER)
+
+    Runs COMBINER with echo and canonical processing
+    turned off. The current input and output ports
+    must be connected to the same terminal.
+
+    Non-canonical processing is necessary for
+    correct function of (char-ready?) and (read-key).
+
+  (read-key [PORT]) => CHARACTER or KEYWORD or LIST
+
+    Reads a character or an ANSI terminal escape
+    sequence from PORT. The result is either
+    a character, or one of the keywords:
+
+      #:up #:down #:right #left #:home #:end
+      #:delete #backspace
+      #:tab #:return #:escape
+
+    or a list of characters (the first element
+    of the list is #\escape = #\x1B).
+
+    Works with XTERM and linux console. The canonical
+    processing on the port should be turned off.
+
+ 7) High-level input and output features
+
+  ($get-printer-flag SYMBOL)
+
+    Returns current value of a flag which controls
+    the behavior of (write ...). The flags are
+
+      unicode
+        #t - print #e+infinity as the infinity sign
+
+        #f - do not use unicode on output
+
+      color
+        #t - print parentheses in color using
+              ANSI terminal escape sequences
+        #f - do not use colors
+        #:if-terminal - use colors only if the port
+                         is terminal
+
+      share
+        #t - show sharing using SRFI-38/R7RS
+             datum notation #NN= and #NN# (as write)
+        #f - print naively (as write-simple)
+
+      escape
+        #t - escape strings and characters (as write)
+        #f - do not escape (as display)
+
+  ($with-printer-flags BINDINGS COMBINER)
+
+    Evaluate (COMBINER) with modified printer flags.
+
+  (color-port? PORT)
+
+    Return #t iff (write OBJECT PORT) would print
+    in color.
+
+  (read-edit PROMPT HISTORY COMPLETIONS)
+
+    Reads a string with limited editing capabilities.
+    This input function is used by the REPL, if the
+    input and output ports are connected to terminal.
+
+    PROMPT must be a string and HISTORY and COMPLETIONS
+    must be lists of strings.
+
+
+Part II - REPL
+==============
+
+Command line arguments
+----------------------
+
+  Command line usage is mostly compatible with klisp:
+
+  bronze.bin [OPTIONS] [SCRIPT.k [SCRIPT-ARGS]]
+
+  -e EXPR        evaluate EXPR
+
+  -l FILE        load FILE and continue processing arguments,
+                 equivalent to -e '(load "FILE")'
+
+  -r FILE        require a FILE and continue processing arguments,
+                 equivalent to -e '(require "FILE")'
+
+  -i             force interactive REPL
+
+  -b             disable color output and line editing in REPL
+                 equivalent to -e '($define! %dumb #t)'
+
+  -              read expressions from STDIN and evaluate
+                 one-by-one
+
+  -v, --version  print version string
+  -h, --help     print short help
+
+Environment variables
+---------------------
+
+  KLISP_PATH
+
+Special bindings in Read-Eval-Print Loop
+----------------------------------------
+
+  %         the last result printed by REPL
+
+  %history  list of strings recently entered in REPL
+
+  %dumb     bound to #t if the interpreter was run
+            with the option -b
+
+Keyboard shortcuts
+------------------
+
+  UP/DOWN  - move in command history
+  TAB      - very limited completion
+  Ctrl-D   - erase the line
+  Ctrl-C   - interrupt and return to the REPL
+
+  If the input line contains more than one
+  object, and the first object is a symbol,
+  the interpreter adds parentheses automatically,
+  for example, the input
+
+    $define x 1 <ENTER>
+
+  is replaced by
+
+    ($define x 1)
+
+  and evaluated.
+
+Part III - Build Configuration
+==============================
+
+  src-prefix = ""
+    Path to lisp sources of the interpreter relative
+    to working directory where the bootstrapping
+    interpreter is run.
+
+    The path must be specified if the bootstrapping
+    is done outside of the src/ directory. For example,
+    see tst/test.sh.
+
+  asm-prefix = ""
+    Path to assembler sources of the interpreter,
+    relative to working directory of the assembler.
+
+  lisp-heap-size = (* 2 1024 1024)
+    Capacity of lisp heap (bytes, power of two).
+
+    The interpreter manages two heaps. One for
+    structured objects (cons cells, continuations,
+    vectors, ...) and one for blobs.
+
+    Warning: Making the heap larged does not
+    necessarily make the program faster.
+
+    Some algorithms of the interpreter (most importantly,
+    equal? and checking for cycles in parameter trees) need
+    a mark bit for each object. The mark bits are stored
+    in the unused halfspace of the copying colector. All
+    mark bits must be cleared before use, and this
+    operation costs O(heap capacity).
+
+  blob-descriptor-capacity = 8192
+    Size of blob heap descriptor table (entries).
+
+    This value represents the maximal number of
+    blobs the interpreter can hold.
+
+  blob-heap-size = (* 512 1024)
+    Size of blob heap (bytes).
+
+    This value represents the sum of lengths of
+    blobs the interpreter can hold.
+
+  signal-ring-capacity = 16
+    Capacity of ring buffer for information on caught
+    signals.
+
+    A signal may arrive asynchronously when the
+    interpreter executes native code (e.g. the garbage
+    collector or implementation of bigint arithmetic).
+    The information about the signal is stored in
+    auxilliary buffer, until the interpreter is ready
+    to hand it to the lisp code.
+
+  lisp-transient-size = (* 16 1024)
+    Size of transient area in the lisp heap (bytes).
+
+    The transient area is used for helper continuations
+    when evaluation arguments of applicative combiners,
+    and also for environments created by $let1. The
+    space used by continuations and environments in
+    the transient area may be reclaimed quickly after
+    the objects die, if the objects are not captured
+    (i.e. stored in another objects, namely environments).
+
+    TODO: Optimal size of transient area.
+
+  lisp-heap-threshold = (* 17 1024)
+    Allocation threshold (bytes).
+
+    When the free heap drops below this limit,
+    garbage collector is run. The threshold must
+    be greater than lisp-transient-size.
+
+ The following configuration parameters are
+ used only for testing and debugging the interpreter.
+
+  start-form = ($quote (stand-alone-interpreter))
+    Object evaluated after the interpreter starts up.
+
+  user-ground-bindings = ()
+    Additional ground bindings
+    (overengineering, never used that)
+
+  no-applicative-support = #f
+    Do not generate applicative support code (testing only).
+
+  no-macros = #f
+    Do not output assembler macros and constants (testing only).
+
+  no-code-segment = #f
+    Do not output code segment (testing only).
+
+  no-data-segment = #f
+    Do not output data segments (testing only).
+
+  debug-continuations = #f
+    Enables debugging messages in continuations.
+
+  debug-ports = #f
+    Enables debugging messages in the ports module.
+
+  debug-environments = #f
+    Enables debugging messages in environments.
+
+  debug-gc-blobs = #f
+    Enables debugging messages blob GC.
+
+  debug-gc-detail = #f
+    Enables detailed debugging messages in the garbage collector.
+
+  debug-gc-cycle = #f
+    Enables debugging message about free heap after GC cycle.
+
+  debug-evaluator = #f
+    Enables debugging messages in the evaluator.
+
+  character-predicates = #t
+    Enable (char-alphabetic?).
+
+  reader-and-printer = #t
+    Enable (read), (write).
+
+  default-buffer-size = 256
+    Default buffer size for textual ports.
+
+  raw-stdio = #f
+    Binary input/output/error ports.
+
+  stdio = #t
+    Enable ports and standard input/output/error ports.
