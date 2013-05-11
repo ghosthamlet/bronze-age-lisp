@@ -2,7 +2,6 @@ TODO
 ----
 
 - add tests
-- fix arithmetic applicatives, esp. max and min
 - implement integer division on bigints
 - add missing ground bindings from Kernel Report
 - add ground bindings for Klisp compatibility
@@ -10,7 +9,6 @@ TODO
 - improve REPL (full TAB completion)
 - add comments, write documentation
 - consider extending the numeric tower with rationals and floats (low priority)
-- improve performance of check_ptree
 
 -------
 

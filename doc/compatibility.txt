@@ -1,0 +1,117 @@
+
+        ===================================
+        Bronze Age Lisp Compatibility Notes
+        ===================================
+
+Part I - Compliance with language definition
+============================================
+
+    Bronze Age Lisp supports the ten core modules
+  defined in [KR chapters 4 and 5], and the optional
+  modules Continuations, Encapsulations, Promises,
+  Keyed dynamic variables, Keyed static variables,
+  Characters, Strings and Ports (note that specification
+  of the last three modules in [KR] is not complete).
+
+    Bronze Age Lisp supports the module Numbers,
+  but it does not support the optional modules
+  Inexact, Narrow Inexact, Rational, Real
+  and Complex. That is, Bronze Age lisp supports
+  only integers and the exact infinity values
+  #e-infinity and #e+infinity.
+
+    The lack of the advanced numeric features means
+  that Bronze Age Lisp is NOT comprehensive implementation
+  of Kernel in the sense of [KR section 1.3.2].
+
+Robustness
+----------
+
+  The implementation is not robust. Not all errors
+  describedin the Kernel Report are signalled.
+
+  Namely, the result of evaluation in tail position
+  of ($and ...) and ($or ...) is never checked,
+  see also [KR section 6.1.4].
+
+Implementation restrictions
+---------------------------
+
+  Heap capacity is fixed when the interpreter
+  is built. Therefore, number of objects, length
+  of strings and range of integers supported
+  by the implementation is bounded.
+
+Part II - Compatibility with Klisp
+==================================
+
+  Bronze Age Lisp supports most of the functionality
+  provided by Klisp under the modules Keywords,
+  Errors, Libraries and Ports. Support for the
+  modules Characters, Strings, Vectors, Bytevectors
+  and System is work in progress.
+
+Characters
+----------
+
+  In contrast to klisp (default branch), Bronze
+  Age Lisp character type can represent all unicode
+  code points. Unicode characters can be also used
+  in strings, symbols and keywords. The interpreter
+  does not (yet) perform normalization of unicode
+  input.
+
+  The combiners char-alphabetic? and char-whitespace?
+  support unicode.
+
+Strings
+-------
+
+  All strings are immutable mutable. The string ports
+  can be used instead of string mutation combiners.
+
+Ports
+-----
+
+  UTF-8 encoding is always assumed for textual ports.
+
+Part III - Compatibility with the host environment
+==================================================
+
+  The interpreter is an executable file in ELF format
+  which can be run in under Linux operating system
+  on x86 (32-bit) platforms. Other platforms are not
+  supported.
+
+  The interpreter uses only the following linux
+  system calls:
+
+                 system call number on x86
+    ----------------------------------------
+    read         0x03
+    write        0x04
+    open         0x05
+    close        0x06
+    ioctl        0x36
+    gettimeofday 0x4E
+    rt_sigaction 0xAE
+    sigaltstack  0xBA
+
+  The interpreter uses the "vsyscall" mechanism.
+
+  The text user interface of the read-eval-print loop
+  is expected to be run from a terminal emulator
+  which supports ANSI escape sequences e.g. xterm
+  or Konsole.
+
+References
+==========
+
+  [KR]
+     John N. Shutt: Revised^(-1) Report on the Kernel
+     Programming Language (partial draft of 29 October 2009)
+     http://web.cs.wpi.edu/~jshutt/kernel.html
+
+  [KLISPDOC]
+     Andres Navarro: Klisp Reference Manual
+     http://www.klisp.org/docs/index.html
