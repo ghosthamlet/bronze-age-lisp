@@ -252,7 +252,7 @@ List of combiners bound in the ground environment
   (mod INTEGER INTEGER)
   (mutable-pair? . OBJECTs)
 
-  (negate NUM)
+  (negate NUM)                                       ; ext
   (negative? . NUMs)
   (newline [PORT])
   (not? BOOLEAN)
@@ -400,6 +400,11 @@ Bronze Age Lisp Extensions
     trees. Morever, the environment created is
     allocated in the "transient" area of the heap,
     and may be reclaimed more quickly.
+
+  (negate NUM) => NUM
+
+    Equivalent to (- 0 NUM). Note that according
+    to the Kernel Report, (- NUM) is an error.
 
   (shared-structure-indicator START-OBJECT)
     => PREDICATE?
