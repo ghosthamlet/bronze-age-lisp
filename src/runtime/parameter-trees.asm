@@ -30,30 +30,112 @@
 ;;                 mark bits
 ;;
 rn_check_ptree:
-    push edx                ; save registers
+    push ecx
+    push edx
     push esi
-    push ebp
+    push edi
     perf_time begin, check_ptree
+    call rn_check_ptree_quick
+    perf_time end, check_ptree, save_regs
+    pop edi
+    pop esi
+    pop edx
+    pop ecx
+    ret
+
+;;
+;; rn_check_ptree_quick (native procedure)
+;;
+;; Fast algorithm using hashing. If a collision
+;; occurs, switch to more general algorithm.
+;;
+;; pre- and postconditions like rn_check_ptree
+;; preserves: EBP
+;; clobbers:  EAX, EBX, ECX, EDX, ESI, EDI
+;;
+rn_check_ptree_quick:
+    push ebx
+    push ebp
+    xor esi, esi
+    xor edi, edi
+    mov ebp, esp
+    call .recurse
+    pop ebp
+    pop ebx
+    xor eax, eax
+    ret
+  .recurse:
+    test bl, 3
+    jz .error.invalid_type
+    jp .pair
+    cmp bl, symbol_tag
+    je .hash_test
+    cmp bl, nil_tag
+    je .ignore
+    cmp bl, ignore_tag
+    je .ignore
+    cmp bl, keyword_tag
+    jne .error.invalid_type
+  .ignore:
+    ret
+  .pair:
+    call .hash_test
+    push dword car(ebx)
+    mov ebx, cdr(ebx)
+    call .recurse
+    pop ebx
+    jmp .recurse
+  .error.invalid_type:
+    mov eax, err_invalid_ptree
+    mov esp, ebp
+    pop ebp
+    pop ebx
+    ret
+  .collision:
+    mov esp, ebp
+    pop ebp
+    pop ebx
+    jmp rn_check_ptree_full
+  .hash_test:
+    mov eax, 0x89ABCDEF
+    mul ebx
+    mov eax, edx
+    shr eax, 27
+    shr edx, 22
+    and edx, 31
+    xor ecx, ecx
+    bts esi, eax
+    setc cl
+    bts edi, eax
+    setc ch
+    test cl, ch
+    jnz .collision
+    ret
+
+;;
+;; rn_check_ptree_full (native procedure)
+;;
+;; General algorithm using mark bits.
+;;
+;; pre- and postconditions like rn_check_ptree
+;; preserves: EBP
+;; clobbers:  EAX, EBX, ECX, EDX, ESI, EDI
+;;
+rn_check_ptree_full:
+    push ebp
     mov ebp, esp            ; save stack pointer for early aborts
     call rn_mark_base_1     ; esi = base of 1-bit marks
-    push edi
-    push ecx
     xor eax, eax                      ; clear
     mov edi, esi                      ;   all 1-bit marks
     mov ecx, all_mark_slots / (8 * 4) ;   in 32-bit steps
     rep stosd                         ;   ...
-    pop ecx
-    pop edi
     push ebx
     call .recurse
     pop ebx                 ; restore original object
     xor eax, eax            ; return value 0
   .abort:
     mov esp, ebp            ; restore stack pointer
-    perf_time end, check_ptree, save_regs
     pop ebp
-    pop esi
-    pop edx
     ret
   .error.repeated_symbol:
     mov eax, err_repeated_symbol
