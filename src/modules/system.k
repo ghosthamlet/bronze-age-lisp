@@ -27,14 +27,18 @@
 ;;
 ;; performance statistics
 ;;
-($bind-private! perf-time
-  (make-bounded-applicative
-    (list 1 1) (list "app_perf_time.A1") ()))
-
-($define-ground-lambda! get-performance-statistics ()
-  (list
-    (cons #:perf-time
-      (map
-        ($lambda ((name . index))
-          (cons name (perf-time index)))
-        perf-time-sections))))
+($if ($configured performance-statistics)
+  ($provide! ()
+    ($bind-private! perf-time
+      (make-bounded-applicative
+        (list 1 1) (list "app_perf_time.A1") ()))
+    ($define-ground-lambda! get-performance-statistics ()
+      (list
+        (cons #:perf-time
+          (map
+            ($lambda ((name . index))
+              (cons name (perf-time index)))
+            perf-time-sections)))))
+  ($provide! ()
+    ($define-ground-lambda! get-performance-statistics ()
+      (error "performance statistics disabled"))))

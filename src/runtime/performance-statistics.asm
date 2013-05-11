@@ -12,6 +12,7 @@
 ;; clobbers: EAX, EDX, EFLAGS
 ;;
 %macro perf_time 2-3
+%if configured_performance_statistics
 %ifidn %3, save_regs
     pushf
     push eax
@@ -34,5 +35,6 @@
 %else
     xor eax, eax
     xor edx, edx
+%endif
 %endif
 %endmacro

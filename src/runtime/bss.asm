@@ -45,12 +45,6 @@ perf_time_buffer        resd (perf_time_section_count * 8)
 scratchpad_start        resb 256
 scratchpad_end:
 
-;; space for lisp and blob heaps
-;;
-lisp_heap_area:
-    resb (4 * configured_lisp_heap_size + configured_blob_heap_size)
-lisp_heap_area_end:
-
 ;; space for signal stack
 ;;
 signal_stack_base:      resb 8192

@@ -5,7 +5,9 @@ SECTIONS
     .text : { *(.text) }
     .rodata : { *(.rodata) }
     .data : { *(.data) }
+    .bss : { *(.bss) }
     . = 0x09000000;
     .lisp_rom : { *(.lisp_rom) }
-    .bss : { *(.bss) }
+    . = 0x0A000000;
+    .heap_area : { *(.heap_area) }
 }

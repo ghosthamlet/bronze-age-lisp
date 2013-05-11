@@ -34,6 +34,8 @@ section .bss
 test_buffer resb 1024
 test_buffer_end: resd 32
 %include "runtime/bss.asm"
+lisp_heap_area: resd (4 * configured_lisp_heap_size + configured_blob_heap_size)
+lisp_heap_area_end:
 
 section .text
     global _start, pass_if.z, pass_if.nz, pass, fail, next_subtest, test_finished

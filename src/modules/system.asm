@@ -75,6 +75,7 @@ app_collect_garbage:
     mov eax, inert_tag
     jmp [ebp + cont.program]
 
+%if (configured_performance_statistics == 1)
 app_perf_time:
   .A1:
     mov eax, ebx
@@ -95,3 +96,4 @@ app_perf_time:
     mov eax, err_invalid_argument
     mov ecx, symbol_value(rom_string_perf_time)
     jmp rn_error
+%endif

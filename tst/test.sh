@@ -59,7 +59,7 @@ prepare_smoke_test()
         'start-form=(write (eval (read) (get-current-environment)))' \
         'src-prefix="../src/"' > build/smoke.asm
     nasm -g -f elf32 -o build/smoke.o -i ../src/ -i asm/ -i build/ build/smoke.asm
-    ld -o build/smoke.bin build/smoke.o -Tasm/linker-script.ld
+    ld -o build/smoke.bin build/smoke.o -T../src/runtime/linker-script.ld
 }
 
 smoke_test()
@@ -81,7 +81,7 @@ prepare_dual_test()
         $CONF_SMALLER_HEAP \
         'src-prefix="../src/"' > build/dual.asm
     nasm -g -f elf32 -o build/dual.o -i ../src/ -i asm/ -i build/ build/dual.asm
-    ld -o build/dual.bin build/dual.o -Tasm/linker-script.ld
+    ld -o build/dual.bin build/dual.o -T../src/runtime/linker-script.ld
 }
 
 dual_test()
@@ -103,7 +103,7 @@ prepare_bootstrap_test()
         $CONF_DEBUG \
         'src-prefix="../src/"' > build/bootstrap.asm
     nasm -g -f elf32 -o build/bootstrap.o -i ../src/ -i asm/ -i build/ build/bootstrap.asm
-    ld -o build/bootstrap.bin build/bootstrap.o -Tasm/linker-script.ld
+    ld -o build/bootstrap.bin build/bootstrap.o -T../src/runtime/linker-script.ld
 }
 
 run_bootstrap_test()

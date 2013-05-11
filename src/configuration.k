@@ -65,6 +65,9 @@
   ($param no-applicative-support #f
     "Do not generate applicative support code (testing only).")
 
+  ($param performance-statistics #t
+    "Enable measurement of execution time.")
+
   ($param asm-prefix ""
     "Path to assembler sources of the interpreter (relative to working directory of NASM)")
   ($param src-prefix ""
