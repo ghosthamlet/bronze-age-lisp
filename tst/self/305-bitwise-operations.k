@@ -80,6 +80,11 @@
           (integer-length (arithmetic-shift -1 i)))
     (list (+ i 1) i)))
 
+($eq (arithmetic-shift -6291456 345)
+     -450920175892575979754780274583552709256131049390397415175799866534184132822004821145030207689875590982131515392)
+($eq (arithmetic-shift -6291456 -1)
+     -3145728)
+
 ;; bitwise-not
 ;;
 ($eq (map bitwise-not (list -7 -6 -5 -4 -3 -2 -1 0 1 2 3 4 5 6 7))

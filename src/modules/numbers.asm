@@ -139,26 +139,6 @@ app_min_max:
     mov eax, ecx
     ret
 
-check_fixint:
-  .app_3:
-    xchg ebx, edx
-    call rn_fixintP_procz
-    jne .type_error
-    xchg ebx, edx
-  .app_2:
-    xchg ebx, ecx
-    call rn_fixintP_procz
-    jne .type_error
-    xchg ebx, ecx
-  .app_1:
-    call rn_fixintP_procz
-    jne .type_error
-    ret
-  .type_error:
-     mov ecx, inert_tag ;[eax + applicative.name]
-     mov eax, err_not_a_number
-     jmp rn_error
-
 ;;
 ;; (+) (+ N) (+ N N) (+ N N N) (+ . <finite list>)
 ;;
@@ -387,25 +367,62 @@ app_times:
 ;; TODO: bigints
 app_div:
   .A2:
-    call check_fixint.app_2
+    call check_div_args
+    jz .big
+  .fix:
     sar ebx, 2
     sar ecx, 2
     call scheme_div_mod
     lea eax, [4*eax + 1]
     jmp [ebp + cont.program]
+  .big:
+    mov edi, .continue
+  .fallback:
+    push ecx
+    push nil_tag
+    call rn_cons
+    push ebx
+    push eax
+    call rn_cons
+    mov ebx, eax
+    mov ecx, -4
+    call rn_allocate_transient
+    mov [eax + cont.header], dword cont_header(4)
+    mov [eax + cont.program], edi
+    mov [eax + cont.parent], ebp
+    mov [eax + cont.var0], dword inert_tag
+    mov ebp, eax
+    mov eax, private_binding(rom_string_general_div_and_mod)
+    mov edi, private_binding(rom_string_private_environment)
+    jmp rn_combine
+  .continue:
+    mov ebp, [ebp + cont.parent]
+    mov eax, car(eax)
+    jmp [ebp + cont.program]
 
 app_mod:
   .A2:
-    call check_fixint.app_2
+    call check_div_args
+    jz .big
     sar ebx, 2
     sar ecx, 2
     call scheme_div_mod
     lea eax, [4*edx + 1]
     jmp [ebp + cont.program]
+  .big:
+    mov edi, .continue
+    jmp app_div.fallback
+  .continue:
+    mov ebp, [ebp + cont.parent]
+    mov eax, cdr(eax)
+    mov eax, car(eax)
+    jmp [ebp + cont.program]
 
 app_div_and_mod:
   .A2:
-    call check_fixint.app_2
+    call check_div_args
+    jz .big
+  .fixint:
     sar ebx, 2
     sar ecx, 2
     call scheme_div_mod
@@ -418,6 +435,63 @@ app_div_and_mod:
     push eax
     call rn_cons
     jmp [ebp + cont.program]
+  .big:
+    push ecx
+    push nil_tag
+    call rn_cons
+    push ebx
+    push eax
+    call rn_cons
+    mov ebx, eax
+    mov eax, private_binding(rom_string_general_div_and_mod)
+    mov edi, private_binding(rom_string_private_environment)
+    jmp rn_combine
+
+;;
+;; check_div_args (native procedure)
+;;
+;; preconditions:  EBX = dividend
+;;                 ECX = divisor
+;;                 ESI = symbol for error reporting
+;;
+;; postconditions: ZF = 0, if both arguments are fixints
+;;                 ZF = 1, if both arguments are integers
+;;                         and at least one is bigint
+;;                         or fixint_min.
+;;
+check_div_args:
+    call rn_numberP_procz
+    jne .type_error
+    mov dl, al
+    xchg ebx, ecx
+    call rn_numberP_procz
+    jne .type_error
+    xchg ebx, ecx
+    cmp ecx, fixint_value(0)
+    je .divz
+    cmp ebx, fixint_value(min_fixint)
+    je .force_bigint
+    or al, dl
+    cmp al, 1
+    ja .inf
+  .force_bigint:
+    ret
+  .inf:
+    mov edx, err_invalid_argument
+    jmp .error
+  .divz:
+    mov edx, err_division_by_zero
+    jmp .error
+  .type_error:
+    mov edx, err_invalid_argument
+  .error:
+    push ebx
+    push ecx
+    call rn_cons
+    mov ebx, eax
+    mov eax, edx
+    mov ecx, esi
+    jmp rn_error
 
 scheme_div_mod:
     ;; pre: ebx = dividend
@@ -457,43 +531,3 @@ scheme_div_mod:
     mov ecx, ignore_tag ;[eax + applicative.name]
     mov eax, err_division_by_zero
     jmp rn_error
-
-;;
-;; (number-digits NUMBER BASE)
-;;
-
-%if (configured_reader_and_printer)
-app_number_digits:
-  .A2:
-    ;; ebx = nonnegative fixint
-    ;; ecx = base (fixint), 2 <= base <= 36
-    ;; ebp = continuation
-    mov eax, ebx
-    mov ebx, ecx
-    shr eax, 2
-    shr ebx, 2
-    lea ecx, [scratchpad_end]
-  .next_digit:
-    xor edx, edx
-    div ebx
-    cmp dl, 10
-    jb .decimal
-    add dl, 'A' - 10 - '0'
-  .decimal:
-    add dl, '0'
-    dec ecx
-    mov [ecx], dl
-    test eax, eax
-    jnz .next_digit
-  .done:
-    mov edx, ecx
-    mov ecx, scratchpad_end
-    sub ecx, edx
-    call rn_allocate_blob
-    mov ebx, eax
-    mov eax, edx
-    call rn_copy_blob_data
-    mov eax, ebx
-    mov al, string_tag
-    jmp [ebp + cont.program]
-%endif

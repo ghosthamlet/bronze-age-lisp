@@ -116,7 +116,7 @@ app_arithmetic_shift:
     cmp ecx, 30
     jae .zero_result
     mov eax, ebx
-    shr eax, cl
+    sar eax, cl
     and al, ~3
     or al, 1
     ret

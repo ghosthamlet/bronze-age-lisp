@@ -1110,17 +1110,16 @@ rn_bigint_shift_left:
     shr ecx, 8                   ; ECX := length of input bigint object
     mov edi, [esi + 4*ecx - 4]   ; EDI := most significant digit
     bigint_extension edi         ; EDI := sign extension of input
-    add ecx, ebx                 ; ECX := length of output object
     mov eax, ecx                 ; EAX := ... necessary to hold the result - 1
+    dec eax                      ; number of 30-bit digits - 1
+    add ecx, ebx                 ; ECX := length of output object
+    add ecx, 2                   ; align length
+    and ecx, ~1                  ;   to a multiple of 2 dwords
                                  ; reserve space for:
     push edi                     ;   [esp + 12] = saved sign extension
     push ebp                     ;   [esp + 8] = saved EBP
     push ebp                     ;   [exp + 4] = pointer to new object
-    push ebp                     ;   [esp + 0] = # of digits - 1
-    add eax, 2                   ; align length
-    and ecx, ~1                  ;   to a multiple of 2 dwords
-    dec eax                      ; number of 30-bit digits - 1
-    mov [esp], eax               ;   save it
+    push eax                     ;   [esp + 0] = # of digits - 1
     call rn_allocate             ; allocate output object
     mov [esp + 4], eax           ; save pointer to the new object
     xchg edi, eax                ; EDI := new object, EAX := sign extension

@@ -61,6 +61,11 @@
   ($letrec* ((f ($lambda () (write-char #\x) (f))))
     (with-output-to-string f)))
 
+;; Bigints
+;;
+($om
+  (arithmetic-shift -6291456 65152345))
+
 ;; Allocation of various objects.
 ;;
 ($define! om-repeat

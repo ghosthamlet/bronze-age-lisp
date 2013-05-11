@@ -240,11 +240,20 @@ pred_immutable_pair:
     ret
 
 pred_integer:
-pred_finite_number:
-    xor eax, eax
     call rn_integerP_procz
     setz al
     ret
+
+pred_finite_number:
+    call rn_numberP_procz
+    jnz .nan
+    cmp al, 2
+    setne al
+    ret
+  .nan:
+    mov eax, err_not_a_number
+    mov ecx, [esi + operative.var0]
+    jmp rn_error
 
 pred_number:
     xor eax, eax

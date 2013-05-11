@@ -78,3 +78,50 @@
            (print-integer x b p)
            (get-output-string p))))
     (#t (error "invalid argument for number->string"))))
+
+;; bigint division
+;;
+
+($defun-privates!
+  (scaled-inverse (b m)
+    ($define! n (+ m (integer-length b)))
+    ($define! k (arithmetic-shift 1 n))
+    ($define! newton
+      ($lambda (y)
+        ($let1 dy
+               (arithmetic-shift (* y (- k (* b y)))
+                                 (negate n))
+          ($if (<=? -1 dy 1)
+            (list y n)
+            (newton (+ y dy))))))
+    (newton (arithmetic-shift 1 m)))
+  (fix-div (b q r)
+    ($cond
+      ((<? r 0)  (fix-div b (- q 1) (+ r b)))
+      ((>=? r b) (fix-div b (+ q 1) (- r b)))
+      (#t        (list q r))))
+  (div-mod-pos (a b)
+    ($let* (((y p) (scaled-inverse b (+ 4 (integer-length a))))
+            (q     (arithmetic-shift (* a y) (negate p))))
+      (fix-div b q (- a (* b q))))))
+
+($define-ground-lambda! general-div-and-mod (a b)
+  ($unless (finite? a b)
+    (error "infinity in division procedure" a b))
+  ($cond
+    ((positive? b)
+      ($cond
+        ((positive? a)
+          (div-mod-pos a b))
+        ((negative? a)
+          ($let (((q r) (div-mod-pos (negate a) b)))
+            ($if (zero? r)
+              (list (negate q) 0)
+              (list (- -1 q) (- b r)))))
+        (#t
+          (list 0 0))))
+    ((negative? b)
+      ($let (((q r) (general-div-and-mod a (negate b))))
+        (list (negate q) r)))
+    (#t
+      (error "division by zero" a b))))
