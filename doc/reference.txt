@@ -152,7 +152,9 @@ List of combiners bound in the ground environment
   (digit->char INTEGER RADIX)
   (display OBJECT [PORT])
   (div-and-mod INTEGER INTEGER)
+  (div0-and-mod0 INTEGER INTEGER)
   (div INTEGER INTEGER)
+  (div0 INTEGER INTEGER)
 
   (encycle! LIST INDEX INDEX)
   (environment? . OBJECTs)
@@ -250,6 +252,7 @@ List of combiners bound in the ground environment
   (memq? OBJECT LIST)
   (min . NUMs)
   (mod INTEGER INTEGER)
+  (mod0 INTEGER INTEGER)
   (mutable-pair? . OBJECTs)
 
   (negate NUM)                                       ; ext
@@ -303,6 +306,7 @@ List of combiners bound in the ground environment
   (set-car! PAIR OBJECT)
   (set-cdr! PAIR OBJECT)
   (shared-structure-indicator OBJECT)                ; ext
+  (signum NUM)                                       ; ext
   (string? . STRINGs)
   (string<? . STRINGs)
   (string<=? . STRINGs)
@@ -405,6 +409,11 @@ Bronze Age Lisp Extensions
 
     Equivalent to (- 0 NUM). Note that according
     to the Kernel Report, (- NUM) is an error.
+
+  (signum NUM) => NUM
+
+    Returns 1, 0, or -1, respectively, if NUM
+    is positive, zero, or negative, respectively.
 
   (shared-structure-indicator START-OBJECT)
     => PREDICATE?

@@ -29,6 +29,14 @@
 ($define-ground-lambda! abs (x)
   ($if (negative? x) (negate x) x))
 
+;; signum
+;;
+($define-ground-lambda! signum (x)
+  ($cond
+    ((positive? x)  1)
+    ((negative? x) -1)
+    (#t             0)))
+
 ;;
 ;; printing numbers (incl. bigints)
 ;;
@@ -106,22 +114,32 @@
       (fix-div b q (- a (* b q))))))
 
 ($define-ground-lambda! general-div-and-mod (a b)
-  ($unless (finite? a b)
-    (error "infinity in division procedure" a b))
-  ($cond
-    ((positive? b)
-      ($cond
-        ((positive? a)
-          (div-mod-pos a b))
-        ((negative? a)
-          ($let (((q r) (div-mod-pos (negate a) b)))
-            ($if (zero? r)
-              (list (negate q) 0)
-              (list (- -1 q) (- b r)))))
-        (#t
-          (list 0 0))))
-    ((negative? b)
-      ($let (((q r) (general-div-and-mod a (negate b))))
-        (list (negate q) r)))
-    (#t
-      (error "division by zero" a b))))
+  ;; The assembler part checks that both arguments
+  ;; are finite and b is not zero.
+  ($if (positive? b)
+    ($cond
+      ((positive? a)
+        (div-mod-pos a b))
+      ((negative? a)
+        ($let (((q r) (div-mod-pos (negate a) b)))
+          ($if (zero? r)
+            (list (negate q) 0)
+            (list (- -1 q) (- b r)))))
+      (#t
+        (list 0 0)))
+    ($let (((q r) (general-div-and-mod a (negate b))))
+        (list (negate q) r))))
+
+;; div0 and mod0
+;;
+($define-ground-lambda! div0-and-mod0 (a b)
+  ($let (((q r) (div-and-mod a b)))
+    ($if (<? (* 2 r) (abs b))
+      (list q r)
+      (list (+ q (signum b)) (- r (abs b))))))
+
+($define-ground-lambda! div0 x
+  (car (apply div0-and-mod0 x)))
+
+($define-ground-lambda! mod0 x
+  (cadr (apply div0-and-mod0 x)))

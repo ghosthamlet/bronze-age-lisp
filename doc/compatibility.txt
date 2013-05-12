@@ -42,6 +42,34 @@ Implementation restrictions
   of strings and range of integers supported
   by the implementation is bounded.
 
+Notable bindings
+----------------
+
+  div, mod, div-and-mod, div0, mod0, div0-and-mod0
+
+    Definition in [KR] is suspicious. Bronze Age Lisp,
+    like klisp, implements the definition from [R6RS],
+    restricted to integers.
+
+    (div-and-mod A B) => (Q R),     where A = Q * B + R
+                                      and 0 <= R < |B|
+
+    (div0-and-mod0 A B) => (Q0 R0), where A = Q0 * B + R0
+                                      and -|B/2| <= R0 < |B/2|
+
+    The arguments A and B must be finite, and B must
+    be nonzero.
+
+    The applicatives correspond to [R7RS] procedures:
+
+      div-and-mod    euclidean/
+      div            euclidean-quotient
+      mod            euclidean-remainder
+      div0-and-mod0  centered/
+      div0           centered-quotient
+      mod0           centered-remainder
+
+
 Part II - Compatibility with Klisp
 ==================================
 
@@ -115,3 +143,11 @@ References
   [KLISPDOC]
      Andres Navarro: Klisp Reference Manual
      http://www.klisp.org/docs/index.html
+
+  [R6RS]
+     M. Sperber et al.: Revised^6 Report on the Algorithmic Language Scheme
+     http://www.r6rs.org
+
+  [R7RS]
+     A. Shinn et al.: Revised^7 Report on the Algorithmic Language Scheme (6th draft)
+     http://scheme-reports.org
