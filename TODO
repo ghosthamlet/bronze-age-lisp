@@ -2,12 +2,12 @@ TODO
 ----
 
 - add tests
-- add missing ground bindings from Kernel Report
 - add ground bindings for Klisp compatibility
 - improve unicode support
 - improve REPL (full TAB completion)
 - add comments, write documentation
 - consider extending the numeric tower with rationals and floats (low priority)
+- copy-es-immutable in $lambda and $vau (?)
 
 -------
 

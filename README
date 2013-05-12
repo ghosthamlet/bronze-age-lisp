@@ -101,16 +101,28 @@ Bronze Age Lisp Readme File
   src/
     runtime/*.{k,asm}    -- implements basic runtime
     modules/*.{k,asm}    -- implements language features
-    unicode/*            -- generates tables for (alphabetic? ...) etc.
+    unicode/*            -- generates tables for (char-alphabetic? ...) etc.
     configuration.k      -- contains configuration (heap size, etc.)
     mold.k               -- generates code of the interpreter
     (other *.k) files    -- contains support procedures
     build.sh             -- controls the building and linking
 
+  doc/
+    compatibility.txt    -- Notes on compatibility with language definition
+                            and klisp
+    reference.txt        -- List of implemented bindings and documentation
+                            of extensions not present in klisp.
+
   tst/
-    asm/*.asm            -- tests on assembly level
+    asm/*.asm            -- unit tests on assembly level
     smoke/*.k            -- tests by comparison with klisp
-    test.sh              -- runs the test
+    dual/*.k             -- test builtins against derivations from the Kernel Report
+    self/*.k             -- other tests
+    test.sh              -- runs all tests
+
+  benchmarks/
+    *.k                  -- short benchmark programs
+    benchmark.sh         -- runs benchmarks and compares performance against klisp
 
   README                 -- this file
   TODO                   -- lists missing functionality
