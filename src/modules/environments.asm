@@ -656,6 +656,8 @@ app_make_environment:
     loop .L
     mov ecx, edx
     call rn_make_multiparent_environment
+    mov ebx, eax
+    call rn_make_list_environment
     lea esp, [esp + 4*edx]
     jmp [ebp + cont.program]
   .type_error:
