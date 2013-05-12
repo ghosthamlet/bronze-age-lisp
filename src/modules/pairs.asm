@@ -354,6 +354,9 @@ app_listX:
     push eax
     call rn_cons
     jmp [ebp + cont.program]
+  .O1:
+    mov eax, car(ebx)
+    jmp [ebp + cont.program]
   .operate:
     ;; operative call
     ;; the argument list must not be mutated
@@ -365,7 +368,7 @@ app_listX:
     jnz .operate.error
     cmp edx, 1
     jb .operate.error
-    je .A1
+    je .O1
     mov ecx, edx
   .operate.down:
     push dword car(ebx)

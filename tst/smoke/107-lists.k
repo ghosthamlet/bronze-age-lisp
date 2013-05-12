@@ -1,7 +1,9 @@
 ;; test list operations
 (list
   (list) (list 1) (list 2 3) (list 4 5 6) (list 7 8 9 10)
-  (list* 11) (list* 12 13) (list* 14 15 16); (list* 17 18 19 20)
+  ((unwrap list) 41) ((unwrap list) 42 43)
+  (list* 11) (list* 12 13) (list* 14 15 16)
+  ((unwrap list*) 44) ((unwrap list*) 45 46)
   (length ()) (length (cons 21 ())) (length (list 22 23 24))
   (memq? 1 ())
   (memq? 1 (list 1))
