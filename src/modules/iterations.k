@@ -18,21 +18,7 @@
   (map-enlist (input ms head tail)
     ($define! result (map-acc input ms () head tail cons))
     (apply encycle! (list* result ms))
-    result)
-
-  ;; TEMPFIX: implementation of max and lcm
-
-  (naive-lcm (x0 y0 x y)
-    ($cond
-      ((=? x y) x)
-      ((<? x y) (naive-lcm x0 y0 (+ x x0) y))
-      (#t (naive-lcm x0 y0 x (+ y y0)))))
-)
-
-($define-ground-lambda! lcm (x y)
-  ($when ($or? (<=? x 0) (<=? y 0))
-    (error "lcm - negative and zero arguments not supported yet"))
-  (naive-lcm x y x y))
+    result))
 
 ($define-private-wrapvau! general-map (appv . lss) env
   ($define! mss (cddr (get-list-metrics lss)))

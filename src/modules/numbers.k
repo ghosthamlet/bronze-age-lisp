@@ -143,3 +143,37 @@
 
 ($define-ground-lambda! mod0 x
   (cadr (apply div0-and-mod0 x)))
+
+;; gcm and lcd
+;;
+
+($defun-privates!
+  (euclid (x y)
+    ($if (zero? x) y (euclid (mod y x) x)))
+  (gcd-bin (x y)
+    (euclid (min x y) (max x y)))
+  (lcm-bin (x y)
+    (div (* x y) (euclid (min x y) (max x y)))))
+
+($define-ground-lambda! gcd xs
+  ($let1 ys (filter finite? xs)
+    ($cond
+      ((null? ys)
+        #e+infinity)
+      ((apply zero? ys)
+        (apply error (cons "Undefined GCD" xs)))
+      (#t
+        (reduce (map abs ys) gcd-bin #ignore
+                list* gcd-bin list*)))))
+
+($define-ground-lambda! lcm xs
+  ($let1 ys (filter positive? (map abs xs))
+    ($cond
+      ((not? (equal? (get-list-metrics xs)
+                     (get-list-metrics ys)))
+        (apply error (cons "Undefined LCM" xs)))
+      ((not? (apply finite? ys))
+        #e+infinity)
+      (#t
+        (reduce ys lcm-bin 1
+                list* lcm-bin list*)))))
