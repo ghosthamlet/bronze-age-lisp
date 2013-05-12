@@ -78,6 +78,8 @@
   ($bind-native-predicate! zero? "pred_zero")
   ($bind-native-predicate! positive? "pred_positive")
   ($bind-native-predicate! negative? "pred_negative")
+  ($bind-native-predicate! odd? "pred_odd")
+  ($bind-native-predicate! even? "pred_even")
   ($bind-native-predicate! finite-list? "pred_finite_list")
   ($bind-native-predicate! countable-list? "pred_countable_list")
   ($bind-native-predicate! char-whitespace? "pred_char" (make-nonlisp-value "white_space_code"))

@@ -166,6 +166,7 @@ List of combiners bound in the ground environment
   (error-object-irritants ERROR-OBJECT)              ; klisp
   (error-object-source ERROR-OBJECT)                 ; ext
   (eval OBJECT ENV)
+  (even? . NUMs)
   (exit OBJECT)
   (extend-continuation CONT APPLICATIVE [ENV])
 
@@ -177,6 +178,7 @@ List of combiners bound in the ground environment
   (force PROMISE)
   (for-each APPLICATIVE . LISTs)
 
+  (gcd . NUMs)
   (get-current-environment)
   (get-current-error-port)                           ; klisp
   (get-current-input-port)
@@ -263,6 +265,7 @@ List of combiners bound in the ground environment
   (number? . OBJECTs)
   (number->string NUMBER [RADIX])                    ; klisp
 
+  (odd? . NUMs)
   (open-binary-input-file FILENAME)
   (open-binary-output-file FILENAME)
   (open-input-file FILENAME)

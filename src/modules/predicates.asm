@@ -291,6 +291,32 @@ pred_negative:
     sets al
     ret
 
+pred_even:
+    call rn_integerP_procz
+    jnz .nan
+    test al, al
+    jz .fixint
+    mov ebx, [ebx + bigint.digit0]
+  .fixint:
+    test ebx, 4
+    setz al
+    ret
+  .nan:
+    mov eax, err_not_a_number
+    mov ecx, [esi + operative.var0]
+    jmp rn_error
+
+pred_odd:
+    call rn_integerP_procz
+    jnz pred_even.nan
+    test al, al
+    jz .fixint
+    mov ebx, [ebx + bigint.digit0]
+  .fixint:
+    test ebx, 4
+    setnz al
+    ret
+
 pred_finite_list:
     call rn_list_metrics
     test eax, eax

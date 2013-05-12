@@ -2,7 +2,6 @@ TODO
 ----
 
 - add tests
-- implement integer division on bigints (lcm+gcd)
 - add missing ground bindings from Kernel Report
 - add ground bindings for Klisp compatibility
 - improve unicode support
