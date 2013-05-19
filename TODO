@@ -11,11 +11,156 @@ TODO
 
 -------
 
-Ports:
-  read-line
-  input-port? output-port?
-  textual-port? binary-port?
-  textual-input-port? ...
+Missing bindings from klisp:
 
-Everything from modules:
-  vectors, strings, characters, bytevectors, system
+  Bytevectors:
+    make-bytevector
+    list->bytevector
+    bytevector-copy
+    bytevector-copy!
+    bytevector-copy-partial
+    bytevector-copy-partial!
+    bytevector-for-each
+    bytevector->immutable-bytevector
+    bytevector-length
+    bytevector->list
+    bytevector-map
+    bytevector-port?
+    bytevector->string
+    bytevector-u8-fill!
+    bytevector-u8-ref
+    bytevector-u8-set!
+    bytevector->vector
+
+  Lists:
+    list-copy
+    list-set!
+
+  Ports:
+    string-port?
+    textual-port?
+    input-port?
+    binary-port?
+    close-input-file
+    close-output-file
+    eval-string
+    file-port?
+    get-output-bytevector
+    open-input-bytevector
+    open-output-bytevector
+    output-port?
+    peek-u8
+    port-open?
+    with-error-to-file
+    write-u8
+    u8-ready?
+    read-u8
+
+  System:
+    system-error-continuation
+    rename-file
+    delete-file
+    file-exists?
+
+  Numbers:
+    expt
+
+  Vectors:
+    vector->bytevector
+    vector-fill!
+    vector->immutable-vector
+
+  Errors:
+    raise
+
+  Keywords:
+    keyword->symbol
+
+  Strings:
+    string->bytevector
+    string-ci<?
+    string-ci<=?
+    string-ci>?
+    string-ci>=?
+    string-ci=?
+    string-copy
+    string-downcase
+    string-fill!
+    string-foldcase
+    string-for-each
+    string->immutable-string
+    string-map
+    string-set!
+    string-titlecase
+    string-upcase
+    string->vector
+    symbol->keyword
+
+  Characters:
+    char-ci<?
+    char-ci<=?
+    char-ci>?
+    char-ci>=?
+    char-ci=?
+    char-downcase
+    char-foldcase
+    char-lower-case?
+    char-numeric?
+    char-titlecase
+    char-title-case?
+    char-upcase
+    char-upper-case?
+
+  Promises:
+    $delay
+
+  Hash tables:
+    alist->hash-table
+    hash-table?
+    hash-table->alist
+    hash-table-copy
+    hash-table-delete!
+    hash-table-exists?
+    hash-table-keys
+    hash-table-length
+    hash-table-merge
+    hash-table-merge!
+    hash-table-ref
+    hash-table-set!
+    hash-table-values
+    make-hash-table
+
+  Immutability
+    immutable-bytevector?
+    immutable-string?
+    immutable-vector?
+
+  Rational and Inexact
+    inexact?
+    make-inexact
+    numerator
+    rational?
+    rationalize
+    real?
+    real->exact
+    real->inexact
+    robust?
+    round
+    simplest-rational
+    sqrt
+    truncate
+    undefined?
+    with-strict-arithmetic
+    acos
+    asin
+    atan
+    ceiling
+    ...
+    denominator
+    exact-integer?
+    floor
+    get-real-exact-bounds
+    get-real-exact-primary
+    get-real-internal-bounds
+    get-real-internal-primary
+    get-strict-arithmetic?

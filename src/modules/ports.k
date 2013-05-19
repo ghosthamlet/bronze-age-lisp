@@ -216,6 +216,23 @@
       (error msg
         (list path) e))))
 
+;; read-line
+;;
+($define-ground-lambda! read-line args
+  ($define! p ($if (pair? args) (car args) stdin))
+  #1=($define! c (read-char p))
+  ($cond
+    (#2=(eof-object? c) c)
+    (#3=(eq? c #\newline) "")
+    (#t
+      ($define! q (open-output-string))
+      #4=($sequence
+           (write-char c q)
+           #1#
+           ($if ($or? #2# #3#)
+              (get-output-string q)
+              #4#)))))
+
 ;; terminal attributes
 ;;
 ($bind-ground! tcgetattr
