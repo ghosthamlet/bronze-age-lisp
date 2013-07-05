@@ -95,7 +95,7 @@ Characters
 Strings
 -------
 
-  All strings are immutable mutable. The string ports
+  All strings are immutable. The string ports
   can be used instead of string mutation combiners.
 
 Ports
@@ -116,6 +116,7 @@ Part III - Compatibility with the host environment
 
                  system call number on x86
     ----------------------------------------
+    exit         0x01
     read         0x03
     write        0x04
     open         0x05

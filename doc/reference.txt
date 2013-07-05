@@ -37,7 +37,7 @@ Abbreviations
                extension of Bronze Age Lisp
 
       Note that environments returned by
-      (make-kernel-standard-environments)
+      (make-kernel-standard-environment)
       contain all bindings, even if they
       are not standard.
 
@@ -374,6 +374,19 @@ Bronze Age Lisp Extensions
   (bigint? . OBJECTs)
   (fixint? . OBJECTs)
 
+    Type predicates for internal integer representations.
+
+    Integers of small magnitude are represented by tagged
+    values known as fixints. Other integers are represented
+    by heap-allocated blocks known as bigints.
+    
+    (fixint? x)
+      == ($and? (integer? x) (<=? 536870911 x -536870912))))
+      == ($and? (integer? x) (<? (integer-length x) 30))
+      
+    (bigint? x)
+      == ($and? (integer? x) (not? (fixint? x)))
+            
  2) extended standard bindings
     --------------------------
 
@@ -525,6 +538,9 @@ Bronze Age Lisp Extensions
   (close-port-ignore-errors PORT)
       => #inert
 
+    Closes PORT, silently ignoring all errors (including
+    type error in PORT argument).
+      
   (open-utf-decoder BINARY-INPUT-PORT)
       => TEXTUAL-INPUT-PORT
 
@@ -552,10 +568,12 @@ Bronze Age Lisp Extensions
   (terminal-port? . OBJECTs) => BOOLEAN
 
     Returns #t, iff all arguments are ports connected
-    to a terminal. The ports created by open-utf-decoder
-    open-utf-encoder are terminal ports, if the underlying
-    binary port is a terminal port. The function is
-    analogous to POSIX function isatty().
+    to a terminal. The function is analogous to POSIX
+    function isatty().
+    
+    A port created by open-utf-decoder or open-utf-encoder
+    is a terminal port, if the underlying binary port
+    is a terminal port. 
 
   (tcgetattr PORT) => BYTEVECTOR
 
@@ -735,7 +753,7 @@ Part III - Build Configuration
     structured objects (cons cells, continuations,
     vectors, ...) and one for blobs.
 
-    Warning: Making the heap larged does not
+    Warning: Making the heap larger does not
     necessarily make the program faster.
 
     Some algorithms of the interpreter (most importantly,
