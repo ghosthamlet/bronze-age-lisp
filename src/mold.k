@@ -250,6 +250,7 @@
     "predicates.asm"
     "bitwise-operations.asm"
     "booleans.asm"
+    "bytevectors.asm"
     "characters.asm"
     "combiners.asm"
     "continuations.asm"

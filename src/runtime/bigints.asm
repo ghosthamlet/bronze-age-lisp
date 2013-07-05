@@ -68,6 +68,21 @@ rn_numberP_procz:
     ret
 
 ;;
+;; rn_u8P_procz (native procedure)
+;;
+;; preconditions:  EBX = object
+;; postconditions: ZF = 1 if 
+;;                 ZF = 0 otherwise
+;;
+;; clobbers: EAX, EFLAGS
+;;
+rn_u8P_procz:
+    mov eax, ebx
+    xor al, 1
+    test eax, 0xFFFFFC03
+    ret
+
+;;
 ;; rn_siglog (native procedure)
 ;;
 ;; Returns sign and representation length of an integer

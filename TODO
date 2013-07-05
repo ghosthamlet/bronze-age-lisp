@@ -14,7 +14,6 @@ TODO
 Missing bindings from klisp:
 
   Bytevectors:
-    make-bytevector
     list->bytevector
     bytevector-copy
     bytevector-copy!
@@ -22,14 +21,11 @@ Missing bindings from klisp:
     bytevector-copy-partial!
     bytevector-for-each
     bytevector->immutable-bytevector
-    bytevector-length
     bytevector->list
     bytevector-map
     bytevector-port?
     bytevector->string
     bytevector-u8-fill!
-    bytevector-u8-ref
-    bytevector-u8-set!
     bytevector->vector
 
   Lists:

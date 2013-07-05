@@ -317,6 +317,11 @@ pred_odd:
     setnz al
     ret
 
+pred_u8:
+    call rn_u8P_procz
+    setz al
+    ret
+
 pred_finite_list:
     call rn_list_metrics
     test eax, eax

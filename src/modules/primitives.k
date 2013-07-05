@@ -68,7 +68,7 @@
     negate
     get-list-metrics length
     string-length string-size
-    vector-length
+    vector-length bytevector-length
     wrap unwrap
     copy-es-immutable
     get-output-string
@@ -87,12 +87,12 @@
   ($bounded-app 1 2
     char-digit? char->digit digit->char
     open-utf-encoder
-    make-vector)
+    make-vector make-bytevector)
   ($bounded-app 2 2
     cons eval
     list-tail list-ref
     set-car! set-cdr!
-    string-ref vector-ref
+    string-ref vector-ref bytevector-u8-ref
     div mod div-and-mod
     arithmetic-shift
     apply-continuation)
@@ -101,7 +101,7 @@
   ($bounded-app 3 3
     encycle!
     guard-continuation guard-dynamic-extent
-    set! vector-set!)
+    set! vector-set! bytevector-u8-set!)
   ($unbounded-app 2 3
     (- "minus"))
   ($unbounded-app 0 3

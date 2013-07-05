@@ -22,6 +22,7 @@ Abbreviations
     NUM            number (integer or exact infinity)
     OBJECT or KEY  any object
     PTREE          formal parameter tree
+    U8             byte (integer 0..255)
     [ X ] or ...   optional arguments
     Xs             list of X
 
@@ -83,6 +84,9 @@ List of combiners bound in the ground environment
   (bitwise-not INTEGER)                              ; SRFI-60
   (boolean? . OBJECTs)
   (bytevector? . OBJECTs)                            ; klisp
+  (bytevector-length BYTEVECTOR)                     ; klisp, r7rs
+  (bytevector-u8-ref BYTEVECTOR INDEX)               ; klisp, r7rs
+  (bytevector-u8-set! BYTEVECTOR INDEX U8)           ; klisp, r7rs
 
   (caaar PAIR)
   (caaaar PAIR)
@@ -237,6 +241,7 @@ List of combiners bound in the ground environment
   (list-tail LIST INTEGER)
   (load FILENAME)
 
+  (make-bytevector INTEGER [U8])
   (make-encapsulation-type)
   (make-environment . ENVs)
   (make-kernel-standard-environment)
@@ -344,7 +349,7 @@ List of combiners bound in the ground environment
   (vector->list VECTOR)                              ; klisp, r7rs
   (vector-length VECTOR)                             ; klisp, r7rs
   (vector-ref VECTOR INDEX)                          ; klisp, r7rs
-  (vector-set! VECTOR INDEX)                         ; klisp, r7rs
+  (vector-set! VECTOR INDEX OBJECT)                  ; klisp, r7rs
 
   (with-input-from-file FILENAME COMBINER)
   (with-input-from-port FILENAME COMBINER)

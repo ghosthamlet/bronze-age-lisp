@@ -64,7 +64,7 @@ Bronze Age Lisp Readme File
   it is not possible to link the interpreter with programs
   or libraries written in C or any other language.
 
-    Built-in combiners are implemented partly in  assembly,
+    Built-in combiners are implemented partly in assembly,
   and partly by interpreted lisp code. The interpreted code is
   included in the interpreter executable in binary form, along
   with table representing the ground environment and strings,
