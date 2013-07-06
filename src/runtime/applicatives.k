@@ -272,7 +272,7 @@
 
 
 ($provide!
-  (make-builtin-lambda
+  (make-builtin-wrap make-builtin-lambda
    $define-ground-lambda! $define-private-lambda!
    $define-ground-wrapvau! $define-private-wrapvau!
    $define-ground-vau! $define-private-vau!

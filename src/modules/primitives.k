@@ -11,6 +11,14 @@
            (bind-ground! s
              (make-primitive-operative "primop_" (asm-identifier s))))
          symbols)))
+   ($prim-app
+     ($vau symbols #ignore
+       (for-each
+         ($lambda (s)
+           (bind-ground! s
+             (make-builtin-wrap
+               (make-primitive-operative "app_" (asm-identifier s) ".operate"))))
+         symbols)))
    (genlist
      ($lambda (a b suffix)
        ($if (<=? a b)
@@ -50,6 +58,8 @@
     $vau $lambda
     $lazy
     $let/cc)
+  ($prim-app
+    bytevector-copy-partial!)
   ($bounded-app 0 0
     get-current-environment
     make-kernel-standard-environment
@@ -71,6 +81,7 @@
     vector-length bytevector-length
     wrap unwrap
     copy-es-immutable
+    bytevector-copy
     get-output-string
     char->integer integer->char
     open-utf-decoder
@@ -101,7 +112,8 @@
   ($bounded-app 3 3
     encycle!
     guard-continuation guard-dynamic-extent
-    set! vector-set! bytevector-u8-set!)
+    set! vector-set! bytevector-u8-set!
+    bytevector-copy-partial)
   ($unbounded-app 2 3
     (- "minus"))
   ($unbounded-app 0 3

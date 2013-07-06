@@ -18,6 +18,14 @@
     (naive-reverse (cdr a) (cons (car a) b))
     b))
 
+($define-ground-lambda! list-tabulate (n f)
+  ($define! g
+    ($lambda (k a)
+      ($if (<=? 0 k)
+        (g (- k 1) (cons (apply f (list k)) a))
+        a)))
+  (g (- n 1) ()))
+    
 ($define-ground-lambda! list->vector (l)
   ($let* ((n (length l))
           (v (make-vector n)))
@@ -34,6 +42,21 @@
                    (f (- i 1) (cons (vector-ref v i) a))
                    a))))
     (f (- (vector-length v) 1) ())))
+
+($define-ground-lambda! list->bytevector (l)
+  ($let* ((n (length l))
+          (v (make-bytevector n)))
+    (list->bytevector-helper l v 0 n)
+    v))
+($define-private-lambda! list->bytevector-helper (l v k n)
+  ($when (<? k n)
+    (bytevector-u8-set! v k (car l))
+    (list->bytevector-helper (cdr l) v (+ k 1) n)))
+
+($define-ground-lambda! bytevector->list (v)
+  (list-tabulate
+    (bytevector-length v)
+    ($lambda (k) (bytevector-u8-ref v k))))
 
 ($define-ground-lambda! make-list (n . opt)
   ($letrec* ((x ($if (pair? opt) (car opt) #inert))
@@ -110,3 +133,6 @@
 
 ($define-ground-lambda! vector args
   (list->vector args))
+
+($define-ground-lambda! bytevector args
+  (list->bytevector args))

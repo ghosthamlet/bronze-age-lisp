@@ -83,8 +83,13 @@ List of combiners bound in the ground environment
   (bitwise-ior . INTEGERs)                           ; SRFI-60
   (bitwise-not INTEGER)                              ; SRFI-60
   (boolean? . OBJECTs)
+  (bytevector . U8s)                                 ; klisp
   (bytevector? . OBJECTs)                            ; klisp
+  (bytevector-copy BYTEVECTOR)                       ; klisp, r7rs
+  (bytevector-copy-partial BYTEVECTOR START END)     ; klisp, r7rs
+  (bytevector-copy-partial! FROM START END TO AT)    ; klisp, r7rs
   (bytevector-length BYTEVECTOR)                     ; klisp, r7rs
+  (bytevector->list BYTEVECTOR)                      ; klisp
   (bytevector-u8-ref BYTEVECTOR INDEX)               ; klisp, r7rs
   (bytevector-u8-set! BYTEVECTOR INDEX U8)           ; klisp, r7rs
 
@@ -234,7 +239,9 @@ List of combiners bound in the ground environment
   (library-name-component? . OBJECTs)                ; klisp
   (list . OBJECTs)
   (list* . OBJECTs)
+  (list->bytevector LIST)                            ; klisp
   (list->string LIST)
+  (list->tabulate N APPLICATIVE)                     ; SRFI-1
   (list->vector LIST)                                ; klisp
   (list-neighbors LIST)
   (list-ref LIST INDEX)
