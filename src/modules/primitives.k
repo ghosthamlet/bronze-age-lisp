@@ -66,13 +66,14 @@
     make-encapsulation-type
     make-keyed-dynamic-variable
     make-keyed-static-variable
-    open-output-string
     get-interpreter-arguments
     rdtsc get-current-second
     get-current-jiffy get-jiffies-per-second
     collect-garbage)
   ($bounded-app 0 1
-    exit)
+    exit
+    open-output-string
+    open-output-bytevector)
   ($bounded-app 1 1
     not?
     negate
@@ -83,6 +84,7 @@
     copy-es-immutable
     bytevector-copy
     get-output-string
+    get-output-bytevector get-output-bytevector-position
     char->integer integer->char
     open-utf-decoder
     open-input-string
@@ -173,8 +175,15 @@
                txt-out-header-tag string-tag)
     ($bind-io! write-bytevector "app_write_typed" (1 2)
                bin-out-header-tag bytevector-tag)
-    ($bind-io! write-utf8 "app_write_typed" (1 2)
+    ($bind-io! write-utf8-string "app_write_typed" (1 2)
                bin-out-header-tag string-tag)
+    ($bind-io! write-utf8-char "app_write_typed" (1 2)
+               bin-out-header-tag char-tag)
+    ($bind-ground! write-u8
+      (make-bounded-applicative
+        (list 1 2)
+        (list "app_write_u8.A1" "app_write_u8.A2")
+        ()))
 
     ($bind-io! read-char "app_read_typed" (0 1)
                txt-in-header-tag 3)

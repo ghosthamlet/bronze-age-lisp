@@ -29,21 +29,14 @@ Missing bindings from klisp:
 
   Ports:
     string-port?
-    textual-port?
-    input-port?
-    binary-port?
     close-input-file
     close-output-file
     eval-string
     file-port?
-    get-output-bytevector
     open-input-bytevector
-    open-output-bytevector
-    output-port?
     peek-u8
     port-open?
     with-error-to-file
-    write-u8
     u8-ready?
     read-u8
 

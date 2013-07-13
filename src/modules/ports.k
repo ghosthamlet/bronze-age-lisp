@@ -84,6 +84,11 @@
     (with-output-to-port port proc)
     (get-output-string port)))
 
+($define-ground-lambda! with-output-to-bytevector (proc)
+  ($let* ((port (open-output-bytevector)))
+    (with-output-to-port port proc)
+    (get-output-bytevector port)))
+
 ;; get-module (definition adapted from KR)
 
 ($define-ground-lambda! get-module (filename . opt)

@@ -77,6 +77,7 @@ List of combiners bound in the ground environment
   (assq KEY LIST)
 
   (bigint? . OBJECTs)                                ; ext
+  (binary-port? . OBJECTs)                           ; klisp
   ($bindings->environment BINDINGs)
   ($binds? ENV . SYMBOLs)
   (bitwise-and . INTEGERs)                           ; SRFI-60
@@ -201,7 +202,9 @@ List of combiners bound in the ground environment
   (get-library-export-list LIBRARY)                  ; klisp
   (get-list-metrics OBJECT)
   (get-module FILENAME)
-  (get-output-string STRING-PORT)                    ; klisp
+  (get-output-string STRING-PORT)                    ; r7rs
+  (get-output-bytevector BYTEVECTOR-PORT)            ; r7rs
+  (get-output-bytevector-position BYTEVECTOR-PORT)   ; ext
   (get-performance-statistics)                       ; ext
   ($get-printer-flag SYMBOL)                         ; ext
   ($get-registered-library LIBRARY-NAME)             ; klisp
@@ -216,6 +219,7 @@ List of combiners bound in the ground environment
   ($import! ENV . SYMBOLs)
   ($import-library! IMPORT-SPECIFICATIONs)
   (inert? . OBJECTs)
+  (input-port? . OBJECTs)
   (integer? . OBJECTs)
   (integer->char INTEGER)
   (integer-length INTEGER)
@@ -283,12 +287,14 @@ List of combiners bound in the ground environment
   (open-input-file FILENAME)
   (open-input-string STRING)
   (open-output-file FILENAME)
-  (open-output-string [INITIAL-BUFFER-SIZE])
+  (open-output-string [INITIAL-BUFFER-SIZE])         ; r7rs ext
+  (open-output-bytevector [INITIAL-BUFFER-SIZE])     ; r7rs ext
   (open-utf-decoder PORT)                            ; ext
   (open-utf-encoder PORT)                            ; ext
   (operative? . OBJECTs)
   (or? . BOOLEANs)
   ($or? . FORMs)
+  (output-port? . OBJECTs)
 
   (pair? . OBJECTs)
   (peek-char [PORT])
@@ -344,6 +350,7 @@ List of combiners bound in the ground environment
   (tcgetattr PORT)                                   ; ext
   (tcsetattr PORT BYTEVECTOR)                        ; ext
   (terminal-port? . OBJECTs)                         ; ext
+  (textual-port? . OBJECTs)                          ; klisp
 
   ($unless BOOLEAN . FORMs)                          ; klisp
   ($unregister-library LIBRARY-NAME)                 ; klisp
@@ -365,6 +372,7 @@ List of combiners bound in the ground environment
   (with-output-to-file FILENAME COMBINER)
   (with-output-to-port FILENAME COMBINER)
   (with-output-to-string COMBINER)                   ; ext
+  (with-output-to-bytevector COMBINER)               ; ext
   ($with-printer-flags BINDINGS COMBINER)            ; ext
   (with-signal-handler (SIGSPEC HANDLER) COMBINER)   ; ext
   (wrap COMBINER)
@@ -373,7 +381,8 @@ List of combiners bound in the ground environment
   (write-char CHAR [PORT])
   (write-simple OBJECT [PORT])                       ; klisp, r7rs
   (write-string STRING [PORT])
-  (write-utf8 STRING [PORT])                         ; ext
+  (write-utf8-string STRING [PORT])                  ; ext
+  (write-utf8-char CHAR [PORT])                      ; ext
 
   (zero? . NUMs)
 
@@ -552,7 +561,13 @@ Bronze Age Lisp Extensions
 
     Closes PORT, silently ignoring all errors (including
     type error in PORT argument).
-      
+
+  (get-output-bytevector-position PORT)
+
+    Returns number of bytes writen in PORT. Signals
+    an error if PORT was not created with
+    open-output-bytevector.
+
   (open-utf-decoder BINARY-INPUT-PORT)
       => TEXTUAL-INPUT-PORT
 
@@ -569,10 +584,16 @@ Bronze Age Lisp Extensions
     Closing the textual port causes closing of the
     underlying binary port.
 
-  (write-utf8 STRING [BINARY-OUTPUT-PORT])
+  (write-utf8-string STRING [BINARY-OUTPUT-PORT])
       => #inert
 
-    Writes UTF-8 representation of STRING in
+    Writes UTF-8 representation of STRING to
+    a binary output port.
+
+  (write-utf8-char CHAR [BINARY-OUTPUT-PORT])
+      => #inert
+
+    Writes UTF-8 representation of CHAR to
     a binary output port.
 
  6) Terminal interface

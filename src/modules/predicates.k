@@ -86,7 +86,12 @@
   ($bind-native-predicate! char-alphabetic? "pred_char" (make-nonlisp-value "alphabetic_code"))
   ($bind-native-predicate! library-name-component? "pred_library_name_component")
   ($bind-native-predicate! u8? "pred_u8")
+
   ($when ($configured stdio)
+    ($bind-header-predicate! textual-port? txt-in-header-tag #b11111011)
+    ($bind-header-predicate! binary-port? bin-in-header-tag  #b11111011)
+    ($bind-header-predicate! input-port? txt-out-header-tag #b11110111)
+    ($bind-header-predicate! output-port? txt-out-header-tag  #b11110111)
     ($bind-native-predicate! terminal-port? "pred_terminal_port")))
 
 ($provide! ()

@@ -265,7 +265,6 @@
     "misc.asm"
     "numbers.asm"
     "pairs.asm"
-    "ports.asm"
     "promises.asm"
     "strings.asm"
     "shared-structures.asm"
@@ -273,6 +272,12 @@
     "symbols.asm"
     "system.asm"
     "vectors.asm")
+  ($when ($configured stdio)
+    ($for-each-src asm-include asm-prefix "modules/"
+      "ports.asm"
+      "textual-output-ports.asm"
+      "textual-input-ports.asm"
+      "binary-output-ports.asm"))
   ($when ($configured character-predicates)
     ($for-each-src asm-include asm-prefix "unicode/"
       "unicode-lookup.asm"
