@@ -144,4 +144,10 @@
   ($bind-order-predicate! string<=? "rel_string" #t #t #f)
   ($bind-order-predicate!  string=? "rel_string" #f #t #f)
   ($bind-order-predicate! string>=? "rel_string" #f #t #t)
-  ($bind-order-predicate!  string>? "rel_string" #f #f #t))
+  ($bind-order-predicate!  string>? "rel_string" #f #f #t)
+
+  ($bind-order-predicate!  bytevector<? "rel_bytevector" #t #f #f)
+  ($bind-order-predicate! bytevector<=? "rel_bytevector" #t #t #f)
+  ($bind-order-predicate!  bytevector=? "rel_bytevector" #f #t #f)
+  ($bind-order-predicate! bytevector>=? "rel_bytevector" #f #t #t)
+  ($bind-order-predicate!  bytevector>? "rel_bytevector" #f #f #t))

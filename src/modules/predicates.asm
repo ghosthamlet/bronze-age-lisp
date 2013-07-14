@@ -456,6 +456,7 @@ rel_string:
     cmp bl, string_tag
     jne .error
     xchg ebx, ecx
+  .checked:
     push ebx
     push ecx
     push edx
@@ -518,6 +519,15 @@ rel_string:
     call .ebx_shorter
     neg eax
     ret
+
+rel_bytevector:
+    cmp bl, bytevector_tag
+    jne rel_string.error
+    xchg ebx, ecx
+    cmp bl, bytevector_tag
+    jne rel_string.error
+    xchg ebx, ecx
+    jmp rel_string.checked
 
 rel_integer:
     push ebx
