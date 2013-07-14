@@ -86,6 +86,11 @@ List of combiners bound in the ground environment
   (boolean? . OBJECTs)
   (bytevector . U8s)                                 ; klisp
   (bytevector? . OBJECTs)                            ; klisp
+  (bytevector<? . BYTEVECTORs)                       ; ext
+  (bytevector<=? . BYTEVECTORs)                      ; ext
+  (bytevector=? . BYTEVECTORs)                       ; r6rs
+  (bytevector>=? . BYTEVECTORs)                      ; ext
+  (bytevector>? . BYTEVECTORs)                       ; ext
   (bytevector-copy BYTEVECTOR)                       ; klisp, r7rs
   (bytevector-copy-partial BYTEVECTOR START END)     ; klisp, r7rs
   (bytevector-copy-partial! FROM START END TO AT)    ; klisp, r7rs
@@ -389,8 +394,8 @@ List of combiners bound in the ground environment
 Bronze Age Lisp Extensions
 --------------------------
 
- 1) type predicates
-    ---------------
+ 1) type and comparison predicates
+    ------------------------------
 
   (bigint? . OBJECTs)
   (fixint? . OBJECTs)
@@ -400,14 +405,18 @@ Bronze Age Lisp Extensions
     Integers of small magnitude are represented by tagged
     values known as fixints. Other integers are represented
     by heap-allocated blocks known as bigints.
-    
+
     (fixint? x)
       == ($and? (integer? x) (<=? 536870911 x -536870912))))
       == ($and? (integer? x) (<? (integer-length x) 30))
-      
+
     (bigint? x)
       == ($and? (integer? x) (not? (fixint? x)))
-            
+
+  (bytevector<? . BYTEVECTORs) (bytevector<=? BYTEVECTORS ...)
+
+    Implementation of lexicographic order on bytevectors.
+
  2) extended standard bindings
     --------------------------
 
@@ -418,12 +427,12 @@ Bronze Age Lisp Extensions
     is bound to DEFAULT-VALUE in continuations which
     are not descendant of the ones introduced by BIND.
 
-  (set! ENV SYMBOL OBJECT)
+  (set! ENV PTREE OBJECT)
       => #inert
 
     Fully applicative version of $set!. Evaluates all
-    arguments in the dynamic environment, and binds
-    SYMBOL to OBJECT in the environment ENV.
+    arguments in the dynamic environment, and matches
+    PTREE with OBJECT in the environment ENV.
 
  3) convenience combiners
     ---------------------
@@ -568,6 +577,9 @@ Bronze Age Lisp Extensions
     an error if PORT was not created with
     open-output-bytevector.
 
+    Equivalent to
+      (bytevector-length (get-output-bytevector PORT))
+
   (open-utf-decoder BINARY-INPUT-PORT)
       => TEXTUAL-INPUT-PORT
 
@@ -603,10 +615,10 @@ Bronze Age Lisp Extensions
     Returns #t, iff all arguments are ports connected
     to a terminal. The function is analogous to POSIX
     function isatty().
-    
+
     A port created by open-utf-decoder or open-utf-encoder
     is a terminal port, if the underlying binary port
-    is a terminal port. 
+    is a terminal port.
 
   (tcgetattr PORT) => BYTEVECTOR
 
