@@ -214,6 +214,7 @@ List of combiners bound in the ground environment
   ($get-printer-flag SYMBOL)                         ; ext
   ($get-registered-library LIBRARY-NAME)             ; klisp
   (get-script-arguments)                             ; klisp
+  (get-textual-input-position [PORT])                ; ext
   (guard-continuation GUARDs CONT GUARDs)
   (guard-dynamic-extent GUARDs COMBINER GUARDs)
   (guess-object-name OBJECT BOOLEAN)                 ; ext
@@ -572,6 +573,7 @@ Bronze Age Lisp Extensions
     type error in PORT argument).
 
   (get-output-bytevector-position PORT)
+      => fixint
 
     Returns number of bytes writen in PORT. Signals
     an error if PORT was not created with
@@ -579,6 +581,14 @@ Bronze Age Lisp Extensions
 
     Equivalent to
       (bytevector-length (get-output-bytevector PORT))
+
+  (get-textual-input-position [PORT])
+      => (LINE COLUMN)
+
+    Returns line and column number corresponding to the
+    current position in the textual input PORT. The position
+    may not be reliable if used on terminal port in
+    (with-noncanonical-input ...).
 
   (open-utf-decoder BINARY-INPUT-PORT)
       => TEXTUAL-INPUT-PORT

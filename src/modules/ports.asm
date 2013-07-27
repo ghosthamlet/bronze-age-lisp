@@ -9,6 +9,8 @@
 %define txt_in.state           txt_out.var2
 %define txt_in.accum           txt_out.var3
 %define txt_in.underlying_port txt_out.var4
+%define txt_in.line            txt_out.var5
+%define txt_in.column          (txt_out.var5 + 4)
 
 %define txt_out.buffer          txt_out.var0
 %define txt_out.usage           txt_out.var1

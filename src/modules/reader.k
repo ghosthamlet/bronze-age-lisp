@@ -50,10 +50,12 @@
 ;;
 
 ($defun-privates!
+  (parse-error (p . args)
+    (apply error (append args (get-textual-input-position p))))
   (read-signed-number (p b)
     ($let1 c (peek-char p)
       ($cond
-        ((eof-object? c) (error "read-number EOF"))
+        ((eof-object? c) (parse-error p "read-number EOF"))
         ((eq? c #\-) (read-char p) (negate (read-unsigned-number p b)))
         ((eq? c #\+) (read-char p) (read-unsigned-number p b))
         (#t (read-unsigned-number p b)))))
@@ -61,7 +63,7 @@
     ($let1 c (read-char p)
       ($if ($and? (char? c) (char-digit? c b))
         (read-number-tail p b (char->digit c b))
-        (error "read-unsigned-number"))))
+        (parse-error p "read-unsigned-number"))))
   (read-number-tail (p b a)
     ($let1 c (peek-char p)
       ($if ($and? (char? c) (char-digit? c b))
@@ -132,7 +134,7 @@
                    (get-output-string
                      (read-symbol-tail p (open-output-string* #\.)))))
                ((char-digit? c)
-                 (error "reader: dot followed by a digit is not supported syntax"))
+                 (parse-error p "reader: dot followed by a digit is not supported syntax"))
                (#t
                  t-dot))))
     (#\+ . #1=(read-number-or-symbol c p))
@@ -174,7 +176,7 @@
                   (get-output-string
                     (read-symbol-tail p (open-output-string* c)))))
               (#t
-                (error "invalid character on input" c))))))))
+                (parse-error p "invalid character on input" c))))))))
   (read-special (p)
     ($let* ((c (read-char p))
             (t (assq c read-special-token-cases)))
@@ -193,19 +195,19 @@
                          (memq? d extended-identifier-characters))
                     (read-symbol-tail p (open-output-string* d)))
                   (#t
-                    (error "invalid keyword")))))))
+                    (pase-error p "invalid keyword")))))))
         ((char<=? #\0 c #\9)
           ($let* ((n (read-number-tail p 10 (char->digit c 10)))
                   (k (read-char p)))
             ($if ($or? (eq? k #\=) (eq? k #\#))
               (list k n)
-              (error "invalid S-expression label" n k))))
+              (parse-error p "invalid S-expression label" n k))))
         (#t
           ($let1 s (get-output-string
                      (read-symbol-tail p (open-output-string* c)))
             ($let1 x (assoc s special-tokens)
               ($if (null? x)
-                (error "invalid special token" s c)
+                (parse-error p "invalid special token" s c)
                 (cdr x))))))))
   (read-character-literal (p)
     ($let* ((c1 (read-char p))
@@ -222,7 +224,7 @@
                      (read-symbol-tail p (open-output-string* c1)))
             ($let1 x (assoc s character-names)
               ($if (null? x)
-                   (error "invalid character name" s)
+                   (parse-error p "invalid character name" s)
                    (cdr x)))))
         (#t c1))))
   (skip-line (p)
@@ -233,7 +235,7 @@
     ($let1 c1 (read-char p)
       ($cond
         ((eof-object? c1)
-          (error "unterminated #|block|# comment"))
+          (parse-error p "unterminated #|block|# comment"))
         (($and? (eq? c0 #\#) (eq? c1 #\|))
           (skip-block-comment (+ n 1) (read-char p) p))
         (($and? (eq? c0 #\|) (eq? c1 #\#))
@@ -245,7 +247,7 @@
     ($let1 c (read-char p)
       ($cond
         ((eof-object? c)
-          (error "unexpected EOF in quoted string"))
+          (parse-error p "unexpected EOF in quoted string"))
         ((eq? c #\")
           q)
         ((eq? c #\\)
@@ -258,7 +260,7 @@
     ($let1 c (read-char p)
       ($cond
         ((eof-object? c)
-          (error "unexpected EOF in quoted symbol"))
+          (parse-error p "unexpected EOF in quoted symbol"))
         ((eq? c #\|)
           q)
         ((eq? c #\\)
@@ -292,7 +294,7 @@
           ($let1 n (read-unsigned-number p 16)
             ($let1 t (read-char p)
               ($unless (eq? t #\;)
-                (error "escape sequence #\\x...; must end with a semicolon"))
+                (parse-error p "escape sequence #\\x...; must end with a semicolon"))
               (integer->char n))))
         (#t c))))
   (read-number-or-symbol (c p)
@@ -339,7 +341,7 @@
     ($let1 y (assq l ($remote-eval labels e))
       ($if (pair? y)
         (cdr y)
-        (error "undefined S-expression label" l))))
+        (parse-error p "undefined S-expression label" l))))
   (read-label-set! (e l v)
     ($set! e labels (cons (cons l v) ($remote-eval labels e))))
 
@@ -359,7 +361,7 @@
                          (p! v)
                          (read-label-set! e (cadr t) v))))
           (#t
-            (error "read-form: unexpected character" (car t))))
+            (parse-error p "read-form: unexpected character" (car t))))
         (p! t))))
   (read-list (e p!)
     ($let ((tmp (cons 0 0)))
@@ -376,9 +378,9 @@
           (read-aux-token e)
           (read-form e p!)
           ($unless (eq? (read-aux-token e) t-right)
-            (error "expected ) after improper list")))
+            (parse-error p "expected ) after improper list")))
         ((eof-object? t)
-          (error "unexpected EOF in a list"))
+          (parse-error p "unexpected EOF in a list"))
         (#t
           (read-list e p!))))))
 

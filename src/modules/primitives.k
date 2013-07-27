@@ -205,6 +205,12 @@
   ($define-ground-lambda! open-output-file (s)
     (open-utf-encoder (open-binary-output-file s)))
 
+  ($bind-ground! get-textual-input-position
+    (make-bounded-applicative
+      (list 0 1)
+      (list "app_get_textual_input_position.A0" "app_get_textual_input_position.A1")
+      ()))
+
   ($unless ($configured raw-stdio)
     (init-forms-add!
       ($quote

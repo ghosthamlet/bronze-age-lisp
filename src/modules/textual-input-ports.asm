@@ -12,9 +12,9 @@ app_open_input_string:
     xor al, (symbol_tag & bytevector_tag)
     test al, ~(symbol_tag ^ bytevector_tag)
     jnz .open_error
-    mov ecx, 10
+    mov ecx, 12
     call rn_allocate
-    mov [eax + txt_in.header], dword txt_in_header(10)
+    mov [eax + txt_in.header], dword txt_in_header(12)
     mov [eax + txt_in.env], eax
     mov [eax + txt_in.close], dword primitive_value(primop_no_op)
     mov [eax + txt_in.read], dword primitive_value(.read_method)
@@ -24,6 +24,8 @@ app_open_input_string:
     mov [eax + txt_in.state], dword fixint_value(0)
     mov [eax + txt_in.accum], dword fixint_value(0)
     mov [eax + txt_in.underlying_port], dword inert_tag
+    mov [eax + txt_in.line], dword fixint_value(1)
+    mov [eax + txt_in.column], dword fixint_value(1)
     jmp [ebp + cont.program]
   .open_error:
     mov eax, err_invalid_argument
@@ -62,6 +64,7 @@ app_open_input_string:
     pop edx
     jmp rn_error
   .read_success:
+    call txt_in_update_position
     mov [edi + txt_in.accum], dword fixint_value(0)
   .peek_success:
     mov eax, ecx
@@ -77,9 +80,9 @@ app_open_utf_decoder:
     mov eax, [edx]
     cmp al, bin_in_header(0)
     jne .type_error
-    mov ecx, 10
+    mov ecx, 12
     call rn_allocate
-    mov [eax + txt_in.header], dword txt_in_header(10)
+    mov [eax + txt_in.header], dword txt_in_header(12)
     mov [eax + txt_in.env], eax
     mov [eax + txt_in.close], dword primitive_value(.close_method)
     mov [eax + txt_in.read], dword primitive_value(.read_method)
@@ -89,6 +92,8 @@ app_open_utf_decoder:
     mov [eax + txt_in.state], dword fixint_value(0)
     mov [eax + txt_in.accum], dword fixint_value(0)
     mov [eax + txt_in.underlying_port], edx
+    mov [eax + txt_in.line], dword fixint_value(1)
+    mov [eax + txt_in.column], dword fixint_value(1)
     jmp [ebp + cont.program]
   .type_error:
     mov eax, err_invalid_argument
@@ -185,11 +190,66 @@ app_open_utf_decoder:
     pop edx
     jmp edx
   .read_success:
+    call txt_in_update_position
     mov [edi + txt_in.accum], dword fixint_value(0)
   .peek_success:
     mov eax, ecx
     jmp [ebp + cont.program]
 
+;;
+;; txt_in_update_position (native procedure)
+;;
+;; Update line and column indices based on character read.
+;;
+;; preconditions:  ECX = character (tagged) or eof-object
+;;                 EDI = textual input port object
+;;
+;; preserves:      EBX, ECX, EDX, ESI, EDI, EBP
+;; clobbers:       EAX
+;;
+;; TODO: switch to bigint on overflow.
+;;
+txt_in_update_position:
+    ;; ecx = char
+    cmp cl, char_tag
+    jne .done
+    cmp ecx, char_value(10)
+    je .down
+  .right:
+    mov eax, [edi + txt_in.column]
+    lea eax, [eax + fixint_value(1) - fixint_value(0)]
+    mov [edi + txt_in.column], eax
+    ret
+  .down:
+    mov eax, [edi + txt_in.line]
+    lea eax, [eax + fixint_value(1) - fixint_value(0)]
+    mov [edi + txt_in.line], eax
+    mov [edi + txt_in.column], dword fixint_value(1)
+  .done:
+    ret
+
+app_get_textual_input_position:
+  .A0:
+    mov ebx, private_binding(rom_string_stdin)
+  .A1:
+    test bl, 3
+    jnz .type_error
+    mov eax, [ebx + txt_in.header]
+    cmp al, txt_in_header(0)
+    jne .type_error
+    push dword [ebx + txt_in.column]
+    push dword nil_tag
+    call rn_cons
+    push dword [ebx + txt_in.line]
+    push eax
+    call rn_cons
+    jmp [ebp + cont.program]
+  .type_error:
+    mov eax, err_invalid_argument
+    mov ecx, symbol_value(rom_string_get_textual_input_position)
+    jmp rn_error
+
+    
 txt_in_try_buffer:
     ;; pre:   esi = textual input port object with buffer
     ;;        native stack (0) = fail return address
