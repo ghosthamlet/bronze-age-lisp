@@ -75,17 +75,19 @@
     ($lambda (blob-alist)
       (asm)
       (asm ";; blob heap descriptors")
+      (asm "section .bdesc1 progbits alloc noexec write align=8")
       (asm "blob_descriptors:")
       ($define! n (length blob-alist))
+      ($define! r (- ($configured blob-descriptor-capacity) n))
       (for-each
         ($lambda ((sym . index))
           (asm "  dd" (string-append* "rom_string_" index) "," (+ 1 index)))
         blob-alist)
       (asm "  dd rom_string_end, " n)
       (asm " .ram:")
-      ($let ((r (- ($configured blob-descriptor-capacity) n)))
-        (asm "  times" r "dd 0, 0")
-        (asm " .limit:"))))
+      (asm "section .bdesc2 nobits alloc noexec write align=8")
+      (asm "  resb" (* 8 r))
+      (asm " blob_descriptors.limit:")))
 
   ($define! rom-blobs
     ($lambda (objects)

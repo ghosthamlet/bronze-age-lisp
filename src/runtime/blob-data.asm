@@ -7,7 +7,7 @@
 
 %define blob_address(k) [blob_descriptors + 8*(k-1)]
 %define blob_next(k) [blob_descriptors + 8*(k-1) + 4]
-%define blob_value_bound ((1 + (blob_descriptors.limit - blob_descriptors)/8) << 8)
+%define blob_value_bound ((1 + configured_blob_descriptor_capacity) << 8)
 
 %define blob_mark_bit   0x80000000
 %define blob_index_mask 0x00FFFFFF
