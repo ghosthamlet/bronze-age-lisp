@@ -52,15 +52,64 @@
 
 ($define! account
   ($lambda (f x r1 r2)
-    ($if (equal? r1 r2)
-      (pass)
-      ($sequence
-        (fail)
-        (display "  FAIL ") (write f)
-        (display "\n    test expression:  ") (write x)
-        (display "\n    test result:      ") (write r1)
-        (display "\n    reference result: ") (write r2)
-        (newline)))))
+    ($cond
+      ((equal? r1 r2)
+        (pass))
+      ((equal? (car r1) (car r2) "error")
+        ($if (major-difference-in-error-signalling? (cdr r1) (cdr r2))
+          (report-major-failure f x r1 r2)
+          (report-minor-failure f x r1 r2)))
+      (#t
+        (report-major-failure f x r1 r2)))))
+
+($define! major-difference-in-error-signalling?
+  ($lambda ((msg1 irr1) (msg2 irr2))
+    ($define! similar-messages
+      ($or?
+        (equal? msg1 msg2)
+        (member? (list msg1 msg2)
+          ($quote*
+            ("Invalid argument structure." "Match failure")
+            ("Invalid argument structure." "Cannot traverse list structure.")
+            ("Cannot traverse list structure." "Match failure")
+            ))))
+    ($define! similar-irritants
+      ($or?
+        (equal? irr1 irr2)
+        (equal? irr1 (list irr2))
+        (equal? irr2 (list irr1))
+        ($and? (not? (null? irr2))
+               (substructure? irr2 irr1))))
+    ($or? (not? similar-messages)
+          (not? similar-irritants))))
+
+($define! substructure?
+  ($lambda (small big)
+    ($or?
+      (equal? small big)
+      ($and?
+        (pair? big)
+        ($or? (substructure? small (car big))
+              (substructure? small (cdr big)))))))
+
+($define! report-minor-failure
+  ($lambda (f x r1 r2)
+    (pass)
+    ($when #f ; change to #t to enable printing
+      (display "  minor discrepancy in error signalling of ") (write f)
+      (display "\n    test expression:  ") (write x)
+      (display "\n    test error:       ") (write (cdr r1))
+      (display "\n    reference error:  ") (write (cdr r2))
+      (newline))))
+
+($define! report-major-failure
+  ($lambda (f x r1 r2)
+    (fail)
+    (display "  FAIL ") (write f)
+    (display "\n    test expression:  ") (write x)
+    (display "\n    test result:      ") (write r1)
+    (display "\n    reference result: ") (write r2)
+    (newline)))
 
 ($define! $check
   ($vau (symbol reimpl prepare inputs) denv
