@@ -51,7 +51,10 @@
 
 ($defun-privates!
   (parse-error (p . args)
-    (apply error (append args (get-textual-input-position p))))
+    ($when (environment? p)
+      ($define! p ($remote-eval port p)))
+    (apply error
+      (append args (get-textual-input-position p))))
   (read-signed-number (p b)
     ($let1 c (peek-char p)
       ($cond
@@ -341,7 +344,7 @@
     ($let1 y (assq l ($remote-eval labels e))
       ($if (pair? y)
         (cdr y)
-        (parse-error p "undefined S-expression label" l))))
+        (parse-error e "undefined S-expression label" l))))
   (read-label-set! (e l v)
     ($set! e labels (cons (cons l v) ($remote-eval labels e))))
 
@@ -361,7 +364,7 @@
                          (p! v)
                          (read-label-set! e (cadr t) v))))
           (#t
-            (parse-error p "read-form: unexpected character" (car t))))
+            (parse-error e "read-form: unexpected character" (car t))))
         (p! t))))
   (read-list (e p!)
     ($let ((tmp (cons 0 0)))
@@ -378,9 +381,9 @@
           (read-aux-token e)
           (read-form e p!)
           ($unless (eq? (read-aux-token e) t-right)
-            (parse-error p "expected ) after improper list")))
+            (parse-error e "expected ) after improper list")))
         ((eof-object? t)
-          (parse-error p "unexpected EOF in a list"))
+          (parse-error e "unexpected EOF in a list"))
         (#t
           (read-list e p!))))))
 

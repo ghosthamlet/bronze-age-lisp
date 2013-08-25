@@ -22,6 +22,9 @@
       (#t
         (error "$e" (list* ext err))))))
 
+($define! *eof-object*
+  (with-input-from-string "" read-char))
+
 ;; invalid special tokens and character names
 ;;
 ($e "#blabla")
@@ -57,9 +60,9 @@
 ;; invalid comments
 ;;
 ($let ((m "unterminated #|block|# comment"))
-  ($e "#|aaaaa" m ())
-  ($e "#|" m ())
-  ($e "#| #| |#" m ()))
+  ($e "#|aaaaa" m (list 1 8))
+  ($e "#|" m (list 1 3))
+  ($e "#| #| |#" m (list 1 9)))
 ($e "#| |# |#")
 
 ;; invalid datum labels
@@ -67,13 +70,13 @@
 ($e "#0=" 1)
 
 ($let ((m "undefined S-expression label"))
-  ($e "#0#" m (list 0))
-  ($e "#1=(#0#)" m (list 0))
-  ($e "#0=(#1#)" m (list 1)))
+  ($e "#0#" m (list 0 1 4))
+  ($e "#1=(#0#)" m (list 0 1 8))
+  ($e "#0=(#1#)" m (list 1 1 8)))
 
 ($let ((m "invalid S-expression label"))
-  ($e "(#0)" m (list 0 #\)))
-  ($e "#0")
-  ($e "#123a" m (list 123 #\a)))
+  ($e "(#0)" m (list 0 #\) 1 5))
+  ($e "#0" m (list 0 *eof-object* 1 3))
+  ($e "#123a" m (list 123 #\a 1 6)))
 
 (summary)
