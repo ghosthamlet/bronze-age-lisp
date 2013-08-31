@@ -1,7 +1,18 @@
+;;;
+;;; blob-zero.asm
+;;;
+;;; Handle zero-terminated strings.
+;;;
 
+;;
+;; rn_blob_to_blobz (native procedure)
+;;
+;; preconditions:  EBX = blob
+;; postconditions: EAX = new blob with zero terminator
+;; preserves:      EBX, ECX, EDX, ESI, EDI, EBP
+;; clobbers:       EAX, EFLAGS
+;;
 rn_blob_to_blobz:
-    ;; pre: ebx = blob
-    ;; post: eax = new blob
     push ecx
     push ebx
     call rn_get_blob_data
@@ -17,9 +28,15 @@ rn_blob_to_blobz:
     pop ecx
     ret
 
+;;
+;; rn_blob_to_blobz (native procedure)
+;;
+;; preconditions:  EBX = pointer to start of a zero-terminated string
+;; postconditions: EAX = new blob with copy of the string
+;; preserves:      EBX, ECX, EDX, ESI, EDI, EBP
+;; clobbers:       EAX, EFLAGS
+;;
 rn_stringz_to_blob:
-    ;; pre: ebx = pointer
-    ;; post: eax = new blob
     push ecx
     push edi
     xor eax, eax

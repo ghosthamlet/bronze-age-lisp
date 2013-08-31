@@ -69,11 +69,14 @@
     get-interpreter-arguments
     rdtsc get-current-second
     get-current-jiffy get-jiffies-per-second
-    collect-garbage)
+    collect-garbage
+    getpid)
   ($bounded-app 0 1
     exit
     open-output-string
     open-output-bytevector)
+  ($bounded-app 0 2
+    waitpid)
   ($bounded-app 1 1
     not?
     negate
@@ -100,7 +103,10 @@
   ($bounded-app 1 2
     char-digit? char->digit digit->char
     open-utf-encoder
-    make-vector make-bytevector)
+    make-vector make-bytevector
+    fork)
+  ($bounded-app 1 3
+    execve)
   ($bounded-app 2 2
     cons eval
     list-tail list-ref

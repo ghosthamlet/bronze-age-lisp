@@ -17,6 +17,7 @@
 ($bind-private! signal-names
   ($quote*
     (#:sigint  . 2)
+    (#:sigquit . 3)
     (#:sigusr1 . 10)
     (#:sigusr2 . 12)
     (#:sigterm . 15)))
@@ -66,15 +67,17 @@
 
 ($define-ground-lambda! with-signal-handler ((s h) f)
   ($define! old-h (signal s h))
-  (guard-dynamic-extent
-    (list (list root-continuation
-                ($lambda (obj . #ignore)
-                  (signal s h)
-                  obj)))
-    ($lambda () (apply f ()))
-    (list (list root-continuation
-                ($lambda (obj . #ignore)
-                  (signal s old-h)
-                  obj))))
-  (signal s old-h))
+  ($define! result
+    (guard-dynamic-extent
+      (list (list root-continuation
+                  ($lambda (obj . #ignore)
+                    (signal s h)
+                    obj)))
+      ($lambda () (apply f ()))
+      (list (list root-continuation
+                  ($lambda (obj . #ignore)
+                    (signal s old-h)
+                    obj)))))
+  (signal s old-h)
+  result)
 

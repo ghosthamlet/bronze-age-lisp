@@ -4,13 +4,14 @@
 ;;; Linux file descriptors wrapped as port objects.
 ;;;
 
-EINTR    equ 4
+EINTR     equ 4
 
-O_RDONLY equ 0o0000000  ; octal, see linux headers
-O_WRONLY equ 0o0000001
-O_CREAT  equ 0o0000100
-O_NOCTTY equ 0o0000400
-O_TRUNC  equ 0o0001000
+O_RDONLY  equ 0o0000000  ; octal, see linux headers
+O_WRONLY  equ 0o0000001
+O_CREAT   equ 0o0000100
+O_NOCTTY  equ 0o0000400
+O_TRUNC   equ 0o0001000
+O_CLOEXEC equ 0o2000000
 
     align 4
 linux_close:
@@ -128,7 +129,7 @@ linux_open_input:
     mov ebx, eax
     call rn_get_blob_data
     mov eax, 5 ; open syscall
-    mov ecx, O_RDONLY
+    mov ecx, O_RDONLY | O_CLOEXEC
     mov edx, 0
     call call_linux
     test eax, eax   ; check return code
@@ -149,7 +150,7 @@ linux_open_output:
     mov ebx, eax
     call rn_get_blob_data
     mov eax, 5 ; open syscall
-    mov ecx, O_WRONLY | O_CREAT | O_TRUNC
+    mov ecx, O_WRONLY | O_CREAT | O_TRUNC | O_CLOEXEC
     mov edx, 0o666
     call call_linux
     test eax, eax   ; check return code

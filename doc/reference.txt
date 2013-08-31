@@ -182,6 +182,7 @@ List of combiners bound in the ground environment
   (error-object-source ERROR-OBJECT)                 ; ext
   (eval OBJECT ENV)
   (even? . NUMs)
+  (execve PATH [ARGS [ENV]])                         ; ext
   (exit OBJECT)
   (extend-continuation CONT APPLICATIVE [ENV])
 
@@ -192,6 +193,7 @@ List of combiners bound in the ground environment
   (flush-output-port [PORT])
   (force PROMISE)
   (for-each APPLICATIVE . LISTs)
+  (fork APPLICATIVE [CONTINUATION])                  ; ext
 
   (gcd . NUMs)
   (get-current-environment)
@@ -211,6 +213,7 @@ List of combiners bound in the ground environment
   (get-output-bytevector BYTEVECTOR-PORT)            ; r7rs
   (get-output-bytevector-position BYTEVECTOR-PORT)   ; ext
   (get-performance-statistics)                       ; ext
+  (getpid)                                           ; ext
   ($get-printer-flag SYMBOL)                         ; ext
   ($get-registered-library LIBRARY-NAME)             ; klisp
   (get-script-arguments)                             ; klisp
@@ -351,6 +354,7 @@ List of combiners bound in the ground environment
   (substring STRING INDEX INDEX)
   (symbol? . OBJECTs)
   (symbol->string SYMBOL)
+  (system STRING)                                    ; ext
 
   (tc-cbreak-noecho BYTEVECTOR)                      ; ext
   (tcgetattr PORT)                                   ; ext
@@ -371,6 +375,7 @@ List of combiners bound in the ground environment
   (vector-ref VECTOR INDEX)                          ; klisp, r7rs
   (vector-set! VECTOR INDEX OBJECT)                  ; klisp, r7rs
 
+  (waitpid [PID [OPTIONS]])                          ; ext
   (with-input-from-file FILENAME COMBINER)
   (with-input-from-port FILENAME COMBINER)
   (with-input-from-string FILENAME COMBINER)         ; ext
@@ -719,6 +724,94 @@ Bronze Age Lisp Extensions
     PROMPT must be a string and HISTORY and COMPLETIONS
     must be lists of strings.
 
+ 8) Process management
+
+  (execve PATH [ARGS [ENVIRON]])
+
+    Replaces the interpreter by the program loaded from PATH.
+
+    The list ARGS of strings is converted to command line
+    the argument vector. The list must have at least one element.
+    The first element becomes the "program name" argv[0].
+
+    If ENVIRON is not specified or it is equal to #ignore,
+    the program inherits the environment from the parent process.
+    Otherwise, ENVIRON must be a list of strings of the
+    form "NAME=VALUE", and it is passed as an environment to
+    the program.
+
+    The form (execve ...) does not return, unless an error occurs.
+
+  (fork APPLICATIVE [CONTINUATION]) => PID / ?
+
+    Creates a new child process using the fork() system
+    call. The program proceeds differently in the
+    parent and in the child processes.
+
+      - In the parent process, the (fork ...) combination
+        returns the process id of the child.
+
+      - In the child process, the APPLICATIVE is called
+        on the empty argument list. If CONTINUATION is
+        specified, then the call takes place in the
+        dynamic extent of CONTINUATION.
+
+    If CONTINUATION is specified, the child executes
+    a program equivalent to
+
+      (apply-continuation CONTINUATION (APPLICATIVE))
+
+    except that no continuation guards are invoked. This
+    behavior is not consistent with the usual semantics
+    of guarded continuations in the Kernel Language. The
+    inconsistency was introduced in order to implement
+    the typical Unix fork-exec operation. The child
+    process can exit() after failed exec() without
+    invoking the continuation guards installed in
+    the parent process.
+
+  (getpid) => INTEGER
+
+    Returns the process ID of the interpreter.
+
+  (system STRING) => (TYPE CODE)
+
+    Executes STRING as a shell command and waits for its
+    completion. Returns (#:exited EXIT-CODE), if the shell
+    exits, and (#:signalled SIGNAL-NUMBER), if the shell was
+    terminated by a signal.
+
+    Modelled after the POSIX library function system().
+
+    Application notes:
+
+      The errors which may occur while starting the shell or
+      executing the command are not propagated to the
+      error-continuation of the calling program. Instead, an
+      error message is printed on the standard error.
+
+      The program which uses system should flush all ports
+      associated with any file descriptor which may be used
+      by the shell command.
+
+  (waitpid [PID [#:nohang]]) => (REAL-PID TYPE CODE)
+
+    Wait until a child process terminates. The PID
+    is an integer specifying the process ID or
+    #:ignore.
+
+    The result is a list (REAL-PID TYPE CODE), where
+    REAL-PID is the PID of the process which terminated,
+    TYPE is #:exited or #:signalled, and CODE is the
+    exit code or signal number associated with the
+    termination.
+
+    The form (waitpid PID #:nohang) returns without waiting.
+    If no child has exited, the list (#inert #:waiting #inert)
+    is returned.
+
+    This function is an interface to Linux system call
+    waitpid(). See wait(2) man page for more information.
 
 Part II - REPL
 ==============

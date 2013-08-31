@@ -57,4 +57,5 @@
     (invalid-selector "Invalid continuation guard selector.")
     (invalid-interceptor "Invalid continuation guard interceptor.")
     (signal-initialization "Error while initializing signal handling.")
+    (syscall "System call error.")
   ))

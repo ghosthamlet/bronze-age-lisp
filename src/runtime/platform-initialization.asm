@@ -108,8 +108,7 @@ rn_interpreter_arguments:
 ;; preconditions:  EDI = list tail
 ;;                 EBP = current continuation (for error reporting)
 ;;
-;; postconditions: All environment variables are added
-;;                 to the environment.
+;; postconditions: EDI = list of pairts (NAME . VALUE)
 ;;
 ;; preserves:      ESI, EDI, EBP
 ;; clobbers:       EAX, EBX, ECX, EDX, EFLAGS
