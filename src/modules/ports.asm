@@ -65,7 +65,7 @@ app_read_typed:
     mov edx, [esi + operative.var4]    ; method index (tagged fixint)
     mov eax, [ebx + edx - 1]           ; method combiner
     mov edi, [ebx + bin_out.env]       ; environment for port method
-    mov ebx, inert_tag                 ; method argument
+    mov ebx, fixint_value(configured_default_buffer_size)  ; method argument
     rn_trace configured_debug_ports, 'read-typed', hex, esi, hex, edx
     jmp rn_combine
 

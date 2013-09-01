@@ -320,6 +320,7 @@ List of combiners bound in the ground environment
 
   (rdtsc)                                            ; ext
   (read [PORT])
+  (read-bytevector [PORT])                           ; ext
   (read-char [PORT])
   (read-edit PROMPT HISTORY COMPLETIONS)             ; ext
   (read-key [PORT])                                  ; ext
@@ -581,6 +582,10 @@ Bronze Age Lisp Extensions
     Closes PORT, silently ignoring all errors (including
     type error in PORT argument).
 
+  (dup2 PORT/FIXINT PORT/FIXINT) => #inert
+
+    Interface to dup2() system call. See dup2(2) man page.
+
   (get-output-bytevector-position PORT)
       => fixint
 
@@ -599,6 +604,14 @@ Bronze Age Lisp Extensions
     may not be reliable if used on terminal port in
     (with-noncanonical-input ...).
 
+  (open-binary-pipe [#:no-cloexec]) => (IN-PORT OUT-PORT)
+
+    Creates a pipe and two unbuffered binary ports associated
+    with its read and write ends.
+
+    The pipe is created with the flag O_CLOEXEC (see man pipe(2)),
+    unless #:no-cloexec is passed to (open-binary-pipe ...).
+
   (open-utf-decoder BINARY-INPUT-PORT)
       => TEXTUAL-INPUT-PORT
 
@@ -615,6 +628,12 @@ Bronze Age Lisp Extensions
     Closing the textual port causes closing of the
     underlying binary port.
 
+  (read-bytevector [PORT])
+      => BYTEVECTOR/EOF-OBJECT
+
+    Reads up to ($configured default-buffer-size) bytes from
+    a binary input port.
+
   (write-utf8-string STRING [BINARY-OUTPUT-PORT])
       => #inert
 
@@ -626,18 +645,6 @@ Bronze Age Lisp Extensions
 
     Writes UTF-8 representation of CHAR to
     a binary output port.
-
-  (open-binary-pipe [#:no-cloexec]) => (IN-PORT OUT-PORT)
-
-    Creates a pipe and two unbuffered binary ports associated
-    with its read and write ends.
-
-    The pipe is created with the flag O_CLOEXEC (see man pipe(2)),
-    unless #:no-cloexec is passed to (open-binary-pipe ...).
-
-  (dup2 PORT/FIXINT PORT/FIXINT) => #inert
-
-    Interface to dup2() system call. See dup2(2) man page.
 
  6) Terminal interface
 
@@ -835,7 +842,7 @@ Bronze Age Lisp Extensions
     Same as ($with-subshell ...), except that the program
     and its command line and environment is specified
     in the same way as for (execve ...).
-    
+
     Example:
 
       ($with-subprocess

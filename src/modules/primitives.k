@@ -197,6 +197,8 @@
                txt-in-header-tag 3)
     ($bind-io! peek-char "app_read_typed" (0 1)
                txt-in-header-tag 4)
+    ($bind-io! read-bytevector "app_read_typed" (0 1)
+               bin-in-header-tag 3)
 
     ($bind-ground! flush-output-port
       (make-bounded-applicative

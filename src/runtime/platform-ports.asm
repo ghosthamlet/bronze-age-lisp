@@ -37,12 +37,17 @@ linux_close:
     mov ecx, inert_tag
     jmp rn_error
 
+;;
+;; linux_read (continuation passing procedure)
+;;
+;; preconditions:  EBX = request length (tagged fixint, positive)
+;;                 EDI = file descriptor (tagged fixint)
+;;                 EBP = continuation
+;;
+;; postconditions: EAX = bytevector or eof-object
+;;
     align 4
 linux_read:
-    ;; pre:  ebx = request length (tagged fixint, positive)
-    ;;       edi = file descriptor (tagged fixint)
-    ;;       ebp = continuation
-    ;; post: eax = number of bytes read (tagged fixint) or eof-object
     push ebx
     mov ecx, ebx
     shr ecx, 2
