@@ -202,7 +202,7 @@
       ((eq? c #\newline) (write-string "newline" p))
       ((eq? c #\space) (write-string "space" p))
       ((eq? c #\escape) (write-string "escape" p))
-      ((char<=? #\space c #\x7D) (write-char c p))
+      ((char<=? #\space c #\x7E) (write-char c p))
       (#t
         (write-char #\x p)
         (print-integer (char->integer c) 16 p))))
@@ -210,7 +210,7 @@
     ($cond
       ((eq? c #\\) (write-string "\\\\" p))
       ((eq? c #\") (write-string "\\\"" p))
-      ((char<=? #\x20 c #\x7D) (write-char c p))
+      ((char<=? #\x20 c #\x7E) (write-char c p))
       ((eq? c #\newline) (write-string "\\n" p))
       (#t
         (write-string "\\x" p)
