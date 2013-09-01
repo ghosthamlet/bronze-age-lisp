@@ -3,6 +3,7 @@ TODO
 
 - add tests
 - add ground bindings for Klisp compatibility
+- complete binary port features
 - improve unicode support
 - improve REPL (full TAB completion)
 - add comments, write documentation

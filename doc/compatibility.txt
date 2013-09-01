@@ -117,14 +117,19 @@ Part III - Compatibility with the host environment
                  system call number on x86
     ----------------------------------------
     exit         0x01
+    fork         0x02
     read         0x03
     write        0x04
     open         0x05
     close        0x06
+    execve       0x0B
+    getpid       0x14
     ioctl        0x36
+    dup2         0x3F
     gettimeofday 0x4E
     rt_sigaction 0xAE
     sigaltstack  0xBA
+    pipe2        0x14B
 
   The interpreter uses the "vsyscall" mechanism.
 

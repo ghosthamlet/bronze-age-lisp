@@ -74,7 +74,8 @@
   ($bounded-app 0 1
     exit
     open-output-string
-    open-output-bytevector)
+    open-output-bytevector
+    open-binary-pipe)
   ($bounded-app 0 2
     waitpid)
   ($bounded-app 1 1
@@ -114,7 +115,8 @@
     string-ref vector-ref bytevector-u8-ref
     div mod div-and-mod
     arithmetic-shift
-    apply-continuation)
+    apply-continuation
+    dup2)
   ($bounded-app 2 3
     apply extend-continuation)
   ($bounded-app 3 3

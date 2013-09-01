@@ -247,7 +247,7 @@ app_waitpid:
     call .compute_pid
     call .compute_options
     push dword 0
-    mov eax, 0x07
+    mov eax, 0x07               ; waitpid() system call
     mov ecx, esp
     call call_linux
     test eax, eax
@@ -331,3 +331,70 @@ app_waitpid:
   .options_nohang:
     mov edx, WNOHANG
     ret
+
+;;
+;; app_open_binary_pipe (continuation passing procedure)
+;;
+;; Interface to linux pipe() system call.
+;;
+;;   (open-binary-pipe [#:no-cloexec]) => (RD-PORT WR-PORT)
+;;
+;; preconditions:  EBX = #:no-cloexec (optional)
+;;                 EBP = current continuation
+;;
+app_open_binary_pipe:
+  .invalid_argument:
+    mov eax, err_invalid_argument
+    mov ecx, symbol_value(rom_string_open_binary_pipe)
+    jmp rn_error
+  .system_error:
+    neg eax
+    lea ebx, [4*eax + 1]
+    mov eax, err_syscall
+    mov ecx, symbol_value(rom_string_open_binary_pipe)
+    jmp rn_error
+  .A1:
+    cmp ebx, keyword_value(rom_string_no_cloexec)
+    jne .invalid_argument
+    xor ecx, ecx
+    jmp .system_call
+  .A0:
+    mov ecx, O_CLOEXEC
+  .system_call:
+    mov eax, 0x14B        ; pipe2() linux system call
+    lea esp, [esp - 8]
+    mov ebx, esp
+    call call_linux
+    jnz .system_error
+    pop edx               ; EDX := pipefd[0] = read file desc.
+    pop esi               ; ESI := pipefd[1] = write file desc.
+    lea edx, [4*edx + 1]  ; EDX := tagged read file descriptor
+    lea esi, [4*esi + 1]  ; ESI := tagged read file descriptor
+                          ; words  object
+    mov ecx, 2*6 + 4      ;  2     #1=(#3# . #2#)
+    call rn_allocate      ;  2     #2=(#2# . NIL)
+    mov edi, eax          ;  6     #3=<port for reading>
+                          ;  6     #4=<port for writing>
+    lea eax, [edi + 16]
+    mov [eax + bin_in.header], dword bin_in_header(6)
+    mov [eax + bin_in.env], edx
+    mov [eax + bin_in.close], dword primitive_value(linux_close)
+    mov [eax + bin_in.read], dword primitive_value(linux_read)
+    mov [eax + bin_in.peek], dword primitive_value(linux_nop)
+    mov [eax + bin_in.var0], edx ; dummy
+    mov [edi], eax
+    lea eax, [eax + 6*4]
+    mov [eax + bin_out.header], dword bin_out_header(6)
+    mov [eax + bin_out.env], esi
+    mov [eax + bin_out.close], dword primitive_value(linux_close)
+    mov [eax + bin_out.write], dword primitive_value(linux_write)
+    mov [eax + bin_out.flush], dword primitive_value(linux_nop)
+    mov [eax + bin_out.var0], esi ; dummy
+    mov [edi + 8], eax
+    lea eax, [edi + 8]             ; tag #2#
+    load_mutable_pair eax, eax     ;   as a mutable pair
+    mov [edi + 4], eax             ;   store in #1#'s cdr
+    mov [edi + 12], dword nil_tag  ; terminate the list
+    load_mutable_pair eax, edi     ; tag #1# as a mutable pair
+    xor edi, edi
+    jmp [ebp + cont.program]

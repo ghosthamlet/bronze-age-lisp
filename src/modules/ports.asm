@@ -231,6 +231,10 @@ app_open_binary_output_file:
 ;; postconditions: EAX = EBX = underlying linux port (with file descriptor)
 ;;                 ZF = 1 success
 ;;                 ZF = 0 failure
+;;
+;; preserves:      ECX, EDX, ESI, EDI, EBP
+;; clobbers:       EAX, EBX, EFLAGS
+;;
 get_linux_port:
   .recurse:
     test bl, 3
@@ -271,6 +275,46 @@ get_linux_port:
   .has_file_descriptor:
     mov eax, ebx
     ret
+
+;;
+;; app_dup2 (continuation passing procedure)
+;;
+;; Interface to linux dup2() system call.
+;;
+;;   (dup2 PORT/INTEGER PORT/INTEGER) => #inert
+;;
+;; preconditions:  EBX = port object or nonnegative fixint
+;;                 ECX = port object or nonnegative fixint
+;;                 EBP = current continuation
+;;
+app_dup2:
+  .A2:
+    mov esi, symbol_value(rom_string_dup2)
+    mov edi, ecx              ; EDI := 2nd arg
+    call .get_fd              ; EBX := 1st fd
+    xchg ebx, edi             ; EDI := 1st fd, EBX := 2nd arg
+    call .get_fd              ; EBX := 2nd fd
+    mov ecx, ebx              ; ECX := 2nd fd
+    mov ebx, edi              ; EBX := 1st fd
+    call rn_dup2
+    mov eax, inert_tag
+    jmp [ebp + cont.program]
+
+  .get_fd:
+    mov eax, ebx
+    xor al, 1
+    test eax, 0x80000003
+    jnz .port
+    ret
+  .port:
+    mov ecx, esi
+    call get_linux_port
+    jnz .invalid_argument
+    mov ebx, [eax + txt_out.env]
+    ret
+  .invalid_argument:
+    mov eax, err_invalid_argument
+    jmp rn_error
 
 ;;
 ;; pred_terminal_port (native procedure)

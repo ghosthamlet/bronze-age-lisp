@@ -219,6 +219,30 @@ rn_file_descriptor_ready:
     mov ecx, inert_tag
     jmp rn_error
 
+;;
+;; rn_dup2 (native procedure)
+;;
+;; File descriptor duplication.
+;;
+;; preconditions:  EBX = file descriptor (tagged fixint)
+;;                 ECX = file descriptor (tagged fixint)
+;;                 ESI = symbol for error reporting
+;;
+rn_dup2:
+    mov eax, 0x3F   ; linux dup2() system call
+    shr ebx, 2
+    shr ecx, 2
+    call call_linux
+    test eax, eax
+    js .system_error
+    ret
+  .system_error:
+    neg eax
+    lea ebx, [4*eax + 1]
+    mov eax, err_syscall
+    mov ecx, esi
+    jmp rn_error
+
 %define TCGETS  0x5401
 %define TCSETSF 0x5404
 %define NCCS    19

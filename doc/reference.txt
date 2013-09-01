@@ -170,6 +170,7 @@ List of combiners bound in the ground environment
   (div0-and-mod0 INTEGER INTEGER)
   (div INTEGER INTEGER)
   (div0 INTEGER INTEGER)
+  (dup2 PORT/FIXINT FIXINT)                          ; ext
 
   (encycle! LIST INDEX INDEX)
   (environment? . OBJECTs)
@@ -293,6 +294,7 @@ List of combiners bound in the ground environment
   (odd? . NUMs)
   (open-binary-input-file FILENAME)
   (open-binary-output-file FILENAME)
+  (open-binary-pipe [FLAGS])                         ; ext
   (open-input-file FILENAME)
   (open-input-string STRING)
   (open-output-file FILENAME)
@@ -386,6 +388,8 @@ List of combiners bound in the ground environment
   (with-output-to-bytevector COMBINER)               ; ext
   ($with-printer-flags BINDINGS COMBINER)            ; ext
   (with-signal-handler (SIGSPEC HANDLER) COMBINER)   ; ext
+  ($with-subprocess EXECVE-ARGS REDIRECTIONS . BODY) ; ext
+  ($with-subshell COMMAND REDIRECTIONS . BODY)       ; ext
   (wrap COMBINER)
   (write OBJECT [PORT])
   (write-bytevector BYTEVECTOR [PORT])               ; klisp
@@ -623,6 +627,18 @@ Bronze Age Lisp Extensions
     Writes UTF-8 representation of CHAR to
     a binary output port.
 
+  (open-binary-pipe [#:no-cloexec]) => (IN-PORT OUT-PORT)
+
+    Creates a pipe and two unbuffered binary ports associated
+    with its read and write ends.
+
+    The pipe is created with the flag O_CLOEXEC (see man pipe(2)),
+    unless #:no-cloexec is passed to (open-binary-pipe ...).
+
+  (dup2 PORT/FIXINT PORT/FIXINT) => #inert
+
+    Interface to dup2() system call. See dup2(2) man page.
+
  6) Terminal interface
 
   (terminal-port? . OBJECTs) => BOOLEAN
@@ -812,6 +828,63 @@ Bronze Age Lisp Extensions
 
     This function is an interface to Linux system call
     waitpid(). See wait(2) man page for more information.
+
+  ($with-subprocess EXECVE-ARGS REDIRECTIONS . BODY)
+      => ((TYPE CODE) RESULT)
+
+    Same as ($with-subshell ...), except that the program
+    and its command line and environment is specified
+    in the same way as for (execve ...).
+    
+    Example:
+
+      ($with-subprocess
+        ("/bin/date" (list "date") (list "TZ=XYZ+5"))
+        ((stdout f))
+        (read-line f))
+
+  ($with-subshell COMMAND REDIRECTIONS . BODY)
+      => ((TYPE CODE) RESULT)
+
+    Creates a subprocess to execute COMMAND through the
+    operating systems shell and executes BODY in parallel
+    with the subprocess. Waits for command completion and
+    returns the exit status status (as in (system ...)) and
+    result of the last form in BODY.
+
+    The standard input, output and error of the command can
+    be redirected to ports accessible in BODY. The argument
+    REDIRECTIONS is a list of elements of the form
+    (FILESPEC VAR). The symbol VAR is bound to a port
+    associated with a pipe connected to FILESPEC.
+
+      FILESPEC          bind VAR to a port connected to
+      ---------------------------------------------------------
+      stdin         ... standard input of the command (textual)
+      binary-stdin  ... standard input (binary unbuffered)
+      stdout        ... standard output (textual)
+      binary-stdout ... standard output (binary unbuffered)
+      stderr        ... standard output (textual)
+      stdout+stderr ... standard output and standard error (textual)
+
+    The port objects bound to VAR can be closed inside BODY
+    using an applicative which is bound to the symbol
+    close-pipe.
+
+    Example: Compute MD5 checksum of a string using unix commands.
+
+      ($define! md5
+        ($lambda (s)
+          ($define! (status result)
+            ($with-subshell
+              "md5sum - | cut -d' ' -f1"
+              ((stdin f) (stdout g))
+              (write-string s f)
+              (close-pipe f)
+              (read-line g)))
+          ($if (equal? status (list #:exited 0))
+            result
+            (error "md5sum failed" status))))
 
 Part II - REPL
 ==============
