@@ -198,7 +198,7 @@
                          (memq? d extended-identifier-characters))
                     (read-symbol-tail p (open-output-string* d)))
                   (#t
-                    (pase-error p "invalid keyword")))))))
+                    (parse-error p "invalid keyword")))))))
         ((char<=? #\0 c #\9)
           ($let* ((n (read-number-tail p 10 (char->digit c 10)))
                   (k (read-char p)))
