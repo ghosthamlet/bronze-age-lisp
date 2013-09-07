@@ -158,7 +158,8 @@
     (#\b . (read-signed-number p 2))
     (#\! . ($sequence (skip-line p) (read-token p)))
     (#\| . ($sequence (skip-block-comment 1 (read-char p) p)
-                      (read-token p)))))
+                      (read-token p)))
+    (#\; . ($sequence (read-aux p) (read-token p)))))
 
 ($defun-privates!
   (read-token (p)
