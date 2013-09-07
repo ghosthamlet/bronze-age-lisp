@@ -86,6 +86,7 @@
   ($bind-native-predicate! char-alphabetic? "pred_char" (make-nonlisp-value "alphabetic_code"))
   ($bind-native-predicate! library-name-component? "pred_library_name_component")
   ($bind-native-predicate! u8? "pred_u8")
+  ($bind-native-predicate! file-exists? "pred_file_exists")
 
   ($when ($configured stdio)
     ($bind-header-predicate! textual-port? txt-in-header-tag #b11111011)

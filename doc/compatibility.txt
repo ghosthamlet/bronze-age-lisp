@@ -137,6 +137,7 @@ Part III - Compatibility with the host environment
     gettimeofday 0x4E
     rt_sigaction 0xAE
     sigaltstack  0xBA
+    stat64       0xC3
     pipe2        0x14B
 
   The interpreter uses the "vsyscall" mechanism.

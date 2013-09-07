@@ -49,6 +49,26 @@ app_get_jiffies_per_second:
     mov eax, fixint_value(1000000)
     jmp [ebp + cont.program]
 
+pred_file_exists:
+    ;; see predicates.asm for calling conventions
+    cmp bl, string_tag
+    jne .type_error
+    call rn_blob_to_blobz
+    mov ebx, eax
+    call rn_get_blob_data
+    mov ecx, scratchpad_start
+    mov eax, 0xC3         ; linux stat64() system call
+    call call_linux
+    mov ebx, eax
+    xor eax, eax
+    test ebx, ebx
+    setz al
+    ret
+  .type_error:
+    mov eax, err_invalid_argument
+    mov ecx, [esi + operative.var0]
+    jmp rn_error
+
 app_delete_file:
   .A1:
     cmp bl, string_tag

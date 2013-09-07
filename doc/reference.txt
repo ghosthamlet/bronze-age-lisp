@@ -188,6 +188,7 @@ List of combiners bound in the ground environment
   (exit OBJECT)
   (extend-continuation CONT APPLICATIVE [ENV])
 
+  (file-exists? . STRINGs)                           ; klisp
   (filter PREDICATE LIST)
   (find-required-filename STRING)                    ; klisp
   (finite-list? . OBJECTs)
@@ -447,6 +448,13 @@ Bronze Age Lisp Extensions
     Fully applicative version of $set!. Evaluates all
     arguments in the dynamic environment, and matches
     PTREE with OBJECT in the environment ENV.
+
+  (file-exists? . STRINGs)
+
+    Return #t if each of the arguments refers to an existing file
+    or directory. Bronze Age Lisp supports arbitrary number of
+    arguments for the sake of consistency with other predicates.
+    Klisp and R7Rs support only one argument in (file-exists? ...).
 
  3) convenience combiners
     ---------------------
