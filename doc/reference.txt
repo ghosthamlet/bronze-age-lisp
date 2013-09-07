@@ -164,6 +164,7 @@ List of combiners bound in the ground environment
 
   ($define! PTREE FORM)
   (defined-environment-variable? STRING)             ; klisp
+  (delete-file STRING)                               ; r7rs
   (digit->char INTEGER RADIX)
   (display OBJECT [PORT])
   (div-and-mod INTEGER INTEGER)
@@ -236,6 +237,7 @@ List of combiners bound in the ground environment
 
   (keyword? . OBJECTs)                               ; klisp
   (keyword->string KEYWORD)                          ; klisp
+  (keyword->symbol KEYWORD)                          ; klisp
 
   ($lambda PTREE . BODY)
   ($lazy FORM)
@@ -356,6 +358,7 @@ List of combiners bound in the ground environment
   (string-size STRING)
   (substring STRING INDEX INDEX)
   (symbol? . OBJECTs)
+  (symbol->keyword SYMBOL)                           ; klisp
   (symbol->string SYMBOL)
   (system STRING)                                    ; ext
 

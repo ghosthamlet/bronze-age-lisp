@@ -100,7 +100,8 @@
     memoize
     get-library-export-list get-library-environment
     integer-length bitwise-not
-    shared-structure-indicator)
+    shared-structure-indicator
+    delete-file)
   ($bounded-app 1 2
     char-digit? char->digit digit->char
     open-utf-encoder

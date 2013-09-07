@@ -49,6 +49,30 @@ app_get_jiffies_per_second:
     mov eax, fixint_value(1000000)
     jmp [ebp + cont.program]
 
+app_delete_file:
+  .A1:
+    cmp bl, string_tag
+    jne .type_error
+    call rn_blob_to_blobz
+    mov ebx, eax
+    call rn_get_blob_data
+    mov eax, 0x0A         ; linux unlink() system call
+    call call_linux
+    test eax, eax
+    jnz .system_error
+    mov eax, inert_tag
+    jmp [ebp + cont.program]
+  .type_error:
+    mov eax, err_invalid_argument
+    mov ecx, symbol_value(rom_string_delete_file)
+    jmp rn_error
+  .system_error:
+    neg eax                  ; EAX := negated errno
+    lea ebx, [4*eax + 1]     ; EBX := errno tagged as fixint
+    mov eax, err_syscall
+    mov ecx, symbol_value(rom_string_delete_file)
+    jmp rn_error
+
 op_init_environ:
     mov edi, private_binding(rom_string_environ)
     cmp edi, inert_tag

@@ -21,16 +21,16 @@ Part I - Compliance with language definition
   #e-infinity and #e+infinity.
 
     The lack of the advanced numeric features means
-  that Bronze Age Lisp is NOT comprehensive implementation
+  that Bronze Age Lisp is NOT a comprehensive implementation
   of Kernel in the sense of [KR section 1.3.2].
 
 Robustness
 ----------
 
   The implementation is not robust. Not all errors
-  describedin the Kernel Report are signalled.
+  described in the Kernel Report are signalled.
 
-  Namely, the result of evaluation in tail position
+  Namely, the result of evaluation in the tail position
   of ($and ...) and ($or ...) is never checked,
   see also [KR section 6.1.4].
 
@@ -103,11 +103,18 @@ Ports
 
   UTF-8 encoding is always assumed for textual ports.
 
+System
+------
+
+  UTF-8 encoding is always assumed for file names.
+
+  (delete-file ...) cannot delete directories.
+
 Part III - Compatibility with the host environment
 ==================================================
 
   The interpreter is an executable file in ELF format
-  which can be run in under Linux operating system
+  which can be run under Linux operating system
   on x86 (32-bit) platforms. Other platforms are not
   supported.
 
@@ -122,6 +129,7 @@ Part III - Compatibility with the host environment
     write        0x04
     open         0x05
     close        0x06
+    unlink       0x0A
     execve       0x0B
     getpid       0x14
     ioctl        0x36
