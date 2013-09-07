@@ -4,6 +4,7 @@ TODO
 - add tests
 - add ground bindings for Klisp compatibility
 - complete binary port features
+- print human-redable messages for errors originating from system calls
 - improve unicode support
 - improve REPL (full TAB completion)
 - add comments, write documentation
@@ -44,8 +45,6 @@ Missing bindings from klisp:
   System:
     system-error-continuation
     rename-file
-    delete-file
-    file-exists?
 
   Numbers:
     expt
