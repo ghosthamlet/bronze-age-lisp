@@ -68,23 +68,38 @@ aux_string_to_symbol:
 app_symbol_Gstring:
   .A1:
     cmp bl, symbol_tag
+    mov ecx, symbol_value(rom_string_symbol_Gstring)
     jne .error
     mov bl, string_tag
     mov eax, ebx
     jmp [ebp + cont.program]
   .error:
     mov eax, err_invalid_argument
-    mov ecx, symbol_value(rom_string_symbol_Gstring)
     jmp rn_error
+
+app_symbol_Gkeyword:
+  .A1:
+    cmp bl, symbol_tag
+    mov ecx, symbol_value(rom_string_symbol_Gkeyword)
+    jne app_symbol_Gstring.error
+    mov bl, keyword_tag
+    mov eax, ebx
+    jmp [ebp + cont.program]
 
 app_keyword_Gstring:
   .A1:
     cmp bl, keyword_tag
-    jne .error
+    mov ecx, symbol_value(rom_string_keyword_Gstring)
+    jne app_symbol_Gstring.error
     mov bl, string_tag
     mov eax, ebx
     jmp [ebp + cont.program]
-  .error:
-    mov eax, err_invalid_argument
-    mov ecx, symbol_value(rom_string_keyword_Gstring)
-    jmp rn_error
+
+app_keyword_Gsymbol:
+  .A1:
+    cmp bl, keyword_tag
+    mov ecx, symbol_value(rom_string_keyword_Gsymbol)
+    jne app_symbol_Gstring.error
+    mov bl, symbol_tag
+    mov eax, ebx
+    jmp [ebp + cont.program]
