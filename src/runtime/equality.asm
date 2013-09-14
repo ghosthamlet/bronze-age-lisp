@@ -169,6 +169,8 @@ rn_equal_quick:
     je  .L1
     cmp bl, string_tag  ; is the first value a string?
     je .string
+    cmp bl, bytevector_tag  ; is the first value a bytevector?
+    je .bytevector
     test bl, 3
     jz .header          ; is the first value an object with header?
     jp .pair            ; is the first value a pair?
@@ -214,6 +216,13 @@ rn_equal_quick:
     jmp .L1
   .string:
     cmp cl, string_tag
+    jne .not_equal
+    mov eax, ecx
+    call rn_compare_blob_data
+    jne .not_equal
+    jmp .L1
+  .bytevector:
+    cmp cl, bytevector_tag
     jne .not_equal
     mov eax, ecx
     call rn_compare_blob_data
@@ -272,6 +281,8 @@ rn_equal_full:
     je  .L1
     cmp bl, string_tag  ; is the first value a string?
     je .string
+    cmp bl, bytevector_tag  ; is the first value a string?
+    je .bytevector
     test bl, 3
     jz .header          ; is the first value an object with header?
     jp .pair            ; is the first value a pair?
@@ -336,6 +347,13 @@ rn_equal_full:
     jmp .L1
   .string:
     cmp cl, string_tag
+    jne .not_equal
+    mov eax, ecx
+    call rn_compare_blob_data
+    jne .not_equal
+    jmp .L1
+  .bytevector:
+    cmp cl, bytevector_tag
     jne .not_equal
     mov eax, ecx
     call rn_compare_blob_data
