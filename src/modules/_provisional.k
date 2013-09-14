@@ -10,14 +10,6 @@
 ;;; TODO: fix and/or port to assembly language
 ;;;
 
-($define-ground-lambda! reverse (a)
-  (naive-reverse a ()))
-
-($define-private-lambda! naive-reverse (a b)
-  ($if (pair? a)
-    (naive-reverse (cdr a) (cons (car a) b))
-    b))
-
 ($define-ground-lambda! list-tabulate (n f)
   ($define! g
     ($lambda (k a)

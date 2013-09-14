@@ -85,6 +85,7 @@
     string-length string-size
     vector-length bytevector-length
     wrap unwrap
+    reverse
     copy-es-immutable
     bytevector-copy
     get-output-string

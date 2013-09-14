@@ -171,3 +171,29 @@ app_append:
     mov eax, private_binding(rom_string_general_append)
     mov eax, [eax + applicative.underlying]
     jmp rn_combine
+
+;;
+;; app_reverse (continuation passing procedure)
+;;
+;; preconditions:  EBX = list to reverse
+;;                 EBP = current continuation
+;;
+app_reverse:
+  .A1:
+    mov esi, ebx
+    call rn_list_metrics
+    test eax, eax
+    jz .error
+    test ecx, ecx
+    jnz .error
+    mov eax, esi
+    mov ebx, nil_tag
+    lea edx, [4*edx + 1]
+    call rn_list_rev
+    mov eax, ebx
+    jmp [ebp + cont.program]
+  .error:
+    mov eax, err_invalid_argument
+    mov ebx, esi
+    mov ecx, symbol_value(rom_string_reverse)
+    jmp rn_error
