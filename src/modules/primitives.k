@@ -54,7 +54,7 @@
     $sequence $when $unless $if $cond
     $and? $or?
     $define! $set! $binds?
-    $let $letrec $let* $let-redirect $let-safe
+    $let $letrec $let* $let-redirect $let-safe $match
     $vau $lambda
     $lazy
     $let/cc)

@@ -133,6 +133,7 @@
   "iterations.k"
   "environments.k"
   ;"characters.k"
+  "combiners.k"
   "continuations.k"
   "processes.k"
   "promises.k"

@@ -119,7 +119,7 @@ List of combiners bound in the ground environment
   (call-with-output-file STRING COMBINER)
   (call-with-port PORT COMBINER)                     ; ?
   (car PAIR)
-  ($case-lambda (PTREE . BODY) ...)                  ; ?
+  ($case-lambda (PTREE . BODY) ...)                  ; r7rs
   (cdaaar PAIR)
   (cdaadr PAIR)
   (cdaar PAIR)
@@ -197,6 +197,7 @@ List of combiners bound in the ground environment
   (force PROMISE)
   (for-each APPLICATIVE . LISTs)
   (fork APPLICATIVE [CONTINUATION])                  ; ext
+  (formal-parameter-tree? . OBJECTs)                 ; ext
 
   (gcd . NUMs)
   (get-current-environment)
@@ -277,6 +278,7 @@ List of combiners bound in the ground environment
   (make-string INTEGER [CHAR])
   (make-vector INTEGER [OBJECT])
   (map APPLICATIVE . LISTs)
+  ($match OBJECT (PTREE . BODY) ...)                 ; ext
   (max . NUMs)
   (member? OBJECT LIST)
   (memoize OBJECT)
@@ -464,6 +466,11 @@ Bronze Age Lisp Extensions
 
     Quoting operatives. Bad style, but useful.
 
+  ($formal-parameter-tree? . OBJECTs)
+
+    Returns #t, if all OBJECTs evaluate to valid formal
+    parameter trees. Returns #f otherwise.
+
   ($let1 SYMBOL OBJECT . BODY)
 
     Equivalent to ($let ((SYMBOL OBJECT)) . BODY),
@@ -472,6 +479,16 @@ Bronze Age Lisp Extensions
     trees. Morever, the environment created is
     allocated in the "transient" area of the heap,
     and may be reclaimed more quickly.
+
+  ($match OBJECT . CLAUSEs)
+
+    CLAUSEs must be a list of pairs of the form (PTREE . BODY),
+    where each PTREE is a valid formal parameter tree. The
+    operative $match evaluates OBJECT in the dynamic environment
+    and matches the result against PTREEs. If a matching clause
+    is found, the elements of BODY are evaluated in a newly
+    created environment with all symbols from the matching
+    PTREE. If no matching clause is found, #inert is returned.
 
   (negate NUM) => NUM
 

@@ -87,31 +87,6 @@
                 ()))
          ls)))
 
-($define-ground-vau! $case-lambda clauses denv
-  ($define! subs
-    (map
-      ($lambda (t)
-        (cons
-          ($let ((f (eval (list $lambda (car t) #t) denv)))
-            ($lambda a
-              (guard-dynamic-extent
-                ()
-                ($lambda () (apply f a))
-                (list (list error-continuation
-                            ignore-errors-guard)))))
-          (eval (cons $lambda t) denv)))
-      clauses))
-  ($define! search
-    ($lambda (x s)
-      ($cond
-        ((null? s)
-          (error "Match failure ($case-lambda)." x))
-        ((eq? #t (apply (caar s) x))
-          (apply (cdar s) x))
-        (#t (search x (cdr s))))))
-  ($lambda x
-    (search x subs)))
-
 ($define-ground-lambda! substring (s k1 k2)
   ($letrec ((p (open-input-string s))
             (q (open-output-string))

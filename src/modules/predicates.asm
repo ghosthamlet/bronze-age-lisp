@@ -353,6 +353,11 @@ pred_library_name_component:
     mov eax, 1
     ret
 
+pred_ptree:
+    call rn_check_ptree
+    setz al
+    ret
+
 ;;
 ;; op_relational_predicate:
 ;;
