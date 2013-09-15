@@ -15,7 +15,8 @@
 ;;; Only small subset of formatting directives is implemented:
 ;;;
 ;;;  ~a              print an object like (display ...)
-;;;  ~s              print an object like (write ...)
+;;;  ~s              print an object like (write-simple ...)
+;;;  ~w              print an object like (write ...)
 ;;;  ~c              print a character, unescaped
 ;;;
 ;;;  ~b ~d ~o ~x     print integer in base 10, 2, 8, 16
@@ -33,7 +34,8 @@
     (#\c       . (write-char (consume)))
     (#\d       . (print-integer (consume) 10 (get-current-output-port)))
     (#\o       . (print-integer (consume) 8 (get-current-output-port)))
-    (#\s       . (write (consume)))
+    (#\s       . (write-simple (consume)))
+    (#\w       . (write (consume)))
     (#\x       . (print-integer (consume) 16 (get-current-output-port)))
     (#\~       . (write-char #\~))
     (#\%       . (write-char #\newline))
@@ -75,6 +77,8 @@
   ($define! consume
     ($lambda ()
       ($let1 x (car state)
+        ($unless (pair? x)
+          (error "Format ran out of arguments." fmt items))
         (set-car! state (cdr x))
         (car x))))
   ($define! loop
@@ -85,7 +89,7 @@
                 ($define! d (read-char))
                 ($match (assq d format-directives)
                   ((#ignore . rest) (eval rest (get-current-environment)))
-                  (() (error "unknown format directive" d fmt)))
+                  (() (error "Unknown format directive." d fmt)))
                 . #1#)
               ((char? c)
                 (write-char c)
