@@ -141,6 +141,7 @@
   "signals.k"
   "system.k"
   "libraries.k"
+  "format.k"
   "_provisional.k"
   )
 

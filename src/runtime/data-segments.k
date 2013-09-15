@@ -248,7 +248,7 @@
           all-bindings)
         ($for (i 1 n)
           ($let (((s . t) (vector-ref v i)))
-            (asm " dd" (asm-repr t) "; " i s "=>" t))))
+            (asm " dd" (asm-repr t) "; " i s))))
       ;; output definition of port objects
       ($when ($configured stdio)
         (emit-platform-ports))

@@ -198,6 +198,7 @@ List of combiners bound in the ground environment
   (for-each APPLICATIVE . LISTs)
   (fork APPLICATIVE [CONTINUATION])                  ; ext
   (formal-parameter-tree? . OBJECTs)                 ; ext
+  (format [PORT] STRING . OBJECTs)                   ; srfi-28
 
   (gcd . NUMs)
   (get-current-environment)
