@@ -328,11 +328,11 @@ app_listX:
     mov eax, esi
     cmp edx, 1
     jb .error
-    je rn_asm_applicative.L131
+    je rn_asm_applicative.L1c1
     cmp edx, 2
-    je rn_asm_applicative.L132
+    je rn_asm_applicative.L1c2
     cmp edx, 3
-    je rn_asm_applicative.L133
+    je rn_asm_applicative.L1c3
     jmp rn_generic_applicative
   .error:
     mov eax, err_invalid_argument_structure

@@ -92,6 +92,8 @@
       (string-append* "[" register " + operative.var0 + "
                       (* 4 index) "]")))
 
+  ($define-add! emited-applicative-instance-labels () cons)
+
   ($define! emit-unbounded-applicative-instance
     ($lambda ((a b))
       ($unless (<=? 0 a b (length argument-register-alist))
@@ -108,7 +110,7 @@
       (asm "mov eax, esi")
       ($for (n a b)
         (asm "cmp edx," n)
-        (asm "je " (label a b n)))
+        (asm "je " (label a "c" n)))
       (asm "jmp rn_generic_applicative.with_list_metrics")
       (asm)))
 
@@ -120,18 +122,20 @@
       (asm "call rn_count_parameters")
       ($for (n a b)
         (asm "cmp ecx," n)
-        (asm "je " (label a b n)))
+        (asm "je " (label a "c" n)))
       (asm "jmp .error")
       ($for (n a b)
+        ($unless (member? (list a n) emited-applicative-instance-labels)
+          (emited-applicative-instance-labels-add! (list a n))
         ($when (=? n 0)
-          (asm-label (label a b n))
+          (asm-label (label a "c" n))
           (asm "mov edx, " (app-handler "eax" (- n a)))
           (asm "mov eax, [eax + applicative.underlying]")
           (asm "mov esi, eax")
           (asm "jmp edx"))
         ($when (>? n 0)
           ;; prepare continuation and evaluate the first argument
-          (asm-label (label a b n))
+          (asm-label (label a "c" n))
           ($let* ((m  (+ 5 (- n 1)))
                   (m1 (align m 2)))
             (asm "mov edx, cdr(ebx)")
@@ -141,7 +145,7 @@
             (asm "call rn_allocate_transient")
             (asm "xchg esi, eax")
             (asm "mov [esi + cont.header], dword" (immediate-value-repr (cont-header* m1)))
-            (asm "mov [esi + cont.program], dword" (label a b n 1))
+            (asm "mov [esi + cont.program], dword" (label a "c" n 1))
             (asm "mov [esi + cont.parent], ebp")
             (asm "mov" (cont-env "esi") ", edi")
             (asm "mov" (cont-combiner "esi") ", eax")
@@ -157,16 +161,16 @@
           ;; continuation for each argument
           ($for (i 1 (- n 1))
             ($let ((s (- i 1)))
-              (asm-label (label a b n i))
+              (asm-label (label a "c" n i))
               (asm "call rn_force_transient_continuation")
               (asm "mov edi, " (cont-env "ebp"))
               (asm "mov ebx, " (cont-slot "ebp" s))
               (asm "mov" (cont-slot "ebp" s) ", eax")
               (asm "mov [ebp + cont.program], dword "
-                (label a b n (+ i 1)))
+                (label a "c" n (+ i 1)))
               (asm "jmp rn_eval")))
           ;; last continuation
-          (asm-label (label a b n n))
+          (asm-label (label a "c" n n))
           (asm "mov " (argument-register (- n 1)) ", eax")
           ($for (k 0 (- n 2))
             (asm "mov " (argument-register k) ","
@@ -185,7 +189,9 @@
               (asm "mov eax, [eax + applicative.underlying]")
               (asm "mov esi, eax")
               (asm "ret")))
-          (asm)))))
+          (asm))))))
+
+  ($define-add! emited-operative-instance-labels () cons)
 
   ($define! emit-operative-instance
     ($lambda ((a b))
@@ -193,24 +199,26 @@
       (asm "call rn_count_parameters")
       ($for (n a b)
         (asm "cmp ecx," n)
-        (asm "je " (label a b n)))
+        (asm "je " (label a "c" n)))
       (asm "jmp .error")
       ($for (n a b)
-        (asm-label (label a b n))
-        ($cond
-          ((=? n 0)
-            #inert)
-          ((=? n 1)
-            (asm "mov ebx, car(ebx)"))
-          (#t
-            ($let ((q (argument-register (- n 1))))
-              (asm "mov " q ", ebx")
-              ($for (i 0 (- n 2))
-                (asm "mov " (argument-register i) ", car(" q ")")
-                (asm "mov " q ", cdr(" q ")"))
-              (asm "mov " q ", car(" q ")"))))
-        (asm "jmp" (ope-handler "eax" (- n a)))
-        (asm))))
+        ($unless (member? (list a n) emited-operative-instance-labels)
+          (emited-operative-instance-labels-add! (list a n))
+          (asm-label (label a "c" n))
+          ($cond
+            ((=? n 0)
+              #inert)
+            ((=? n 1)
+              (asm "mov ebx, car(ebx)"))
+            (#t
+              ($let ((q (argument-register (- n 1))))
+                (asm "mov " q ", ebx")
+                ($for (i 0 (- n 2))
+                  (asm "mov " (argument-register i) ", car(" q ")")
+                  (asm "mov " q ", cdr(" q ")"))
+                (asm "mov " q ", car(" q ")"))))
+          (asm "jmp" (ope-handler "eax" (- n a)))
+          (asm)))))
 
   ($define! emit-error-handler
     ($lambda ()
