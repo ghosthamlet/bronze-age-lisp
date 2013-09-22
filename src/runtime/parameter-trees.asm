@@ -220,18 +220,19 @@ rn_match_ptree_procz:
     jz .trivial
     cmp bl, ignore_tag
     jz .trivial
-    call rn_pairP_procz
-    jz .pair
+    test bl, 3
+    jz .other
+    jp .pair
+  .other:
     cmp ebx, edx
     ret
   .trivial:
     xor al, al  ; set ZF=1
     ret
   .pair:
-    xchg ebx, edx
-    call rn_pairP_procz
-    jnz .abort
-    xchg edx, ebx
+    test dl, 3
+    jz .nopair
+    jnp .nopair
     push dword cdr(ebx)
     push dword cdr(edx)
     mov ebx, car(ebx)
@@ -241,6 +242,9 @@ rn_match_ptree_procz:
     pop edx
     pop ebx
     jmp .recurse
+  .nopair:
+    test bl, bl ; set ZF = 0
+    jmp .abort
 
 ;;
 ;; rn_bind_ptree (native procedure)
@@ -265,14 +269,9 @@ rn_bind_ptree:
     rn_trace configured_debug_evaluator, 'bind_ptree', lisp, ebx, lisp, edx
     cmp bl, symbol_tag
     je .case.symbol
-    call rn_pairP_procz
-    jz .case.pair
-    ret
-  .case.symbol:
-    mov eax, ebx
-    mov ebx, edx
-    rn_trace configured_debug_evaluator, 'bind_symbol', lisp, eax, lisp, ebx
-    jmp rn_mutate_environment
+    test bl, 3
+    jz .case.ignore
+    jnp .case.ignore
   .case.pair:
     push dword cdr(ebx)
     push dword cdr(edx)
@@ -282,3 +281,10 @@ rn_bind_ptree:
     pop edx
     pop ebx
     jmp .recurse
+  .case.ignore:
+    ret
+  .case.symbol:
+    mov eax, ebx
+    mov ebx, edx
+    rn_trace configured_debug_evaluator, 'bind_symbol', lisp, eax, lisp, ebx
+    jmp rn_mutate_environment
