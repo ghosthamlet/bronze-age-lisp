@@ -101,7 +101,7 @@ rn_compare_blob_bits:
     pop edx
     xor edx, eax
     cmp dl, 2         ; clear ZF
-    bt dx, 0          ; set CF
+    bt dx, 0          ; set or clear CF according to the result
   .done:
     pop edi
     pop esi
@@ -126,9 +126,7 @@ rn_compare_blob_bits:
   .equal:
     add esp, 8
     mov ecx, 0xFFFFFFFF
-    mov dl, 1
-    cmp dl, 1  ; set ZF
-    bt  dx, 0  ; set CF
+    xor eax, eax      ; set ZF = 1
     jmp .done
   .tail:
     mov cl, al

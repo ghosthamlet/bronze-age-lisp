@@ -48,6 +48,8 @@ rn_platform_init:
     ;; the address of
   .skip_aux:
     mov eax, [ebx]
+    test eax, eax
+    jz .not_found
     cmp eax, AT_SYSINFO
     jz .found
     lea ebx, [ebx + 8]
@@ -56,6 +58,13 @@ rn_platform_init:
     mov eax, [ebx + 4]
     rn_trace configured_debug_evaluator, 'vsyscall', hex, eax
     mov [platform_info + linux.vsyscall], eax
+    ret
+  .not_found:
+    ;; AT_SYSINFO not found, fall back to int 0x80
+    mov [platform_info + linux.vsyscall], dword .int80_stub
+    ret
+  .int80_stub:
+    int 0x80
     ret
 
 rn_lisp_init:
