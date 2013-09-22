@@ -103,8 +103,17 @@ _start:
     call pass_if.z
     cmp ecx, %5
     call pass_if.z
- ;   mov eax, ecx
- ;   call print_decimal
+%endmacro
+
+%macro check_compare_bit_nocf 4
+    mov eax, %1
+    mov ebx, %2
+    call rn_compare_blob_bits
+    setz al
+    cmp al, %3
+    call pass_if.z
+    cmp ecx, %4
+    call pass_if.z
 %endmacro
 
 
@@ -159,10 +168,10 @@ test_compare_bit:
     call next_subtest
     call next_subtest
 
-    check_compare_bit [empty_blob], [empty_blob], 1, 1, 0xFFFFFFFF
+    check_compare_bit_nocf [empty_blob], [empty_blob], 1, 0xFFFFFFFF
     check_compare_bit [empty_blob], [blob_A], 0, 1, 2
     check_compare_bit [blob_A], [empty_blob], 0, 0, 2
-    check_compare_bit [blob_A], [blob_A], 1, 1, 0xFFFFFFFF
+    check_compare_bit_nocf [blob_A], [blob_A], 1, 0xFFFFFFFF
 
     call next_subtest
     check_compare_bit [blob_A], [blob_B], 0, 0, 6

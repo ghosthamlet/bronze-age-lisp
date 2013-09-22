@@ -56,6 +56,7 @@ rn_blob_bit:
 ;;                 EBX = blob B (string/bytevector/symbol/keyword)
 ;; postconditions if A and B are equal:
 ;;                 ZF = 1
+;;                 CF undefined
 ;;                 ECX = 0xFFFFFFFF
 ;; postconditions if A and B are not equal:
 ;;                 ZF = 0
