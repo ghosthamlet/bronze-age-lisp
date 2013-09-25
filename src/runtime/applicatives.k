@@ -46,6 +46,12 @@
 ;;                           ...
 ;;                           L[B] ]
 ;;
+;; (emit-bounded-applicative-constructors)
+;;
+;;   Print assembly code to create an applicatives like
+;;   the ones created by (make-bounded-applicative)
+;;   for 1, 2 and 3 arguments.
+;;
 
 ($provide! (emit-applicative-support
             make-bounded-applicative
@@ -239,7 +245,8 @@
         (asm)
         (asm-label "rn_asm_operative")
         (for-each emit-operative-instance cases-b)
-        (emit-error-handler))))
+        (emit-error-handler))
+      (emit-bounded-applicative-constructors)))
 
   ($define! make-bounded-applicative
     ($lambda ((a b) labels-ab closed-variables)
@@ -276,8 +283,68 @@
           (applicative-header* (+ 3 (length labels-ab)))
           (make-nonlisp-value "rn_asm_applicative" (label a b "x"))
           underlying
-          (map make-nonlisp-value labels-ab))))))
+          (map make-nonlisp-value labels-ab)))))
 
+  ($define! emit-bounded-applicative-constructor
+    ($lambda (n)
+      (asm)
+      (asm-label (string-append* "make_bounded_applicative_" n))
+      ;; Assume
+      ;;   EBX = formal ptree (S1 S2 .. Sn), where Sk are symbols
+      ;;   EDX = procedure body
+      ;;   EDI = the static environment
+      ;; Create the equivalent of ($lambda (S1 ... SN) . BODY).
+      ;;
+      ($define! app-sz 4)
+      ($define! op-sz (align (+ n 5) 2))
+      ($define! symbol-slot ($lambda (k) (* 4 (+ 5 k))))
+      (asm "mov eax, edi")
+      (asm "call rn_capture")
+      (asm "mov ecx, " (+ app-sz op-sz))
+      (asm "call rn_allocate")
+      (asm "lea ecx, [eax + 16]")
+      (asm "mov [eax], dword applicative_header(4)")
+      (asm "mov [eax +  4], dword" (string-append* "rn_asm_applicative.L" n n))
+      (asm "mov [eax +  8], ecx")
+      (asm "mov [eax + 12], dword .execute")
+      (asm "mov [ecx], dword operative_header(" op-sz ")")
+      (asm "mov [ecx +  4], dword" (string-append* "rn_asm_operative.L" n n))
+      (asm "mov [ecx +  8], dword .execute")
+      (asm "mov [ecx + 12], edi")
+      (asm "mov [ecx + 16], edx")
+      ($for (k 0 (- n 1))
+        (asm "mov edx, car(ebx)")
+        ($unless (=? k (- n 1)) (asm "mov ebx, cdr(ebx)"))
+        (asm "mov [ecx + " (symbol-slot k) "], edx"))
+      ($when (=? 0 (mod n 2))
+        (asm "mov [ecx + " (symbol-slot n) "], dword inert_tag"))
+      (asm "jmp [ebp + cont.program]")
+
+      (asm-label ".execute")
+      ($for (k 0 (- n 1))
+        (asm "push" (cdr (assoc (- n 1 k) argument-register-alist))))
+      (asm "mov ecx, " (* 6 n))
+      (asm "call rn_allocate")
+      (asm "mov edi, [esi + 12]")
+      ($for (k 0 (- n 1))
+        (asm "mov [eax + environment.header], dword environment_header(6)")
+        ($let ((p ($if (zero? k) "tail_env_lookup" "list_env_lookup")))
+          (asm "mov [eax + environment.program], dword" p))
+        (asm "mov [eax + environment.parent], edi")
+        (asm "mov ebx, [esi +" (symbol-slot k) "]")
+        (asm "pop ecx")
+        (asm "mov [eax + environment.key0], ebx")
+        (asm "mov [eax + environment.val0], ecx")
+        (asm "mov [eax + environment.key1], ecx")
+        (asm "mov edi, eax")
+        (asm "lea eax, [eax + 24]"))
+      (asm "mov ebx, [esi + 16]")
+      (asm "jmp rn_sequence")))
+
+  ($define! emit-bounded-applicative-constructors
+    ($lambda ()
+      (for-each emit-bounded-applicative-constructor
+        (list 1 2 3)))))
 
 ($provide!
   (make-builtin-wrap make-builtin-lambda
@@ -286,21 +353,33 @@
    $define-ground-vau! $define-private-vau!
    $defun-privates!)
 
+  ($define! private-env-object
+    (make-nonlisp-value "private_env_object"))
+
   ($define! make-builtin-wrap
-    ($lambda (underlying)
-      (make-rom-object
-        (applicative-header* 4)
-        (make-nonlisp-value "rn_generic_applicative")
-        underlying
-        0)))
+    ($let ((label (make-nonlisp-value "rn_generic_applicative")))
+      ($lambda (underlying)
+        (make-rom-object
+          (applicative-header* 4)
+          label
+          underlying
+          0))))
 
   ($define! make-builtin-lambda
+    ($lambda (name formals body)
+      ($if ($and? (finite-list? formals)
+                  (<=? 1 (length formals) 3)
+                  (apply symbol? formals))
+        (make-interpreted-bounded-applicative name formals body)
+        (make-ordinary-builtin-lambda name formals body))))
+
+  ($define! make-ordinary-builtin-lambda
     ($lambda (name formals body)
       (make-builtin-wrap
         (make-rom-object
           (operative-header* 8)
           (make-nonlisp-value "operate_interpreted.noenv")
-          (make-nonlisp-value "private_env_object")
+          private-env-object
           formals
           #ignore
           body
@@ -312,7 +391,7 @@
       (make-rom-object
         (operative-header* 8)
         (make-nonlisp-value "operate_interpreted.env")
-        (make-nonlisp-value "private_env_object")
+        private-env-object
         formals
         eformal
         body
@@ -325,12 +404,25 @@
         (make-rom-object
           (operative-header* 8)
           (make-nonlisp-value "operate_interpreted.env")
-          (make-nonlisp-value "private_env_object")
+          private-env-object
           formals
           eformal
           body
           name
           0))))
+
+  ($define! make-interpreted-bounded-applicative
+    ($lambda (name formals body)
+      ($define! n (length formals))
+      ($unless ($and? (<=? 1 n 3) (apply symbol? formals))
+        (error "make-interpreted-bounded-applicative"
+          name formals n))
+      (make-bounded-applicative
+        (list n n)
+        (list (string-append* "make_bounded_applicative_" n ".execute"))
+        (list* private-env-object
+               body
+               formals))))
 
   ($define! $define-ground-lambda!
     ($vau (name formals . body) #ignore

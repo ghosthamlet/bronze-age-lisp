@@ -28,6 +28,9 @@ rn_get_blob_data:
     ret
 rn_out_of_memory:
 rn_error:
+rn_sequence:
+tail_env_lookup:
+list_env_lookup:
     jmp rn_fatal
 
 ground_private_lookup_table:
