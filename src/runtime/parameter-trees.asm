@@ -99,14 +99,14 @@ rn_check_ptree_quick:
   .hash_test:
     mov eax, 0x89ABCDEF
     mul ebx
-    mov eax, edx
+    mov edx, eax
     shr eax, 27
     shr edx, 22
     and edx, 31
     xor ecx, ecx
     bts esi, eax
     setc cl
-    bts edi, eax
+    bts edi, edx
     setc ch
     test cl, ch
     jnz .collision
