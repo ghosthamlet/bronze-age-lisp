@@ -2,6 +2,10 @@
 set -e
 mkdir -p build
 
+#
+# command line options for mold.k
+#
+
 CONF_DEBUG_ON='
   debug-evaluator=#t
   debug-gc-cycle=#t
@@ -24,18 +28,32 @@ CONF_SMALLER_HEAP='
   lisp-heap-size=262144
   blob-heap-size=65536'
 
+#
+# command line options for the assembler
+#
+NASMFLAGS='-g -O1'
+
+#
+# The build interpreter (to build tests) and the reference interpreter (to check results).
+#
+BUILDINT=bronze-devel
+REFINT=klisp
+if [ ! -x `which $BUILDINT` ] ; then
+    BUILDINT=$REFINT
+fi
+
 prepare_asm_test()
 {
     echo "preparing asm tests..."
 
-    klisp ../src/mold.k \
+    $BUILDINT ../src/mold.k \
     'no-data-segment=#t' 'no-code-segment=#t' 'no-macros=#f' 'no-applicative-support=#t' \
     $CONF_DEBUG \
     'lisp-heap-size=1024' 'lisp-transient-size=192' 'lisp-heap-threshold=256' \
     'blob-descriptor-capacity=16' 'blob-heap-size=4096' \
     'src-prefix="../src/"' > build/macros.inc
 
-    klisp ../src/mold.k \
+    $BUILDINT ../src/mold.k \
     'no-data-segment=#t' 'no-code-segment=#t' 'no-macros=#t' 'no-applicative-support=#f' \
     $CONF_DEBUG \
     'lisp-heap-size=1024' 'lisp-transient-size=192' 'lisp-heap-threshold=256'  \
@@ -46,7 +64,7 @@ prepare_asm_test()
 asm_test()
 {
     echo -n "$1 ..."
-    nasm -o build/test.o -f elf32 -g $2 -i ../src/ -i asm/ -i build/ $1
+    nasm -o build/test.o -f elf32 $NASMFLAGS $2 -i ../src/ -i asm/ -i build/ $1
     ld -o build/test.bin build/test.o -Tasm/linker-script.ld -Map=build/test.map
     ./build/test.bin
 }
@@ -54,11 +72,11 @@ asm_test()
 prepare_smoke_test()
 {
     echo "preparing smoke tests..."
-    klisp ../src/mold.k \
+    $BUILDINT ../src/mold.k \
         $CONF_DEBUG \
         'start-form=(write (eval (read) (get-current-environment)))' \
         'src-prefix="../src/"' > build/smoke.asm
-    nasm -g -f elf32 -o build/smoke.o -i ../src/ -i asm/ -i build/ build/smoke.asm
+    nasm $NASMFLAGS -f elf32 -o build/smoke.o -i ../src/ -i asm/ -i build/ build/smoke.asm
     ld -o build/smoke.bin build/smoke.o -T../src/runtime/linker-script.ld
 }
 
@@ -66,7 +84,7 @@ smoke_test()
 {
     echo -n "$1 ..."
     build/smoke.bin <$1 >build/smoke.tmp
-    if klisp smoke/check.k $1 <build/smoke.tmp ; then
+    if $REFINT smoke/check.k $1 <build/smoke.tmp ; then
       echo "PASS"
     else
       echo "FAIL"
@@ -76,11 +94,11 @@ smoke_test()
 prepare_dual_test()
 {
     echo "preparing dual tests..."
-    klisp ../src/mold.k \
+    $BUILDINT ../src/mold.k \
         $CONF_DEBUG \
         $CONF_SMALLER_HEAP \
         'src-prefix="../src/"' > build/dual.asm
-    nasm -g -f elf32 -o build/dual.o -i ../src/ -i asm/ -i build/ build/dual.asm
+    nasm $NASMFLAGS -f elf32 -o build/dual.o -i ../src/ -i asm/ -i build/ build/dual.asm
     ld -o build/dual.bin build/dual.o -T../src/runtime/linker-script.ld
 }
 
@@ -99,10 +117,10 @@ self_test()
 prepare_bootstrap_test()
 {
     echo "preparing bootstrap test..."
-    klisp ../src/mold.k \
+    $REFINT ../src/mold.k \
         $CONF_DEBUG \
         'src-prefix="../src/"' > build/bootstrap.asm
-    nasm -g -f elf32 -o build/bootstrap.o -i ../src/ -i asm/ -i build/ build/bootstrap.asm
+    nasm $NASMFLAGS -f elf32 -o build/bootstrap.o -i ../src/ -i asm/ -i build/ build/bootstrap.asm
     ld -o build/bootstrap.bin build/bootstrap.o -T../src/runtime/linker-script.ld
 }
 
