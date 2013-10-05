@@ -74,7 +74,7 @@
   promise? force $lazy memoize
     ; $delay
   make-keyed-dynamic-variable
-  ;make-keyed-static-variable
+  make-keyed-static-variable
   number? integer? finite?
     =? <? >? <=? >=?
     + - *
@@ -82,9 +82,9 @@
     div mod div-and-mod
     abs max min
     string->number number->string
-    ; lcm gcd expt
-    ;div0 mod0 div-and-mod0
-    ; u8?
+    lcm gcd ; expt
+    div0 mod0 div0-and-mod0
+    u8?
     negate
   string? string-length string-ref string-append
     make-string string->list list->string
@@ -110,7 +110,7 @@
     write-string
     ; write-u8 ..
     eof-object?
-    ; read-line
+    read-line
     flush-output-port
     call-with-input-file call-with-output-file
     load get-module
@@ -157,7 +157,12 @@
     reverse length get-list-metrics
   ; TODO
   )
-  
+
+($narg-test 1 2
+  number->string
+  ;TODO
+  )
+
 ($narg-test 2 2
   cons set-car! set-cdr!
   assoc assq member? memq?
@@ -165,7 +170,7 @@
   )
 
 ($narg-test 3 3 $if)
-($narg-test 1 #e+infinity $when $unless)
+($narg-test 1 #e+infinity $when $unless format)
 ($narg-test 2 #e+infinity map for-each)
 
 ;; Type errors in applicative arguments.

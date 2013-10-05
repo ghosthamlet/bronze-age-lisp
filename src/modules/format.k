@@ -63,6 +63,10 @@
       ($lambda (f) (with-output-to-port p f))))
   ($define! (dest fmt . items)
     ($match args
+      ((h)
+        ($if (string? h)
+          (list with-output-to-string h)
+          ($error1 format "Invalid argument structure." args)))
       ((h . t)
         ($cond
           ((string? h) (list* with-output-to-string h t))
@@ -71,14 +75,14 @@
           ((port? h)   (cons (to-port h) t))
           (#t          (error "Invalid argument." h))))
       (args
-        (error "Invalid argument structure." (cons format args)))))
+        ($error1 format "Invalid argument structure." args))))
   ($define! state
     (cons items items))
   ($define! consume
     ($lambda ()
       ($let1 x (car state)
         ($unless (pair? x)
-          (error "Format ran out of arguments." fmt items))
+          ($error format "Format ran out of arguments." fmt items))
         (set-car! state (cdr x))
         (car x))))
   ($define! loop
@@ -89,7 +93,7 @@
                 ($define! d (read-char))
                 ($match (assq d format-directives)
                   ((#ignore . rest) (eval rest (get-current-environment)))
-                  (() (error "Unknown format directive." d fmt)))
+                  (() ($error format "Unknown format directive." d fmt)))
                 . #1#)
               ((char? c)
                 (write-char c)

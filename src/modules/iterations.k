@@ -20,7 +20,9 @@
     (apply encycle! (list* result ms))
     result))
 
-($define-private-wrapvau! general-map (appv . lss) env
+($define-private-wrapvau! general-map x env
+  ($check-map-arguments map x)
+  ($define! (appv . lss) x)
   ($define! mss (cddr (get-list-metrics lss)))
   ($define! cars ($lambda (lss) (map-enlist lss mss caar cdr)))
   ($define! cdrs ($lambda (lss) (map-enlist lss mss cdar cdr)))
@@ -42,5 +44,16 @@
           cdrs))
 
 ($define-private-wrapvau! general-for-each x env
+  ($check-map-arguments for-each x)
   (apply map x env)
   #inert)
+
+($define-private-vau! $check-map-arguments (s x) denv
+  ($match (eval x denv)
+    ((appv ls1 . lss)
+      ($unless (applicative? appv)
+        (apply-continuation error-continuation
+          (make-error-object "Invalid argument." appv s))))
+    (x
+      (apply-continuation error-continuation
+        (make-error-object "Invalid argument structure." x s)))))

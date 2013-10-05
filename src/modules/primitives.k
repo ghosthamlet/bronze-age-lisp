@@ -109,7 +109,7 @@
     make-vector make-bytevector
     fork)
   ($bounded-app 1 3
-    execve)
+    make-error-object execve)
   ($bounded-app 2 2
     cons eval
     list-tail list-ref
@@ -163,6 +163,16 @@
 ;;
 ($bind-private! intern ())
 
+;;
+;; report error with a source
+;;
+($define-private-vau! $error1 (fun msg i) denv
+  (apply-continuation error-continuation
+    (make-error-object msg (eval i denv) fun)))
+
+($define-private-vau! $error (fun msg . xs) denv
+  (apply-continuation error-continuation
+    (make-error-object msg (eval (cons list xs) denv) fun)))
 
 ;;
 ;; add buffering layer on top of the binary I/O ports

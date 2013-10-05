@@ -72,20 +72,21 @@
     ((eq? x #e+infinity) "#e+infinity")
     ((eq? x #e-infinity) "#e-infinity")
     ((integer? x)
-       ($let ((b
-         ($cond
-           ((null? r) 10)
-           (($and? (pair? r)
-                   (null? (cdr r))
-                   (integer? (car r))
-                   (<=? 2 (car r) 36))
-              (car r))
-           (#t
-             (error "invalid radix for number->string")))))
-         ($let ((p (open-output-string)))
+       ($let1 b ($cond
+                  ((null? r) 10)
+                  (($and? (pair? r)
+                          (null? (cdr r))
+                          (integer? (car r))
+                          (<=? 2 (car r) 36))
+                      (car r))
+                  (($and? (pair? r) (null? (cdr r)))
+                    ($error1 number->string "invalid radix" (car r)))
+                  (#t
+                    ($error1 number->string "Invalid argument structure." (cons x r))))
+         ($let1 p (open-output-string)
            (print-integer x b p)
            (get-output-string p))))
-    (#t (error "invalid argument for number->string"))))
+    (#t ($error1 number->string "Invalid argument." x))))
 
 ;; bigint division
 ;;

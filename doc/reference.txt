@@ -272,6 +272,7 @@ List of combiners bound in the ground environment
   (make-compiled-operative VAR VAR PROGRAM)          ; ext
   (make-encapsulation-type)
   (make-environment . ENVs)
+  (make-error-object MESSAGE [IRRITANTS [SOURCE]])   ; ext
   (make-kernel-standard-environment)
   (make-keyed-dynamic-variable)
   (make-keyed-dynamic-variable* DEFAULT-VALUE)       ; ext
@@ -550,6 +551,10 @@ Bronze Age Lisp Extensions
       "equal"       ... (equal? ...)
       "check-ptree" ... checking validity of parameter trees
       "system-call" ... time spent in system calls
+
+  (make-error-object MESSAGE [IRRITANTS [SOURCE]])
+
+    Creates a new error object without raising the error.
 
   (error-object-source ERROR-OBJECT)
       => symbol or #inert
