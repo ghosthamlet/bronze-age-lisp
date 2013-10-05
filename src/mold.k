@@ -142,6 +142,7 @@
   "system.k"
   "libraries.k"
   "format.k"
+  "native-interfaces.k"
   "_provisional.k"
   )
 
@@ -266,6 +267,7 @@
     "lists.asm"
     "libraries.asm"
     "misc.asm"
+    "native-interfaces.asm"
     "numbers.asm"
     "pairs.asm"
     "processes.asm"

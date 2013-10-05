@@ -89,6 +89,7 @@ app_write_typed:
     shr edx, 2
     cmp cl, dl
     jne .invalid_argument
+  .unsafe_io:
     mov eax, [ebx + bin_out.write]      ; method combiner
     mov edi, [ebx + bin_out.env]        ; env. for port method
     xchg ebx, ecx                       ; method argument

@@ -166,6 +166,7 @@ List of combiners bound in the ground environment
   (defined-environment-variable? STRING)             ; klisp
   (delete-file STRING)                               ; r7rs
   (digit->char INTEGER RADIX)
+  (disassemble-compiled-combiner COMBINER)           ; ext
   (display OBJECT [PORT])
   (div-and-mod INTEGER INTEGER)
   (div0-and-mod0 INTEGER INTEGER)
@@ -268,6 +269,7 @@ List of combiners bound in the ground environment
   (load FILENAME)
 
   (make-bytevector INTEGER [U8])
+  (make-compiled-operative VAR VAR PROGRAM)          ; ext
   (make-encapsulation-type)
   (make-environment . ENVs)
   (make-kernel-standard-environment)
@@ -921,6 +923,23 @@ Bronze Age Lisp Extensions
           ($if (equal? status (list #:exited 0))
             result
             (error "md5sum failed" status))))
+
+ 9) Native code generator
+
+  (make-compiled-operative ARG-VAR ENV-VAR PROGRAM)
+
+    Compile the imperative PROGRAM and return the result as an
+    operative combiner.
+
+    More doc TODO (for now, see src/modules/native-interfaces.k)
+
+  (disassemble-compiled-combiner COMBINER)
+
+    Print disassebmled native code of COMBINER, where COMBINER was
+    created by (make-compiled-operative ...).
+
+    Uses the "ndisassm" command line utility from the NASM package.
+    The utility must be installed in $PATH.
 
 Part II - REPL
 ==============
