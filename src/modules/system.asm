@@ -113,9 +113,8 @@ app_collect_garbage:
     xor esi, esi
     xor edi, edi
     push ebp
-    call gc_collect
+    call bl_collect   ; note: gc_collect is included in bl_collect
     pop ebp
-    call bl_collect
     mov eax, inert_tag
     jmp [ebp + cont.program]
 

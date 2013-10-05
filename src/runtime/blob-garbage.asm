@@ -146,7 +146,6 @@ bl_compact:
 ;;
 ;; preconditions:  live strings saved in stack, heap, registers
 ;;                 EBP, ESI valid, if used as roots
-;;                 EDI = lisp heap free pointer
 ;;                 transient_limit, stack_limit valid
 ;;
 ;; postconditions: live blobs compacted
@@ -163,7 +162,9 @@ bl_collect:
     push ecx
     push edx
     push esi
+    push edi
     push ebp
+    call gc_collect
     perf_time begin, blob_gc
     rn_trace configured_debug_gc_blobs, 'bl_collect', hex, [first_blob], hex, [free_blob]
     ;; mark roots on stack
@@ -192,6 +193,7 @@ bl_collect:
     perf_time end, blob_gc
     ;; restore registers
     pop ebp
+    pop edi
     pop esi
     pop edx
     pop ecx
