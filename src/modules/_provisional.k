@@ -11,13 +11,17 @@
 ;;;
 
 ($define-ground-lambda! list-tabulate (n f)
+  ($unless ($and? (integer? n) (not? (negative? n)))
+    ($error list-tabulate "Invalid argument." n))
+  ($unless (applicative? f)
+    ($error list-tabulate "Invalid argument." f))
   ($define! g
     ($lambda (k a)
       ($if (<=? 0 k)
         (g (- k 1) (cons (apply f (list k)) a))
         a)))
   (g (- n 1) ()))
-    
+
 ($define-ground-lambda! list->vector (l)
   ($let* ((n (length l))
           (v (make-vector n)))
@@ -86,6 +90,24 @@
                 (list x)
                 ()))
          ls)))
+
+($define-ground-lambda! partition (accept? ls)
+  ($let1 tmp
+    (map ($lambda (x)
+           ($if (apply accept? (list x))
+                (cons (list x) ())
+                (cons () (list x))))
+         ls)
+    (list (apply append (map car tmp))
+          (apply append (map cdr tmp)))))
+
+($define-ground-lambda! iota (count . rest)
+  ($define! (start step)
+    ($match rest
+      (()           (list 0 1))
+      ((start)      (list start 1))
+      ((start step) (list start step))))
+  (list-tabulate count ($lambda (k) (+ start (* step k)))))
 
 ($define-ground-lambda! substring (s k1 k2)
   ($letrec ((p (open-input-string s))
