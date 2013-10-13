@@ -142,6 +142,7 @@
   "system.k"
   "libraries.k"
   "format.k"
+  "hash-tables.k"
   "native-interfaces.k"
   "_provisional.k"
   )
@@ -241,6 +242,7 @@
     "runtime-errors.asm"
     "bigints.asm"
     "object-names.asm"
+    "hash-functions.asm"
     "platform-initialization.asm"
     "platform-ports.asm"
     "platform-signals.asm"))
@@ -262,6 +264,7 @@
     "encapsulations.asm"
     "environments.asm"
     "errors.asm"
+    "hash-tables.asm"
     "iterations.asm"
     "keyed-variables.asm"
     "lists.asm"

@@ -53,6 +53,7 @@
   ($bind-header-predicate! port? txt-in-header-tag #b11110011)
   ($bind-header-predicate! promise? promise-header-tag #xFF)
   ($bind-header-predicate! library? library-header-tag #xFF)
+  ($bind-header-predicate! hash-table? hash-table-header-tag #xFF)
 
   ($define! $bind-native-predicate!
     ($vau (symbol procedure . more) denv

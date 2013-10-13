@@ -102,12 +102,14 @@
     get-library-export-list get-library-environment
     integer-length bitwise-not
     shared-structure-indicator
+    make-hash-function
     delete-file)
   ($bounded-app 1 2
     char-digit? char->digit digit->char
     open-utf-encoder
     make-vector make-bytevector
-    fork)
+    fork
+    hash)
   ($bounded-app 1 3
     make-error-object execve)
   ($bounded-app 2 2
@@ -118,6 +120,7 @@
     div mod div-and-mod
     arithmetic-shift
     apply-continuation
+    hash-bytevector
     dup2)
   ($bounded-app 2 3
     apply extend-continuation)

@@ -60,6 +60,7 @@
     (#b00110001 "bigint" () "digit")
     (#b00110101 "promise" ("node"))
     (#b00111001 "library" ("env"))
+    (#b00111101 "hash-table" ("bucket_count" "vector" "list_lookup" "length" "eq_proc" "hashf" "reconstructor"))
     ))
 
 ;;

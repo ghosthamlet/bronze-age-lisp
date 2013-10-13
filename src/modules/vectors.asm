@@ -10,6 +10,28 @@
 ;;;
 
 ;;
+;; rn_vector_length (native procedure)
+;;
+;; Compute length of a vector as tagged fixint.
+;;
+;; preconditions:  EBX = vector
+;; postconditions: EAX = length as tagged fixint
+;; preserves:      EBX, EDX, ESI, EDI, EBP
+;; clobbers:       EAX, ECX, EFLAGS
+;;
+rn_vector_length:
+    mov eax, [ebx]
+  .header:
+    shr eax, 6                      ; EAX := tagged fixint
+    lea eax, [eax - 3]              ;          (object length - 1)
+    mov ecx, dword [ebx + eax - 1]  ; ECX := last field of the object
+    cmp ecx, unbound_tag
+    jne .done
+    lea eax, [eax - 4]              ; subtract 1 from tagged fixint
+  .done:
+    ret
+
+;;
 ;; app_vector_length (native procedure)
 ;;
 ;; Implementation of (vector-length VECTOR).

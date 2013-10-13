@@ -162,6 +162,8 @@
         (write-string "#[library]" p))
       ((bytevector? x)
         (write-bytevector-aux x s p))
+      ((hash-table? x)
+        (write-string "#[hash-table]" p))
       (#t
         (write-string "#[encapsulation]" p))))
   (write-tail (x s p)

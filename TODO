@@ -57,9 +57,6 @@ Missing bindings from klisp:
   Errors:
     raise
 
-  Keywords:
-    keyword->symbol
-
   Strings:
     string->bytevector
     string-ci<?
@@ -78,7 +75,6 @@ Missing bindings from klisp:
     string-titlecase
     string-upcase
     string->vector
-    symbol->keyword
 
   Characters:
     char-ci<?
@@ -99,20 +95,9 @@ Missing bindings from klisp:
     $delay
 
   Hash tables:
-    alist->hash-table
-    hash-table?
-    hash-table->alist
     hash-table-copy
-    hash-table-delete!
-    hash-table-exists?
-    hash-table-keys
-    hash-table-length
     hash-table-merge
     hash-table-merge!
-    hash-table-ref
-    hash-table-set!
-    hash-table-values
-    make-hash-table
 
   Immutability
     immutable-bytevector?

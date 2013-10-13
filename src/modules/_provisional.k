@@ -125,3 +125,11 @@
 
 ($define-ground-lambda! bytevector args
   (list->bytevector args))
+
+($define-ground-wrapvau! vector-for-each (f v) denv
+  ($define! loop
+    ($lambda (i)
+      ($when (<? i (vector-length v))
+        (apply f (list (vector-ref v i)) denv)
+        (loop (+ i 1)))))
+  (loop 0))

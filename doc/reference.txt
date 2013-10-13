@@ -65,6 +65,7 @@ List of combiners bound in the ground environment
   (>? . NUMs)
 
   (abs NUM)
+  (alist->hash-table ALIST)                          ; srfi-69
   (and . FORMs)
   ($and . FORMs)
   (append! LIST . LISTs)
@@ -228,6 +229,18 @@ List of combiners bound in the ground environment
   (guard-dynamic-extent GUARDs COMBINER GUARDs)
   (guess-object-name OBJECT BOOLEAN)                 ; ext
 
+  (hash-bytevector DATA KEY)                         ; ext
+  (hash-table K1 V1 K2 V2 ...)                       ; klisp
+  (hash-table->alist HASH-TABLE)                     ; srfi-69
+  (hash-table-delete! HASH-TABLE KEY)                ; srfi-69
+  (hash-table-exists? HASH-TABLE KEY [KEY ...])      ; srfi-69
+  (hash-table-fold HASH-TABLE KONS KNIL)             ; srfi-69
+  (hash-table-length HASH-TABLE)                     ; klisp
+  (hash-table-keys HASH-TABLE)                       ; srfi-69
+  (hash-table-ref HASH-TABLE KEY)                    ; srfi-69
+  (hash-table-set! HASH-TABLE KEY VALUE)             ; srfi-69
+  (hash-table-values HASH-TABLE)                     ; srfi-69
+
   ($if BOOLEAN FORM FORM)
   (ignore? . OBJECTs)
   (immutable-pair? . OBJECTs)
@@ -273,6 +286,8 @@ List of combiners bound in the ground environment
   (make-encapsulation-type)
   (make-environment . ENVs)
   (make-error-object MESSAGE [IRRITANTS [SOURCE]])   ; ext
+  (make-hash-function BOUND)                         ; ext
+  (make-hash-table [EQP])                            ; klisp/srfi-69
   (make-kernel-standard-environment)
   (make-keyed-dynamic-variable)
   (make-keyed-dynamic-variable* DEFAULT-VALUE)       ; ext
@@ -945,6 +960,26 @@ Bronze Age Lisp Extensions
 
     Uses the "ndisassm" command line utility from the NASM package.
     The utility must be installed in $PATH.
+
+ 10) Hash tables and hash functions
+
+  (make-hash-function BOUND) => HASH-FUNCTION
+
+    Create an applicative (HASH-FUNCTION OBJECT) => INTEGER,
+    which maps any OBJECT to an INTEGER in the range 0...BOUND-1.
+    The hash function is compatible with (equal? ...), i.e.
+    (=? (HASH-FUNCTION x) (HASH-FUNCTION y)), if (equal? x y).
+
+  (hash-bytevector DATA KEY) => HASH
+
+    Computes hash of DATA using the SipHash-2-4 algorithm [1],
+    parametrized by KEY. DATA, KEY and HASH are bytevectors,
+    KEY contains 16 byte (128-bit key) and HASH contains 8 bytes
+    (64-bit hash).
+
+    [1] Jean-Philippe Aumasson and Daniel J. Bernstein:
+        SipHash: a fast short-input PRF,
+        https://131002.net/siphash/
 
 Part II - REPL
 ==============
