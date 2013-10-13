@@ -25,7 +25,7 @@ CONF_DEBUG_OFF='
   debug-environments=#f'
 
 CONF_SMALLER_HEAP='
-  lisp-heap-size=262144
+  lisp-heap-size=524288
   blob-heap-size=65536'
 
 #
