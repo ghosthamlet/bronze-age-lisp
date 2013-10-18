@@ -1,7 +1,7 @@
 ;;;
 ;;; hash-tables.k
 ;;;
-;;; Hash tables in the SRFI-69 style and hash functions (lisp part).
+;;; Hash tables (in the SRFI-69 style) and hash functions (lisp part).
 ;;;
 ;;; Each hash table contains
 ;;;
@@ -31,6 +31,10 @@
   (make-bounded-applicative
     (list 3 3) (list "app_make_hash_table.equal") ()))
 
+($bind-private! make-user-equivalence-hash-table
+  (make-bounded-applicative
+    (list 3 3) (list "app_make_hash_table.user") ()))
+
 ($bind-private! hash-table-lookup
   (make-bounded-applicative
     (list 2 2) (list "app_hash_table_lookup.A2") ()))
@@ -42,6 +46,8 @@
 ($bind-private! adjust-hash-table-length!
   (make-bounded-applicative
     (list 2 2) (list "app_adjust_hash_table_lengthB.A2") ()))
+
+($bind-private! hash-table-max-bucket-size 10)
 
 (for-each
   ($lambda (f)
@@ -73,9 +79,15 @@
         ($error make-hash-table "Invalid argument structure." args))))
    ($define! ctor
      ($cond
-       ((eq? eq? eqp)    make-eq-hash-table)
-       ((eq? equal? eqp) make-equal-hash-table)
-       (#t               (error "hash table constructor" eqp))))
+       ((eq? eq? eqp)
+         make-eq-hash-table)
+       ((eq? equal? eqp)
+         make-equal-hash-table)
+       ((applicative? eqp)
+         ($lambda (v g r)
+           (make-user-equivalence-hash-table v (cons g (unwrap eqp)) r)))
+       (#t
+         ($error make-hash-table "Invalid equality predicate." eqp))))
    ($define! make
      ($lambda (n)
        (ctor (make-vector n ()) (hashfgen n) make)))
@@ -85,7 +97,7 @@
   ($define! new-n (* 2 (hash-table-bucket-count h)))
   ($define! new-h ((hash-table-reconstructor h) new-n))
   (hash-table-for-each
-    ($lambda (k v) (hash-table-set! new-h k v))
+    ($lambda (k v) (hash-table-set-nogrow! new-h k v))
     h)
   (replace-hash-table! h new-h))
 
@@ -111,11 +123,27 @@
     ($sequence
       (adjust-hash-table-length! h +1)
       (vector-set! (hash-table-vector h)
-                    i
-                    (cons (cons k v)
-                          (vector-ref (hash-table-vector h) i)))
-      ($when (<=? 5 (length (vector-ref (hash-table-vector h) i)))
+        i
+        (cons (cons k v) (vector-ref (hash-table-vector h) i)))
+      ($when (>? (length (vector-ref (hash-table-vector h) i))
+                 hash-table-max-bucket-size)
         (grow-hash-table! h)))))
+
+($define-ground-lambda! hash-table-set-nogrow! (h k v)
+  ($define! (i . t) (hash-table-lookup h k))
+  ($cond
+    ((pair? t)
+      (set-cdr! (car t) v))
+    ((>? (length (vector-ref (hash-table-vector h) i))
+         hash-table-max-bucket-size)
+      ($error1 hash-table-set!
+        "Too many keys with colliding hash values."
+        (map car (vector-ref (hash-table-vector h) i))))
+    (#t
+      (adjust-hash-table-length! h +1)
+      (vector-set! (hash-table-vector h)
+        i
+        (cons (cons k v) (vector-ref (hash-table-vector h) i))))))
 
 ($define-ground-lambda! hash-table-delete! (h k)
   ($define! (i . t) (hash-table-lookup h k))
@@ -176,18 +204,4 @@
       ((())        h)
       (#ignore     ($error1 hash-table "Invalid argument structure." a))))
   (loop a))
-
-;;
-;; user-defined equivalence and hash functions
-;;
-;;  - TODO
-;;
-($define-private-lambda! user-hash-table-lookup (h k)
-  ($define! i (hash-table-hash k))
-  ($define! loop
-    ($lambda (xs)
-      ($if ($or? (null? xs) (hash-table-eqp h (caar xs) k))
-        xs
-        (loop (cdr xs)))))
-  (cons i (loop (vector-ref (hash-table-vector k i)))))
 

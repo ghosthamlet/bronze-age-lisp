@@ -11,17 +11,25 @@
 ;;
 ;;  (make-eq-hash-table VECTOR HASH-FUNCTION RECONSTRUCTOR)
 ;;  (make-equal-hash-table VECTOR HASH-FUNCTION RECONSTRUCTOR)
+;;  (make-equal-hash-table VECTOR (HASH-FUNCTION . EQ-OP) RECONSTRUCTOR)
 ;;
 ;; preconditions:  EBX = vector (even length)
-;;                 ECX = hash function
+;;                 ECX = hash function or a pair (hash function . eq-op)
 ;;                 EDX = reconstructor function
 ;;
 app_make_hash_table:
+  .user:
+    push dword cdr(ecx)
+    mov ecx, car(ecx)
+    push dword hash_table_user_bucket_lookup
+    jmp .com
   .eq:
     push dword rn_eq
+    push dword hash_table_native_bucket_lookup
     jmp .com
   .equal:
     push dword rn_equal
+    push dword hash_table_native_bucket_lookup
   .com:
     mov esi, ecx
     mov ecx, 8
@@ -32,7 +40,7 @@ app_make_hash_table:
     mov [eax + hash_table.header], dword hash_table_header
     mov [eax + hash_table.bucket_count], ecx
     mov [eax + hash_table.vector], ebx
-    mov [eax + hash_table.list_lookup], dword hash_table_bucket_lookup.builtin
+    pop dword [eax + hash_table.list_lookup]
     mov dword [eax + hash_table.length], fixint_value(0)
     mov [eax + hash_table.hashf], esi
     mov [eax + hash_table.reconstructor], edx
@@ -64,9 +72,9 @@ app_replace_hash_tableB:
     jmp [ebp + cont.program]
 
 ;;
-;; hash_table_bucket_lookup (continuation passing procedure)
+;; hash_table_native_bucket_lookup (continuation passing procedure)
 ;;
-;; Search in hash table bucket.
+;; Search in hash table bucket using native equality predicate.
 ;;
 ;; preconditions: ECX = key
 ;;                EDX = bucket index (tagged fixint)
@@ -74,8 +82,8 @@ app_replace_hash_tableB:
 ;;                EDI = hash table object
 ;;                EBP = current continuation
 ;;
-hash_table_bucket_lookup:
-  .builtin:
+hash_table_native_bucket_lookup:
+  .next:
     mov ebx, car(esi)
     mov ebx, car(ebx)
     call [edi + hash_table.eq_proc]
@@ -83,12 +91,76 @@ hash_table_bucket_lookup:
     jnz .found
     mov esi, cdr(esi)
     cmp esi, nil_tag
-    jne .builtin
+    jne .next
   .found:
     push edx
     push esi
     call rn_cons
     jmp [ebp + cont.program]
+
+;;
+;; hash_table_user_bucket_lookup (continuation passing procedure)
+;;
+;; Search in hash table bucket using user-defined equality predicate.
+;;
+;; preconditions: ECX = key
+;;                EDX = bucket index (tagged fixint)
+;;                ESI = bucket list (not null)
+;;                EDI = hash table object
+;;                EBP = current continuation
+;;
+hash_table_user_bucket_lookup:
+    mov ebx, ecx
+    mov ecx, -8
+    call rn_allocate_transient
+    mov ecx, ebx
+    mov [eax + cont.header], dword cont_header(8)
+    mov [eax + cont.program], dword .continue
+    mov [eax + cont.parent], ebp
+    mov [eax + cont.var0], ecx              ; key
+    mov [eax + cont.var1], edx              ; bucket index
+    mov [eax + cont.var2], esi              ; bucket contents
+    mov [eax + cont.var3], edi              ; hash table object
+    mov [eax + cont.var4], dword inert_tag  ; padding
+    mov ebp, eax
+  .call_user:
+    mov ebx, car(esi)
+    push dword car(ebx)
+    push dword nil_tag
+    call rn_cons
+    push ecx
+    push eax
+    call rn_cons
+    mov ebx, eax
+    mov eax, [edi + hash_table.eq_proc]
+    mov edi, empty_env_object
+    jmp rn_combine
+  .continue:
+    mov esi, [ebp + cont.var2]
+    cmp eax, boolean_value(1)
+    je .done
+    cmp eax, boolean_value(0)
+    jne .error
+    mov esi, cdr(esi)
+    cmp esi, nil_tag
+    je .done
+  .try_next:
+    call rn_force_transient_continuation
+    mov [ebp + cont.var2], esi
+    mov edi, [ebp + cont.var3]
+    mov ecx, [ebp + cont.var0]
+    jmp .call_user
+  .done:
+    push dword [ebp + cont.var1]
+    push esi
+    mov ebp, [ebp + cont.parent]
+    call rn_cons
+    jmp [ebp + cont.program]
+  .error:
+    mov ebx, eax
+    mov eax, err_not_bool
+    mov ecx, symbol_value(rom_string_hash_table_lookup)
+    jmp rn_error
 
 ;;
 ;;  (hash-table-vector HASH-TABLE) => VECTOR
@@ -196,6 +268,47 @@ app_hash_table_lookup:
     jmp [ebp + cont.program]
 
   .user_hashf:
+    mov edx, ecx
+    mov ecx, -6
+    call rn_allocate_transient
+    mov [eax + cont.header], dword cont_header(6)
+    mov [eax + cont.program], dword .continue
+    mov [eax + cont.parent], ebp
+    mov [eax + cont.var0], ebx ; hash table object
+    mov [eax + cont.var1], edx ; key
+    mov [eax + cont.var2], edi ; operative underlying the hash function
+    mov ebp, eax
+    push edx
+    push dword nil_tag
+    call rn_cons
+    mov ebx, eax
+    mov eax, edi
+    mov edi, empty_env_object
+    jmp rn_combine
+  .continue:
+    ;; check that the argument is a nonnegative fixint
+    mov ebx, eax
+    mov edx, eax
+    xor eax, 1
+    test eax, 0x80000003
+    jne .error
+    mov edi, [ebp + cont.var0]          ; hash table object
+    mov ecx, [ebp + cont.var1]          ; key
+    mov ebp, [ebp + cont.parent]        ; reinstall continuation
+    mov ebx, [edi + hash_table.vector]  ; vector
+    mov eax, [ebx]                      ; vector header word
+    shr eax, 8                          ; untagged vector object size
+    lea eax, [4*eax - 3]                ; fixint: vector length
+    cmp edx, eax
+    jge .error
+    mov esi, [ebx + edx + 3]            ; vector element
+    cmp esi, nil_tag
+    je .empty_bucket
+    test esi, 3
+    jz .error
+    jnp .error
+    jmp [edi + hash_table.list_lookup]
+
   .error:
     mov eax, err_internal_error
     mov ecx, symbol_value(rom_string_hash_table_lookup)

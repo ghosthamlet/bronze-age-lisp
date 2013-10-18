@@ -88,4 +88,19 @@
       (map ($lambda (x) (=? (hash-table-ref h x) (* 2 x)))
            (iota 500)))))
 
+;;
+;; user defined hash function and equality
+;;
+
+($let* ((hashf ($lambda ((k v)) (hash k)))
+        (eqf   ($lambda ((x1 x2) (y1 y2)) (=? x1 y1)))
+        (h     (make-hash-table eqf hashf)))
+  (hash-table-set! h (list 1 "x") 5)
+  (hash-table-set! h (list 2 "y") 6)
+  (hash-table-set! h (list 3 "z") 7)
+  (hash-table-set! h (list 1 "u") 8)
+  ($equal? 8 (hash-table-ref h (list 1 "a")))
+  ($equal? 6 (hash-table-ref h (list 2 "b")))
+  ($equal? 7 (hash-table-ref h (list 3 "c"))))
+
 (summary)
