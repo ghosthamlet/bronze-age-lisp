@@ -273,11 +273,13 @@ List of combiners bound in the ground environment
   (list . OBJECTs)
   (list* . OBJECTs)
   (list->bytevector LIST)                            ; klisp
+  (list-copy LIST)                                   ; SRFI-1
   (list->string LIST)
   (list->tabulate N APPLICATIVE)                     ; SRFI-1
   (list->vector LIST)                                ; klisp
   (list-neighbors LIST)
   (list-ref LIST INDEX)
+  (list-set! LIST INDEX OBJECT)                      ; klisp
   (list-tail LIST INTEGER)
   (load FILENAME)
 

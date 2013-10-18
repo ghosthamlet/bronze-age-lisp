@@ -119,3 +119,13 @@
               (list y alist))))
         (list x alist))))
   (car (aux x ())))
+
+;; list-set! is from klisp (list_setB() in klisp/src/kgpair_mut.c)
+;;  TODO: large index for cyclic lists?
+($define-ground-lambda! list-set! (xs k v)
+  (set-car! (list-tail xs k) v))
+
+;; list-copy is from SRFI-1
+;;
+($define-ground-lambda! list-copy (xs)
+  (map list* xs))
