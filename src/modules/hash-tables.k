@@ -66,6 +66,9 @@
 ;;
 ;; Construction and rehashing.
 ;;
+($define-private-lambda! guess-bucket-count (n)
+  (max 32 (* 2 n)))
+
 ($define-ground-lambda! make-hash-table args
   ($define! (eqp hashfgen)
     ($match args
@@ -91,7 +94,7 @@
    ($define! make
      ($lambda (n)
        (ctor (make-vector n ()) (hashfgen n) make)))
-   (make 32))
+   (make (guess-bucket-count 0)))
 
 ($define-private-lambda! grow-hash-table! (h)
   ($define! new-n (* 2 (hash-table-bucket-count h)))
@@ -100,6 +103,22 @@
     ($lambda (k v) (hash-table-set-nogrow! new-h k v))
     h)
   (replace-hash-table! h new-h))
+
+($define-ground-lambda! hash-table-copy (h)
+  (hash-table-merge h))
+
+($define-ground-lambda! hash-table-merge hs
+  ($define! new-h
+    ((hash-table-reconstructor (car hs))
+     (guess-bucket-count (apply + (map hash-table-length hs)))))
+  ($define! add! ($lambda (k v) (hash-table-set! new-h k v)))
+  (for-each ($lambda (t) (hash-table-for-each add! t)) hs)
+  new-h)
+
+($define-ground-lambda! hash-table-merge! (new-h . hs)
+  ($define! add! ($lambda (k v) (hash-table-set! new-h k v)))
+  (for-each ($lambda (t) (hash-table-for-each add! t)) hs)
+  new-h)
 
 ;;
 ;; single element operations
@@ -115,6 +134,11 @@
   ($match (cdr (hash-table-lookup h k))
     (((#ignore . v) . #ignore) v)
     (()                        ($error hash-table-ref "Key not found." h k))))
+
+($define-ground-lambda! hash-table-ref/default (h k d)
+  ($match (cdr (hash-table-lookup h k))
+    (((#ignore . v) . #ignore) v)
+    (()                        d)))
 
 ($define-ground-lambda! hash-table-set! (h k v)
   ($define! (i . t) (hash-table-lookup h k))

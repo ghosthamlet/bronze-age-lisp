@@ -94,11 +94,6 @@ Missing bindings from klisp:
   Promises:
     $delay
 
-  Hash tables:
-    hash-table-copy
-    hash-table-merge
-    hash-table-merge!
-
   Immutability
     immutable-bytevector?
     immutable-string?

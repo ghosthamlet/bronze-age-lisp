@@ -89,6 +89,17 @@
            (iota 500)))))
 
 ;;
+;; copy and merge
+;;
+($let ((h1 (hash-table 1 2 3 4 5 6))
+       (h2 (hash-table 1 5 3 7)))
+  ($equal? 3 (hash-table-length (hash-table-merge h1 h2)))
+  (hash-table-merge! h2 h1)
+  ($equal? 3 (hash-table-length h2))
+  ($equal? (hash-table-ref h2 5) 6))
+
+;;
+;;
 ;; user defined hash function and equality
 ;;
 
