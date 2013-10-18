@@ -188,6 +188,7 @@ List of combiners bound in the ground environment
   (even? . NUMs)
   (execve PATH [ARGS [ENV]])                         ; ext
   (exit OBJECT)
+  (expt NUMBER NUMBER)                               ; r7rs
   (extend-continuation CONT APPLICATIVE [ENV])
 
   (file-exists? . STRINGs)                           ; klisp

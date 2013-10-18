@@ -178,3 +178,36 @@
       (#t
         (reduce ys lcm-bin 1
                 list* lcm-bin list*)))))
+
+;; expt
+;;
+($define-ground-lambda! integer-expt (a n p)
+  ($if (zero? n)
+    p
+    (integer-expt
+      (* a a)
+      (arithmetic-shift n -1)
+      ($if (zero? (bitwise-and n 1)) p (* p a)))))
+
+($define-ground-lambda! expt (a n)
+  ($unless (number? a n)
+    #0=($error expt "Invalid argument." a n))
+  ($cond
+    (($and? (finite? a) (finite? n) (positive? n))
+      (integer-expt a n 1))
+    ((eq? #e-infinity a) #0#)
+    ((eq? #e+infinity a) ($cond
+                          ((positive? n) a)
+                          ((negative? n) 0)
+                          (#t            #0#)))
+    ((eq? #e-infinity n) ($cond
+                           ((>? a 1) 0)
+                           ((eq? a 1) 1)
+                           (#t #0#)))
+    ((eq? #e+infinity n) ($cond
+                           ((<=? 0 a 1) a)
+                           ((positive? a) n)
+                           (#t #0#)))
+    ((zero? n)           1)
+    ((eq? 1 a)           1)
+    (#t                  #0#)))

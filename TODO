@@ -42,9 +42,6 @@ Missing bindings from klisp:
     system-error-continuation
     rename-file
 
-  Numbers:
-    expt
-
   Vectors:
     vector->bytevector
     vector-fill!
