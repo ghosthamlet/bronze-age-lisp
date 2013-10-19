@@ -26,9 +26,6 @@ Missing bindings from klisp:
     bytevector->vector
 
   Ports:
-    string-port?
-    close-input-file
-    close-output-file
     eval-string
     with-error-to-file
 

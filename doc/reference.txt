@@ -381,14 +381,15 @@ List of combiners bound in the ground environment
   (string=? . STRINGs)
   (string>=? . STRINGs)
   (string>? . STRINGs)
+  (string-append . STRINGs)
   (string->keyword STRING)                           ; klisp
+  (string-length STRING)
   (string->list STRING)
   (string->number STRING [RADIX])
-  (string->symbol STRING)
-  (string-append . STRINGs)
-  (string-length STRING)
+  (string-port? . PORTs)                             ; klisp
   (string-ref STRING INDEX)
   (string-size STRING)
+  (string->symbol STRING)
   (substring STRING INDEX INDEX)
   (symbol? . OBJECTs)
   (symbol->keyword SYMBOL)                           ; klisp

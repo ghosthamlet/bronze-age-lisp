@@ -400,6 +400,29 @@ pred_file_port:
     mov eax, 1
     ret
 
+pred_string_port:
+    test bl, 3
+    jnz .type_error
+    movzx eax, byte [ebx]
+    xor al, txt_in_header(0)
+    test al, ~(txt_in_header(0) ^ bin_out_header(0))
+    jnz .type_error
+    cmp [ebx + txt_in.read], dword primitive_value(app_open_input_string.read_method)
+    je .yes
+    cmp [ebx + txt_out.write], dword primitive_value(app_open_output_string.write_method)
+    je .yes
+  .no:
+    xor eax, eax
+    ret
+  .yes:
+    mov eax, 1
+    ret
+  .type_error:
+    mov eax, err_invalid_argument
+    mov ecx, [esi + operative.var0]
+    jmp rn_error
+
+
 ;;
 ;; pred_terminal_port (native procedure)
 ;;
