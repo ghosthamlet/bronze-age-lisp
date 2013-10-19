@@ -31,8 +31,6 @@ Missing bindings from klisp:
     close-output-file
     eval-string
     file-port?
-    open-input-bytevector
-    port-open?
     with-error-to-file
 
   System:

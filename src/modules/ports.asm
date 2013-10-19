@@ -334,6 +334,63 @@ app_dup2:
     jmp rn_error
 
 ;;
+;; rn_disable_port_methods (native procedure)
+;;
+;; Marks a port as closed by overwriting methods by dummy ones.
+;;
+;; preconditions:  EDI = port object
+;; preserves:      EBX, ECX, EDX, ESI, EDI, EBP
+;; clobbers:       EAX
+;;
+rn_disable_port_methods:
+    mov [edi + bin_in.env], dword inert_tag
+    mov eax, primitive_value(closed_port_method)
+    mov [edi + bin_in.close], eax
+    mov [edi + bin_in.read], eax
+    mov [edi + bin_in.peek], eax
+    ret
+
+;;
+;; closed_port_method (irregular procedure)
+;;
+;; A primitive which replaces methods of closed ports.
+;;
+closed_port_method:
+    mov eax, err_closed_port
+    mov ebx, edi
+    mov ecx, inert_tag
+    jmp rn_error
+
+;;
+;; pred_port_open (native procedure)
+;;
+;; preconditions: EBX = object
+;;                [ESI + operative.var0] = symbol for error reporting
+;;                EBP = current continuation (for error reporting)
+;;
+;; postconditions: AL = 1 if EBX is a terminal port
+;;                    = 0 if EBX is a port, but not a terminal port
+;;                 raise error if EBX is not a port
+;;
+;; preserves: ESI, EDI, EBP
+;; clobbers: EAX, EBX, EDX, EFLAGS
+;;
+pred_port_open:
+    test bl, 3
+    jnz .type_error
+    movzx eax, byte [ebx]
+    xor al, txt_in_header(0)
+    test al, ~(txt_in_header(0) ^ bin_out_header(0))
+    jnz .type_error
+    cmp [ebx + txt_in.close], dword primitive_value(closed_port_method)
+    setne al
+    ret
+  .type_error:
+    mov eax, err_invalid_argument
+    mov ecx, [esi + operative.var0]
+    jmp rn_error
+
+;;
 ;; pred_terminal_port (native procedure)
 ;;
 ;; preconditions: EBX = object

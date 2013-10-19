@@ -71,6 +71,7 @@ app_open_buffered_binary_input_port:
 
   .close_method:
     mov esi, [edi + bin_in.underlying_port]
+    call rn_disable_port_methods ;; TODO: leak?
     mov eax, [esi + bin_in.close]
     mov edi, [esi + bin_in.env]
     jmp rn_combine

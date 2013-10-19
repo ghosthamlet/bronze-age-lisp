@@ -340,6 +340,7 @@ List of combiners bound in the ground environment
   (peek-char [PORT])
   (peek-u8 PORT)                                     ; r7rs
   (port? . OBJECTs)
+  (port-open? . OBJECTs)                             ; klisp
   (positive? . NUMs)
   (promise? . OBJECTs)
   ($provide SYMBOLS . BODY)

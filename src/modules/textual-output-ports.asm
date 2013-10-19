@@ -224,6 +224,7 @@ app_open_utf_encoder:
     jmp .flush_method
   .close_continue:
     call discard_helper_continuation
+    call rn_disable_port_methods ;; TODO: leak?
     mov edi, [edi + txt_out.underlying_port]
     mov eax, [edi + bin_out.close]
     mov edi, [edi + bin_out.env]

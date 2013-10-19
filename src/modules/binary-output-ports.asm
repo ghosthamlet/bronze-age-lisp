@@ -242,6 +242,7 @@ app_open_buffered_binary_output_port:
     jmp .flush_method
   .close_continue:
     call discard_helper_continuation
+    call rn_disable_port_methods ;; TODO: leak?
     mov edi, [edi + bin_out.underlying_port]
     mov eax, [edi + bin_out.close]
     mov edi, [edi + bin_out.env]

@@ -102,6 +102,7 @@ app_open_utf_decoder:
 
     align 4
   .close_method:
+    call rn_disable_port_methods ;; TODO: leak?
     mov esi, [edi + txt_in.underlying_port]
     mov eax, [esi + bin_in.close]
     mov edi, [esi + bin_in.env]
