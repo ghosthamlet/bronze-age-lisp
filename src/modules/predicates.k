@@ -98,6 +98,7 @@
     ($bind-native-predicate! port-open? "pred_port_open")
     ($bind-native-predicate! file-port? "pred_file_port")
     ($bind-native-predicate! string-port? "pred_string_port")
+    ($bind-native-predicate! bytevector-port? "pred_bytevector_port")
     ($bind-native-predicate! terminal-port? "pred_terminal_port")))
 
 ($provide! ()

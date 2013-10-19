@@ -39,3 +39,14 @@
               symbols
               (cons list symbols))
         (eval exp env)))
+
+($define-ground-lambda! eval-string (str env)
+  ($let* ((p (open-input-string str))
+          (x (read p)))
+    ($cond
+      ((eof-object? x)
+        ($error1 eval-string "Too few values in string." str))
+      ((not? (eof-object? (read p)))
+        ($error1 eval-string "Too many values in string." str))
+      (#t
+        (eval x env)))))

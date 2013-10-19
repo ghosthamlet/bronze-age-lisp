@@ -97,6 +97,7 @@ List of combiners bound in the ground environment
   (bytevector-copy-partial! FROM START END TO AT)    ; klisp, r7rs
   (bytevector-length BYTEVECTOR)                     ; klisp, r7rs
   (bytevector->list BYTEVECTOR)                      ; klisp
+  (bytevector-port? . PORTs)                         ; klisp
   (bytevector-u8-ref BYTEVECTOR INDEX)               ; klisp, r7rs
   (bytevector-u8-set! BYTEVECTOR INDEX U8)           ; klisp, r7rs
 
@@ -187,6 +188,7 @@ List of combiners bound in the ground environment
   (error-object-irritants ERROR-OBJECT)              ; klisp
   (error-object-source ERROR-OBJECT)                 ; ext
   (eval OBJECT ENV)
+  (eval-string STRING ENV)                           ; klisp
   (even? . NUMs)
   (execve PATH [ARGS [ENV]])                         ; ext
   (exit OBJECT)
