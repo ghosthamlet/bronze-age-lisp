@@ -57,3 +57,11 @@
     (x
       (apply-continuation error-continuation
         (make-error-object "Invalid argument structure." x s)))))
+
+($define-ground-vau! $dotimes ((v n . rest) . body) denv
+  ($define! n (eval n denv))
+  ($define! f (eval (list* $lambda v body) denv))
+  ($define! r (eval (list* $lambda v rest) denv))
+  ($define! i 0)
+  #1=($when (<? i n) (apply f i denv) ($define! i (+ i 1)) #1#)
+  (apply r i denv))

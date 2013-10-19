@@ -17,3 +17,13 @@
          (write-char c q)
          #1#))
   (get-output-string q))
+
+($define-ground-lambda! bytevector->vector (b)
+  ($define! v (make-vector (bytevector-length b)))
+  ($dotimes (i (bytevector-length b) v)
+    (vector-set! v i (bytevector-u8-ref b i))))
+
+($define-ground-lambda! vector->bytevector (v)
+  ($define! b (make-bytevector (vector-length v)))
+  ($dotimes (i (vector-length v) b)
+    (bytevector-u8-set! b i (vector-ref v i))))

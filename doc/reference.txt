@@ -101,6 +101,7 @@ List of combiners bound in the ground environment
   (bytevector-port? . PORTs)                         ; klisp
   (bytevector-u8-ref BYTEVECTOR INDEX)               ; klisp, r7rs
   (bytevector-u8-set! BYTEVECTOR INDEX U8)           ; klisp, r7rs
+  (bytevector->vector BYTEVECTOR)                    ; klisp
 
   (caaar PAIR)
   (caaaar PAIR)
@@ -177,6 +178,7 @@ List of combiners bound in the ground environment
   (div0-and-mod0 INTEGER INTEGER)
   (div INTEGER INTEGER)
   (div0 INTEGER INTEGER)
+  ($dotimes (VAR COUNT . RESULT) . BODY)             ; ext
   (dup2 PORT/FIXINT FIXINT)                          ; ext
 
   (encycle! LIST INDEX INDEX)
@@ -416,6 +418,7 @@ List of combiners bound in the ground environment
   ($vau PTREE SYMBOL . BODY)
   (vector . OBJECTs)                                 ; klisp, r7rs
   (vector? . OBJECTs)                                ; klisp, r7rs
+  (vector->bytevector VECTOR)                        ; klisp
   (vector->list VECTOR)                              ; klisp, r7rs
   (vector-length VECTOR)                             ; klisp, r7rs
   (vector-ref VECTOR INDEX)                          ; klisp, r7rs
@@ -503,6 +506,26 @@ Bronze Age Lisp Extensions
   ($quote* . OBJECT) => OBJECT
 
     Quoting operatives. Bad style, but useful.
+
+  ($dotimes (VAR COUNT . RESULTs) . BODY)
+
+    Loop operative inspired by Common Lisp. VAR must
+    be a symbol, and COUNT must evaluate to a number
+    in the dynamic environment.
+
+    If COUNT is a positive integer, ($dotimes ...) evaluates
+    ($sequence . BODY) COUNT times, with VAR bound successively
+    to 0, 1, ... , COUNT-1. Then, ($dotimes ...) evaluates
+    ($sequence RESULTs) with VAR bound to COUNT.
+
+    If COUNT is #e+infinity, ($dotimes ...) evaluates
+    ($sequence . BODY) with VAR bound successively to 0, 1, ...,
+    with no explicit limit (the loop eventually terminates
+    when the iteration variable hits the maximal representable
+    integer.
+
+    If COUNT is negative or zero, ($dotimes ...) evaluates
+    ($sequence . RESULTs) with VAR bound to zero.
 
   ($formal-parameter-tree? . OBJECTs)
 

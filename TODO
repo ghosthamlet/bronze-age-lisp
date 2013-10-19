@@ -25,7 +25,6 @@ Missing bindings from klisp:
     bytevector->immutable-bytevector
     bytevector-map
     bytevector-u8-fill!
-    bytevector->vector
 
   Ports:
     with-error-to-file
@@ -35,7 +34,6 @@ Missing bindings from klisp:
     rename-file
 
   Vectors:
-    vector->bytevector
     vector-fill!
     vector->immutable-vector
 
