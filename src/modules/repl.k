@@ -9,6 +9,8 @@
 ;;;
 ;;;    -e EXPR        evaluate EXPR
 ;;;
+;;;    -w EXPR        evaluate EXPR and print result to stdout
+;;;
 ;;;    -l FILE        load FILE and continue processing arguments,
 ;;;                   equivalent to -e '(load "FILE")'
 ;;;
@@ -140,7 +142,7 @@
             (eval x env)
             . #9#)))
   (print-usage-instructions ()
-    (write-string "usage: bronze [-l FILE] [-e EXPR] [-i] [-b] [-v] [SCRIPT [ARGS...]]" stderr)
+    (write-string "usage: bronze [-l FILE] [-e EXPR] [-w EXPR] [-i] [-b] [-v] [SCRIPT [ARGS...]]" stderr)
     (newline stderr)
     #f)
   (print-version ()
@@ -164,7 +166,11 @@
         (require (cadr args))
         #1#)
       ((equal? (car args) "-e")
-        (eval (read (open-input-string (cadr args))) env)
+        (eval-string (cadr args) env)
+        #1#)
+      ((equal? (car args) "-w")
+        (write (eval-string (cadr args) env))
+        (newline)
         #1#)
       ((equal? (car args) "-i")
         (process-interpreter-arguments (cdr args) #t env))

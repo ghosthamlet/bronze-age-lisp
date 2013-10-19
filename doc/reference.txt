@@ -1021,6 +1021,9 @@ Command line arguments
 
   -e EXPR        evaluate EXPR
 
+  -w EXPR        evaluate EXPR and write the result to the
+                 standard output, followed by a newline
+
   -l FILE        load FILE and continue processing arguments,
                  equivalent to -e '(load "FILE")'
 
@@ -1066,11 +1069,11 @@ Keyboard shortcuts
   the interpreter adds parentheses automatically,
   for example, the input
 
-    $define x 1 <ENTER>
+    $define! x 1 <ENTER>
 
   is replaced by
 
-    ($define x 1)
+    ($define! x 1)
 
   and evaluated.
 
