@@ -96,6 +96,7 @@
     ($bind-header-predicate! input-port? txt-out-header-tag #b11110111)
     ($bind-header-predicate! output-port? txt-out-header-tag  #b11110111)
     ($bind-native-predicate! port-open? "pred_port_open")
+    ($bind-native-predicate! file-port? "pred_file_port")
     ($bind-native-predicate! terminal-port? "pred_terminal_port")))
 
 ($provide! ()

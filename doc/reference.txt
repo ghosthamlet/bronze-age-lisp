@@ -148,8 +148,10 @@ List of combiners bound in the ground environment
   (char->integer CHAR)
   (char-ready? [PORT])
   (char-whitespace? . CHARs)                         ; klisp
-  (close-input-port PORT)
-  (close-output-port PORT)
+  (close-input-file PORT)
+  (close-input-port PORT)                            ; r7rs
+  (close-output-file PORT)
+  (close-output-port PORT)                           ; r7rs
   (close-port PORT)
   (close-port-ignore-errors PORT)                    ; ext
   (collect-garbage)                                  ; ext
@@ -192,6 +194,7 @@ List of combiners bound in the ground environment
   (extend-continuation CONT APPLICATIVE [ENV])
 
   (file-exists? . STRINGs)                           ; klisp
+  (file-port? . PORTs)                               ; klisp
   (filter PREDICATE LIST)
   (find-required-filename STRING)                    ; klisp
   (finite-list? . OBJECTs)
@@ -340,7 +343,7 @@ List of combiners bound in the ground environment
   (peek-char [PORT])
   (peek-u8 PORT)                                     ; r7rs
   (port? . OBJECTs)
-  (port-open? . OBJECTs)                             ; klisp
+  (port-open? . PORTs)                               ; klisp
   (positive? . NUMs)
   (promise? . OBJECTs)
   ($provide SYMBOLS . BODY)

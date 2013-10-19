@@ -282,3 +282,15 @@
     (list 0 1)
     (list "app_char_readyP.A0" "app_char_readyP.A1")
     ()))
+
+;; close-input-file and close-output-file
+;;
+($define-ground-lambda! close-input-file (p)
+  ($if ($and? (port? p) (file-port? p) (input-port? p))
+    (close-port p)
+    ($error1 close-input-file "Invalid argument." p)))
+
+($define-ground-lambda! close-output-file (p)
+  ($if ($and? (port? p) (file-port? p) (output-port? p))
+    (close-port p)
+    ($error1 close-output-file "Invalid argument." p)))

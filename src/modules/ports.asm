@@ -390,6 +390,16 @@ pred_port_open:
     mov ecx, [esi + operative.var0]
     jmp rn_error
 
+pred_file_port:
+    mov ecx, [esi + operative.var0]
+    call get_linux_port
+    jz .file_descriptor
+    xor eax, eax
+    ret
+  .file_descriptor:
+    mov eax, 1
+    ret
+
 ;;
 ;; pred_terminal_port (native procedure)
 ;;

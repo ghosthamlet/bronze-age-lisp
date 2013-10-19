@@ -30,7 +30,6 @@ Missing bindings from klisp:
     close-input-file
     close-output-file
     eval-string
-    file-port?
     with-error-to-file
 
   System:
