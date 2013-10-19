@@ -95,7 +95,7 @@
     open-input-string
     string->symbol symbol->string string->keyword keyword->string symbol->keyword keyword->symbol
     error-object-message error-object-irritants error-object-source error-object-continuation
-    open-binary-input-file open-binary-output-file
+    open-binary-input-file open-raw-output-file
     make-keyed-dynamic-variable*
     continuation->applicative
     memoize
@@ -107,6 +107,7 @@
   ($bounded-app 1 2
     char-digit? char->digit digit->char
     open-utf-encoder
+    open-buffered-binary-output-port
     make-vector make-bytevector
     fork
     hash)
@@ -228,7 +229,9 @@
   ($define-ground-lambda! open-input-file (s)
     (open-utf-decoder (open-binary-input-file s)))
   ($define-ground-lambda! open-output-file (s)
-    (open-utf-encoder (open-binary-output-file s)))
+    (open-utf-encoder (open-raw-output-file s)))
+  ($define-ground-lambda! open-binary-output-file (s)
+    (open-buffered-binary-output-port (open-raw-output-file s)))
 
   ($bind-ground! get-textual-input-position
     (make-bounded-applicative

@@ -96,6 +96,8 @@ linux_write:
     ;;       edi = file descriptor (tagged fixint)
     ;;       ebp = continuation
     ;; post: eax = #inert
+    cmp bl, bytevector_tag
+    jne .invalid_argument
     mov esi, ebx
     call rn_get_blob_data
     mov edx, ecx    ; buffer length
@@ -122,6 +124,10 @@ linux_write:
     mov eax, primitive_value(linux_write)
     mov ebx, esi
     jmp rn_combine.reflect
+  .invalid_argument:
+    mov eax, err_invalid_argument
+    mov ecx, inert_tag
+    jmp rn_error
 
     align 4
 linux_nop:

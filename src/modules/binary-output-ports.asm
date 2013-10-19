@@ -115,6 +115,139 @@ app_get_output_bytevector_position:
     jmp rn_error
 
 ;;
+;; app_open_buffered_binary_output_port (continuation passing procedure)
+;;
+
+app_open_buffered_binary_output_port:
+  .A1:
+    mov ecx, fixint_value(configured_default_buffer_size)
+    ; fallthrough
+  .A2:
+    ;; eax = closure (not used)
+    ;; ebx = underlying port
+    ;; ecx = buffer size (tagged fixint)
+    ;; edi = environment (not used)
+    ;; ebp = continuation
+    mov edx, ebx
+    test bl, 3
+    jnz .port_error
+    mov eax, [ebx]
+    cmp al, bin_out_header(0)
+    jne .port_error
+
+    mov eax, ecx
+    xor al, 1
+    test al, 3
+    jnz .buffer_error
+    cmp ecx, fixint_value(configured_blob_heap_size / 2)
+    ja .buffer_error
+    shr ecx, 2
+
+    call rn_allocate_blob
+    mov ebx, eax
+    mov ecx, 8
+    call rn_allocate
+    mov [eax + bin_out.header], dword bin_out_header(8)
+    mov [eax + bin_out.env], eax
+    mov [eax + bin_out.close], dword primitive_value(.close_method)
+    mov [eax + bin_out.write], dword primitive_value(.write_method)
+    mov [eax + bin_out.flush], dword primitive_value(.flush_method)
+    mov [eax + bin_out.buffer], ebx
+    mov [eax + bin_out.usage], dword fixint_value(0)
+    mov [eax + bin_out.underlying_port], edx
+    jmp [ebp + cont.program]
+  .port_error:
+    mov eax, err_invalid_argument
+    mov ecx, symbol_value(rom_string_open_buffered_binary_output_port)
+    jmp rn_error
+  .buffer_error:
+    mov eax, err_invalid_buffer_size
+    mov ebx, ecx
+    mov ecx, symbol_value(rom_string_open_buffered_binary_output_port)
+    jmp rn_error
+
+    align 4
+  .write_method:
+    ;; ebx = argument
+    ;; edi = closure
+    ;; ebp = continuation
+  .write_restart:
+    push ebx
+    push dword .success
+    call bin_out_try_buffer
+    ;; ecx = current buffer usage (untagged)
+    ;; edx = capacity needed (untagged)
+    ;; [esp] = argument (string or char)
+    test ecx, ecx
+    jz .big
+    pop ebx
+    mov edx, .write_continue
+    call make_helper_continuation
+    call rn_allocate_blob ; eax = temporary buffer
+    mov ebx, eax
+    mov eax, [edi + bin_out.buffer]
+    call rn_copy_blob_data
+    mov [edi + bin_out.usage], dword fixint_value(0)
+    mov edi, [edi + bin_out.underlying_port]
+    mov eax, [edi + bin_out.write]
+    mov edi, [edi + bin_out.env]
+    jmp rn_combine
+  .write_continue:
+    ;; TODO handle partial write
+    rn_trace configured_debug_ports, 'W', hex, eax
+    call discard_helper_continuation
+    jmp .write_restart
+  .big:
+    ;; buffer empty, but the item still does not fit
+    ;; pass it directly to the output port
+    pop ebx
+    mov edi, [edi + bin_out.underlying_port]
+    mov eax, [edi + bin_out.write]
+    mov edi, [edi + bin_out.env]
+    jmp rn_combine
+  .success:
+    pop eax
+    mov eax, dword inert_tag
+    jmp [ebp + cont.program]
+
+    align 4
+  .flush_method:
+    ;; ebx = argument (ignored)
+    ;; edi = port object
+    ;; ebp = continuation
+    mov ecx, [edi + bin_out.usage]
+    shr ecx, 2
+    jz .no_op
+    mov edx, .flush_continue
+    call make_helper_continuation
+    call rn_allocate_blob
+    mov ebx, eax
+    mov eax, [edi + bin_out.buffer]
+    call rn_copy_blob_data
+    mov [edi + bin_out.usage], dword fixint_value(0)
+    mov edi, [edi + bin_out.underlying_port]
+    mov eax, [edi + bin_out.write]
+    mov edi, [edi + bin_out.env]
+    jmp rn_combine
+  .flush_continue:
+    ;; TODO check result & partial writes
+    call discard_helper_continuation
+  .no_op:
+    mov eax, dword inert_tag
+    jmp [ebp + cont.program]
+
+  .close_method:
+    mov edx, .close_continue
+    call make_helper_continuation
+    jmp .flush_method
+  .close_continue:
+    call discard_helper_continuation
+    mov edi, [edi + bin_out.underlying_port]
+    mov eax, [edi + bin_out.close]
+    mov edi, [edi + bin_out.env]
+    jmp rn_combine
+
+;;
 ;; bin_out_try_buffer (native procedure)
 ;;
 ;; preconditions:  EBX = fixint, bytevector or string
