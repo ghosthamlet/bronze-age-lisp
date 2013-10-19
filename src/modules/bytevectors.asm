@@ -170,6 +170,31 @@ app_bytevector_copy:
     jmp rn_error
 
 ;;
+;; app_string_Gutf8 (continuation passing procedure)
+;;
+;; Copy a string and tag the result as bytevector.
+;;
+;; preconditions: EBX = source string
+;;                EBP = current continuation
+;;
+app_string_Gutf8:
+  .A1:
+    cmp bl, string_tag
+    jne .error
+    mov esi, ebx            ; ESI := source
+    call rn_get_blob_data   ; EBX := base, ECX := length
+    call rn_allocate_blob   ; EAX := new bytevector
+    mov ebx, eax            ; EBX := new bytevector
+    mov eax, esi            ; EAX := source
+    call rn_copy_blob_data  ; copy data
+    mov eax, ebx            ; EAX := new bytevector
+    jmp [ebp + cont.program]
+  .error:
+    mov eax, err_invalid_argument
+    mov ecx, symbol_value(rom_string_string_Gutf8)
+    jmp rn_error
+
+;;
 ;; app_bytevector_copy_partial (continuation passing procedure)
 ;;
 ;; Copy bytes from a bytevector.

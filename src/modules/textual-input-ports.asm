@@ -61,6 +61,7 @@ app_open_input_string:
   .error_at_end:
     mov eax, err_invalid_utf8
     mov ebx, edi
+    mov ecx, inert_tag
     pop edx
     jmp rn_error
   .read_success:
@@ -186,6 +187,7 @@ app_open_utf_decoder:
   .error_at_end:
     mov eax, err_invalid_utf8
     mov ebx, edi
+    mov ecx, inert_tag
     jmp rn_error
   .success:
     pop edx
@@ -323,6 +325,7 @@ txt_in_try_buffer:
     jmp edx
   .invalid:
     add esp, 20
-    mov ebx, esi
+    lea ebx, [4*eax + 1]
     mov eax, err_invalid_utf8
+    mov ecx, inert_tag
     jmp rn_error

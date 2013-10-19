@@ -13,14 +13,17 @@ TODO
 
 -------
 
+Incompatible bindings:
+
+    bytevector->string ==> utf8->string
+    string->bytevector ==> string->utf8
+
 Missing bindings from klisp:
 
   Bytevectors:
-    bytevector-copy!
     bytevector-for-each
     bytevector->immutable-bytevector
     bytevector-map
-    bytevector->string
     bytevector-u8-fill!
     bytevector->vector
 
@@ -40,7 +43,6 @@ Missing bindings from klisp:
     raise
 
   Strings:
-    string->bytevector
     string-ci<?
     string-ci<=?
     string-ci>?

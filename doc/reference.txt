@@ -93,6 +93,7 @@ List of combiners bound in the ground environment
   (bytevector>=? . BYTEVECTORs)                      ; ext
   (bytevector>? . BYTEVECTORs)                       ; ext
   (bytevector-copy BYTEVECTOR)                       ; klisp, r7rs
+  (bytevector-copy! SRC DST)                          ; klisp, r7rs
   (bytevector-copy-partial BYTEVECTOR START END)     ; klisp, r7rs
   (bytevector-copy-partial! FROM START END TO AT)    ; klisp, r7rs
   (bytevector-length BYTEVECTOR)                     ; klisp, r7rs
@@ -392,6 +393,7 @@ List of combiners bound in the ground environment
   (string-ref STRING INDEX)
   (string-size STRING)
   (string->symbol STRING)
+  (string->utf8 STRING)                              ; r7rs
   (substring STRING INDEX INDEX)
   (symbol? . OBJECTs)
   (symbol->keyword SYMBOL)                           ; klisp
@@ -408,6 +410,7 @@ List of combiners bound in the ground environment
   ($unless BOOLEAN . FORMs)                          ; klisp
   ($unregister-library LIBRARY-NAME)                 ; klisp
   (unregister-requirement! STRING)                   ; klisp
+  (utf8->string BYTEVECTOR)                          ; r7rs
   (unwrap APPLICATIVE)
 
   ($vau PTREE SYMBOL . BODY)
