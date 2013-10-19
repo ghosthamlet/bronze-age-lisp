@@ -93,9 +93,11 @@
     char->integer integer->char
     open-utf-decoder
     open-input-string
+    open-input-bytevector
     string->symbol symbol->string string->keyword keyword->string symbol->keyword keyword->symbol
     error-object-message error-object-irritants error-object-source error-object-continuation
-    open-binary-input-file open-raw-output-file
+    open-raw-input-file open-raw-output-file
+    open-buffered-binary-input-port
     make-keyed-dynamic-variable*
     continuation->applicative
     memoize
@@ -213,6 +215,10 @@
                txt-in-header-tag 3)
     ($bind-io! peek-char "app_read_typed" (0 1)
                txt-in-header-tag 4)
+    ($bind-io! read-u8 "app_read_typed" (0 1)
+               bin-in-header-tag 3)
+    ($bind-io! peek-u8 "app_read_typed" (0 1)
+               bin-in-header-tag 4)
     ($bind-io! read-bytevector "app_read_typed" (0 1)
                bin-in-header-tag 3)
 
@@ -227,11 +233,13 @@
     ($bind-io! close-output-port "app_close_typed" (1) txt-out-header-tag #b11110111))
 
   ($define-ground-lambda! open-input-file (s)
-    (open-utf-decoder (open-binary-input-file s)))
+    (open-utf-decoder (open-raw-input-file s)))
   ($define-ground-lambda! open-output-file (s)
     (open-utf-encoder (open-raw-output-file s)))
   ($define-ground-lambda! open-binary-output-file (s)
     (open-buffered-binary-output-port (open-raw-output-file s)))
+  ($define-ground-lambda! open-binary-input-file (s)
+    (open-buffered-binary-input-port (open-raw-input-file s)))
 
   ($bind-ground! get-textual-input-position
     (make-bounded-applicative

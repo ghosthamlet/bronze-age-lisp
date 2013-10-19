@@ -32,11 +32,9 @@ Missing bindings from klisp:
     eval-string
     file-port?
     open-input-bytevector
-    peek-u8
     port-open?
     with-error-to-file
     u8-ready?
-    read-u8
 
   System:
     system-error-continuation

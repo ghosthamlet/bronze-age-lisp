@@ -16,6 +16,10 @@
 %define txt_out.usage           txt_out.var1
 %define txt_out.underlying_port txt_out.var2
 
+%define bin_in.buffer           bin_in.var0
+%define bin_in.bufpos           bin_in.var1
+%define bin_in.underlying_port  bin_in.var2
+
 %define bin_out.buffer          bin_out.var0
 %define bin_out.usage           bin_out.var1
 %define bin_out.underlying_port bin_out.var2
@@ -179,10 +183,7 @@ app_close_typed:
     push app_close_typed
     jmp rn_error
 
-;%include "textual-output-ports.asm"
-;%include "textual-input-ports.asm"
-
-app_open_binary_input_file:
+app_open_raw_input_file:
   .A1:
     ;; ebx = name
     cmp bl, string_tag

@@ -286,7 +286,8 @@
       "ports.asm"
       "textual-output-ports.asm"
       "textual-input-ports.asm"
-      "binary-output-ports.asm"))
+      "binary-output-ports.asm"
+      "binary-input-ports.asm"))
   ($when ($configured character-predicates)
     ($for-each-src asm-include asm-prefix "unicode/"
       "unicode-lookup.asm"
