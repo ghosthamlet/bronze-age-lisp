@@ -269,7 +269,22 @@ get_linux_port:
     mov ebx, [ebx + txt_in.underlying_port]
     jmp .recurse
   .bin_out:
+    mov eax, [ebx + bin_out.write]
+    cmp eax, primitive_value(linux_write)
+    je .raw
+    cmp eax, primitive_value(app_open_buffered_binary_output_port.write_method)
+    jne .no
+    mov ebx, [ebx + bin_out.underlying_port]
+    jmp .recurse
   .bin_in:
+    mov eax, [ebx + bin_in.read]
+    cmp eax, primitive_value(linux_read)
+    je .raw
+    cmp eax, primitive_value(app_open_buffered_binary_input_port.read_method)
+    jne .no
+    mov ebx, [ebx + bin_in.underlying_port]
+    jmp .recurse
+  .raw:
     mov eax, [ebx + txt_out.env]
     xor al, 1
     test al, 3
@@ -414,7 +429,7 @@ app_tc_cbreak_noecho:
 ;;
 ;; app_char_readyP
 ;;
-;; Implementation of (char-ready? [PORT])
+;; Implementation of (char-ready? [PORT]) and (u8-ready? [PORT])
 ;;
 app_char_readyP:
   .A0:
@@ -426,9 +441,11 @@ app_char_readyP:
     jnz .type_error
     mov edi, eax
     mov eax, [esi + txt_in.read]
+    cmp eax, primitive_value(app_open_buffered_binary_input_port.read_method)
+    je .ask_bin
     cmp eax, primitive_value(app_open_utf_decoder.read_method)
     jne .ask_the_system
-  .ask_the_decoder:
+  .ask_txt:
     mov ecx, [esi + txt_in.accum]
     cmp cl, char_tag
     jz .yes
@@ -438,6 +455,12 @@ app_char_readyP:
     mov ebx, [edi + bin_out.env]
     call rn_file_descriptor_ready
     jmp [ebp + cont.program]
+  .ask_bin:
+    push .yes
+    xchg esi, edi
+    call bin_in_try_buffer.peek_u8
+    xchg esi, edi
+    jmp .ask_the_system
   .yes:
     mov eax, boolean_value(1)
     jmp [ebp + cont.program]

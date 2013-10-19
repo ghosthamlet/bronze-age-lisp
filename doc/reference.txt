@@ -321,12 +321,14 @@ List of combiners bound in the ground environment
   (odd? . NUMs)
   (open-binary-input-file FILENAME)
   (open-binary-output-file FILENAME)
-  (open-binary-pipe [FLAGS])                         ; ext
+  (open-buffered-binary-input-port PORT)             ; ext
+  (open-buffered-binary-output-port PORT)            ; ext
   (open-input-file FILENAME)
   (open-input-string STRING)
   (open-output-file FILENAME)
   (open-output-string [INITIAL-BUFFER-SIZE])         ; r7rs ext
   (open-output-bytevector [INITIAL-BUFFER-SIZE])     ; r7rs ext
+  (open-raw-pipe [FLAGS])                            ; ext
   (open-utf-decoder PORT)                            ; ext
   (open-utf-encoder PORT)                            ; ext
   (operative? . OBJECTs)
@@ -336,6 +338,7 @@ List of combiners bound in the ground environment
 
   (pair? . OBJECTs)
   (peek-char [PORT])
+  (peek-u8 PORT)                                     ; r7rs
   (port? . OBJECTs)
   (positive? . NUMs)
   (promise? . OBJECTs)
@@ -351,6 +354,7 @@ List of combiners bound in the ground environment
   (read-char [PORT])
   (read-edit PROMPT HISTORY COMPLETIONS)             ; ext
   (read-key [PORT])                                  ; ext
+  (read-u8 PORT)                                     ; r7rs
   (reduce LIST BIN ID [PRE INT POST])
   ($register-library! LIBRARY-NAME LIBRARY)          ; klisp
   ($registered-library? LIBRARY-NAME)                ; klisp
@@ -393,6 +397,7 @@ List of combiners bound in the ground environment
   (terminal-port? . OBJECTs)                         ; ext
   (textual-port? . OBJECTs)                          ; klisp
 
+  (u8-ready? [PORT])                                 ; r7rs
   ($unless BOOLEAN . FORMs)                          ; klisp
   ($unregister-library LIBRARY-NAME)                 ; klisp
   (unregister-requirement! STRING)                   ; klisp
@@ -425,6 +430,7 @@ List of combiners bound in the ground environment
   (write-char CHAR [PORT])
   (write-simple OBJECT [PORT])                       ; klisp, r7rs
   (write-string STRING [PORT])
+  (write-u8 U8 PORT)                                 ; r7rs
   (write-utf8-string STRING [PORT])                  ; ext
   (write-utf8-char CHAR [PORT])                      ; ext
 
@@ -658,13 +664,13 @@ Bronze Age Lisp Extensions
     may not be reliable if used on terminal port in
     (with-noncanonical-input ...).
 
-  (open-binary-pipe [#:no-cloexec]) => (IN-PORT OUT-PORT)
+  (open-raw-pipe [#:no-cloexec]) => (IN-PORT OUT-PORT)
 
     Creates a pipe and two unbuffered binary ports associated
     with its read and write ends.
 
     The pipe is created with the flag O_CLOEXEC (see man pipe(2)),
-    unless #:no-cloexec is passed to (open-binary-pipe ...).
+    unless #:no-cloexec is passed to (open-raw-pipe ...).
 
   (open-utf-decoder BINARY-INPUT-PORT)
       => TEXTUAL-INPUT-PORT
@@ -682,11 +688,23 @@ Bronze Age Lisp Extensions
     Closing the textual port causes closing of the
     underlying binary port.
 
+  (open-buffered-binary-output-port BINARY-OUTPUT-PORT [BUFFER-SIZE])
+
+    Creates a buffered binary output port on top of an existing
+    binary output port. Closing the buffered port causes closing
+    of the underlying port.
+
+  (open-buffered-binary-input-port BINARY-INPUT-PORT)
+
+    Creates a buffered binary input port on top of an existing
+    binary input port. Closing the buffered port causes closing
+    of the underlying port.
+
   (read-bytevector [PORT])
       => BYTEVECTOR/EOF-OBJECT
 
     Reads up to ($configured default-buffer-size) bytes from
-    a binary input port.
+    a raw input port. Do not use on buffered ports (TODO)!
 
   (write-utf8-string STRING [BINARY-OUTPUT-PORT])
       => #inert

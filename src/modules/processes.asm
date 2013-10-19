@@ -333,25 +333,25 @@ app_waitpid:
     ret
 
 ;;
-;; app_open_binary_pipe (continuation passing procedure)
+;; app_open_raw_pipe (continuation passing procedure)
 ;;
 ;; Interface to linux pipe() system call.
 ;;
-;;   (open-binary-pipe [#:no-cloexec]) => (RD-PORT WR-PORT)
+;;   (open-raw-pipe [#:no-cloexec]) => (RD-PORT WR-PORT)
 ;;
 ;; preconditions:  EBX = #:no-cloexec (optional)
 ;;                 EBP = current continuation
 ;;
-app_open_binary_pipe:
+app_open_raw_pipe:
   .invalid_argument:
     mov eax, err_invalid_argument
-    mov ecx, symbol_value(rom_string_open_binary_pipe)
+    mov ecx, symbol_value(rom_string_open_raw_pipe)
     jmp rn_error
   .system_error:
     neg eax
     lea ebx, [4*eax + 1]
     mov eax, err_syscall
-    mov ecx, symbol_value(rom_string_open_binary_pipe)
+    mov ecx, symbol_value(rom_string_open_raw_pipe)
     jmp rn_error
   .A1:
     cmp ebx, keyword_value(rom_string_no_cloexec)

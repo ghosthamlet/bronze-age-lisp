@@ -126,7 +126,7 @@
   (format #t ";; temporaries (slots) ... ~d~%" (vector-ref v 3))
   (format #t ";; closure (slots)     ... ~d~%" (- (vector-length v) 4))
   ($with-subshell "ndisasm -b32 -"
-    ((binary-stdin f))
+    ((raw-stdin f))
     (write-bytevector (vector-ref v 1) f))
   #inert)
 

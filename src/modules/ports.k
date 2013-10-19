@@ -276,3 +276,9 @@
     (list 0 1)
     (list "app_char_readyP.A0" "app_char_readyP.A1")
     ()))
+
+($bind-ground! u8-ready?
+  (make-bounded-applicative
+    (list 0 1)
+    (list "app_char_readyP.A0" "app_char_readyP.A1")
+    ()))

@@ -75,7 +75,7 @@
     exit
     open-output-string
     open-output-bytevector
-    open-binary-pipe)
+    open-raw-pipe)
   ($bounded-app 0 2
     waitpid)
   ($bounded-app 1 1

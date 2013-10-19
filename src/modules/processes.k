@@ -60,9 +60,11 @@
     ($bindings->environment
       (redirections  ())
       (stdin         (redirect-prepare open-utf-encoder w s r 0))
-      (binary-stdin  (redirect-prepare list*            w s r 0))
+      (binary-stdin  (redirect-prepare open-buffered-binary-output-port w s r 0))
+      (raw-stdin     (redirect-prepare list*            w s r 0))
       (stdout        (redirect-prepare open-utf-decoder r s w 1))
-      (binary-stdout (redirect-prepare list*            r s w 1))
+      (binary-stdout (redirect-prepare open-buffered-binary-port r s w 1))
+      (raw-stdout    (redirect-prepare list*            r s w 1))
       (stderr        (redirect-prepare open-utf-decoder r s w 2))
       (stdout+stderr (redirect-prepare open-utf-decoder r s w 1 2))))
   (redirect-launch (exec opts body denv)
@@ -95,7 +97,7 @@
   ($vau (s) e
     ($set! e redirections
       (cons
-        ($let (((r w) (open-binary-pipe #:no-cloexec)))
+        ($let (((r w) (open-raw-pipe #:no-cloexec)))
           (eval (cons list lst) (get-current-environment)))
         ($remote-eval redirections e)))))
 
