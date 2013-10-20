@@ -527,6 +527,9 @@ Bronze Age Lisp Extensions
     If COUNT is negative or zero, ($dotimes ...) evaluates
     ($sequence . RESULTs) with VAR bound to zero.
 
+    The body of the loop should not capture continuations. The
+    implementation uses single mutable loop variable internally.
+
   ($formal-parameter-tree? . OBJECTs)
 
     Returns #t, if all OBJECTs evaluate to valid formal
@@ -973,9 +976,11 @@ Bronze Age Lisp Extensions
       FILESPEC          bind VAR to a port connected to
       ---------------------------------------------------------
       stdin         ... standard input of the command (textual)
-      binary-stdin  ... standard input (binary unbuffered)
+      raw-stdin     ... standard input (binary unbuffered)
+      binary-stdin  ... standard input (binary buffered)
       stdout        ... standard output (textual)
-      binary-stdout ... standard output (binary unbuffered)
+      raw-stdout    ... standard output (binary unbuffered)
+      binary-stdout ... standard output (binary buffered)
       stderr        ... standard output (textual)
       stdout+stderr ... standard output and standard error (textual)
 

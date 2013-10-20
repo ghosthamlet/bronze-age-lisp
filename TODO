@@ -11,6 +11,18 @@ TODO
 - consider extending the numeric tower with rationals and floats (low priority)
 - copy-es-immutable in $lambda and $vau (?)
 
+- fix eq?-hash tables
+
+    The eq? hash tables now do not work well, because the hash
+    function is always equal?-compatible. Hashing by address
+    should be implementable, but requires rehashing after
+    a garbage collection and careful implementation of
+    hash-table-for-each.
+
+    There exists a paper on the topic:
+
+      A. Ghuloum and R. Kent Dybvig: Generation-Friendly Eq Hash Tables
+
 -------
 
 Incompatible bindings:
