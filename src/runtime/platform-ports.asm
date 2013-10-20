@@ -96,7 +96,9 @@ linux_write:
     ;;       edi = file descriptor (tagged fixint)
     ;;       ebp = continuation
     ;; post: eax = #inert
-    cmp bl, bytevector_tag
+    mov al, bl
+    xor al, symbol_tag
+    test al, ~(symbol_tag ^ bytevector_tag)
     jne .invalid_argument
     mov esi, ebx
     call rn_get_blob_data
