@@ -1,6 +1,11 @@
 #! /bin/sh
 #
-
+# list-klisp-ground-bindings.sh
+#
+# This script prints all ground bindings defined by klisp.
+# The script first collects all strings from the klisp
+# executable, and then checks which one are bound.
+#
 if [ $# -ne 2 ] ; then
   echo 'usage: list-klisp-ground-bindings.sh EXECUTABLE INTERPRETER' 1>&2
   echo '  e.g. list-klisp-ground-bindings.sh `which klisp` klisp' 1>&2
