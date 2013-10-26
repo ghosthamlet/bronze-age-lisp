@@ -57,6 +57,8 @@
   #inert
   ((applicative? map)
    (map)
+   (map list ())
+   (map list (list "" " " "a"))
    (map abs (list 1 -2 -3 4 -5))
    ($let ((ls (list 1 2 3 4 5)))
      (encycle! ls 2 3)

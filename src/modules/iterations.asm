@@ -73,10 +73,14 @@ aux_check_two_argument_map:
     jnz .invalid_argument
     mov eax, [ebx]
     cmp al, applicative_header(0)
+    jne .invalid_argument
     mov ebx, [ebx + applicative.underlying]
+    cmp bl, primitive_tag
+    je .combiner_ok
     mov eax, [ebx]
     cmp al, applicative_header(0)
     je .invalid_argument
+  .combiner_ok:
     mov esi, ebx
     mov ebx, ecx
     push ebx
