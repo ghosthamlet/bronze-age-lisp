@@ -1,5 +1,6 @@
 ;; test basic pair manipulation
 (list
+  (pair?) ((unwrap pair?))
   (pair? ()) (null? ())
   (pair? (cons 0 0)) (null? (cons 0 0))
   (car (cons 1 2))

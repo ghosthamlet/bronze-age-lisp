@@ -37,6 +37,8 @@ op_immediate_type_predicate:
     test eax, eax
     jz .error
     mov ecx, edx
+    test ecx, ecx
+    jz .done
     mov eax, esi
     mov edx, [eax + operative.var0]
     shr edx, 2
@@ -96,6 +98,8 @@ op_header_type_predicate:
     test eax, eax
     jz .error
     mov ecx, edx
+    test ecx, ecx
+    jz .done
     mov eax, esi
     mov edx, [eax + operative.var0]
     shr edx, 2
