@@ -113,10 +113,12 @@ System
 Part III - Compatibility with the host environment
 ==================================================
 
-  The interpreter is an executable file in ELF format
-  which can be run under Linux operating system
-  on x86 (32-bit) platforms. Other platforms are not
-  supported.
+  The interpreter is an executable file in 32-bit ELF
+  format which can be run under Linux operating system
+  on x86 (32-bit) platforms. The 64-bit x86 Linux can
+  run 32-bit executables as well (the interpreter, once
+  built, does not depend on external libraries). Other
+  platforms are not supported.
 
   The interpreter uses only the following linux
   system calls:

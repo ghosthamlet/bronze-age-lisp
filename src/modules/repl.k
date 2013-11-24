@@ -111,30 +111,7 @@
       (cons (car xs) (take-at-most-n (- n 1) (cdr xs)))
       ()))
   (repl-error (x divert)
-    ($let1 port stdout ;stderr
-      (write-string
-        ($if (color-port? port)
-          "\x1B;[31;1mERROR:\x1B;[m "
-          "ERROR: ")
-        port)
-      (flush-output-port port)
-      ($if (error-object? x)
-        ($sequence
-          (write-string (error-object-message x) port)
-          (write-string "\n    irritants: " port)
-          (write (error-object-irritants x) port)
-          (write-string "\n    source: " port)
-          (write
-            ($let1 s (error-object-source x)
-              ($if (symbol? s)
-                s
-                (guess-object-name s #t)))
-             port)
-          (write-char #\newline))
-        ($sequence
-          (write x port)
-          (write-char #\newline port)))
-      (flush-output-port port))
+    (print-error-object x stdout)
     (divert))
   (interpret-stdin (env)
     . #9=(($define! x (copy-es-immutable (read)))
@@ -160,17 +137,18 @@
              (equal? (car args) "-v"))
         (print-version))
       ((equal? (car args) "-l")
-        (eval (list load (cadr args)) env)
+        ($abort-on-error args (eval (list load (cadr args)) env))
         #1=(process-interpreter-arguments (cddr args) interactive env))
       ((equal? (car args) "-r")
-        (require (cadr args))
+        ($abort-on-error args (require (cadr args)))
         #1#)
       ((equal? (car args) "-e")
-        (eval-string (cadr args) env)
+        ($abort-on-error args (eval-string (cadr args) env))
         #1#)
       ((equal? (car args) "-w")
-        (write (eval-string (cadr args) env))
-        (newline)
+        ($abort-on-error args
+          (write (eval-string (cadr args) env))
+          (newline))
         #1#)
       ((equal? (car args) "-i")
         (process-interpreter-arguments (cdr args) #t env))
@@ -189,6 +167,18 @@
         ($set! private-environment script-arguments args)
         ($if interactive
           ($sequence
-            #2=(eval (list load (car args)) env)
+            ($abort-on-error args #2=(eval (list load (car args)) env))
             (read-eval-print-loop env))
           #2#)))))
+
+($define-private-vau! $abort-on-error (arg-pos . body) denv
+  (guard-dynamic-extent
+    ()
+    ($lambda () (eval (cons $sequence body) denv))
+    (list (list error-continuation
+                ($lambda (x divert)
+                  (print-error-object x stderr)
+                  (format stderr
+                    "  The error occured while processing the command line arguments ~w.\n"
+                    (take-at-most-n 2 (eval arg-pos denv)))
+                  (exit 1))))))

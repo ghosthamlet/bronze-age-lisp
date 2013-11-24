@@ -132,6 +132,7 @@
   "lists.k"
   "iterations.k"
   "environments.k"
+  "errors.k"
   "bytevectors.k"
   ;"characters.k"
   "combiners.k"

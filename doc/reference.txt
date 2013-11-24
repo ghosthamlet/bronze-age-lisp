@@ -93,7 +93,7 @@ List of combiners bound in the ground environment
   (bytevector>=? . BYTEVECTORs)                      ; ext
   (bytevector>? . BYTEVECTORs)                       ; ext
   (bytevector-copy BYTEVECTOR)                       ; klisp, r7rs
-  (bytevector-copy! SRC DST)                          ; klisp, r7rs
+  (bytevector-copy! SRC DST)                         ; klisp, r7rs
   (bytevector-copy-partial BYTEVECTOR START END)     ; klisp, r7rs
   (bytevector-copy-partial! FROM START END TO AT)    ; klisp, r7rs
   (bytevector-length BYTEVECTOR)                     ; klisp, r7rs
@@ -186,6 +186,7 @@ List of combiners bound in the ground environment
   (eof-object? . OBJECTs)
   (eq? . OBJECTs)
   (equal? . OBJECTs)
+  (errno-keyword INTEGER)                            ; ext
   (error MESSAGE . IRRITANT-OBJECTs)                 ; klisp
   (error-object-message ERROR-OBJECT)                ; klisp
   (error-object-irritants ERROR-OBJECT)              ; klisp
@@ -350,6 +351,7 @@ List of combiners bound in the ground environment
   (port? . OBJECTs)
   (port-open? . PORTs)                               ; klisp
   (positive? . NUMs)
+  (print-error-object OBJECT [PORT])                 ; ext
   (promise? . OBJECTs)
   ($provide SYMBOLS . BODY)
   ($provide-library! LIBRARY-NAME EXPOR-SPEC BODY)   ; klisp
@@ -443,7 +445,7 @@ List of combiners bound in the ground environment
   (write-char CHAR [PORT])
   (write-simple OBJECT [PORT])                       ; klisp, r7rs
   (write-string STRING [PORT])
-  (write-u8 U8 PORT)                                 ; r7rs
+  (write-u8 U8 [PORT])                               ; r7rs
   (write-utf8-string STRING [PORT])                  ; ext
   (write-utf8-char CHAR [PORT])                      ; ext
 
@@ -522,7 +524,7 @@ Bronze Age Lisp Extensions
     ($sequence . BODY) with VAR bound successively to 0, 1, ...,
     with no explicit limit (the loop eventually terminates
     when the iteration variable hits the maximal representable
-    integer.
+    integer).
 
     If COUNT is negative or zero, ($dotimes ...) evaluates
     ($sequence . RESULTs) with VAR bound to zero.
@@ -628,6 +630,37 @@ Bronze Age Lisp Extensions
     Searches the ground environment to determine
     the name of OBJECT. The boolean parameter
     is not used yet.
+
+  (errno-keyword INTEGER) => KEYWORD
+
+    Returns a symbolic name for the given system error code. The
+    symbolic name is derived from the constants defined by <errno.h>,
+    e.g.
+
+      (errno-keyword 2) => #:ENOENT
+
+    The meaning of the symbolic name like ENOENT can be found in
+    the Linux manual pages. The human-readable textual messages
+    in the style of streror() like "No such file or directory" are
+    not provided by the interpreter.
+
+    The applicative errno-keywords knowns only small subset of system
+    error codes. The applicative returns #f, if the argument does
+    not correspond to any known system error.
+
+    Usually, if a linux system call (performed implicitly by write,
+    for example) fails, an error object containing the message 
+    "I/O error" is passed to the error-continuation. The numeric error
+    code can be retrieved by (error-object-irritants ...).
+
+  (print-error-object OBJECT [PORT])
+
+    Prints the error OBJECT to the PORT (default: stderr) in the
+    format used by the REPL:
+
+      ERROR: <error message>
+          irritants: <irritant list>
+          source: <source symbol>
 
   (rdtsc)
       => integer (bigint)
