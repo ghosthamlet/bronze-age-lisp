@@ -1,0 +1,51 @@
+Bronze Age Lisp Troubleshooting
+-------------------------------
+
+* Build problems
+  --------------
+
+  1.1) fatal: unable to open include file `unicode/generated-data.asm'
+
+    The tables of unicode character properties must be built manually.
+    See Installation section in the README.
+
+  1.2) ld: i386 architecture of input file `build/out.o' is
+       incompatible with i386:x86-64 output
+
+    When building on a 64-bit host, the linker must be told to
+    generate 32-bit executable. Try the command
+
+      $ LD='ld -m elf_i386' ./buld.sh
+
+* Interpreter error messages
+  --------------------------
+
+  2.1) Ugly useless hexadecimal numbers in the error messages.
+
+    #[error #x0A20DAC8 "Out of memory (lisp)." #inert
+    #inert #[continuation #x090119E0] #x00000006] #x00000006
+    #x0A20DAC8 #x00000006 #x00000000 #x00000000 #x00000000 #x090119F0
+
+    This error message is printed when running non-interactively.
+    The errors are formatted slightly better in the REPL.
+
+  2.2) ERROR: Out of memory (lisp).
+
+    The default lisp heap size is 2 megabytes, and the value is fixed
+    when the interpreter is built. Try rebuilding the interpreter with
+    bigger heap:
+
+      bronze-age-lisp/src$ ./quickbuild.sh lisp-heap-size=8388608
+
+  2.3) ERROR: read-unsigned-number
+       ERROR: reader: dot followed by a digit is not supported syntax
+
+    Your program probably contains floating point or rational numeric
+    constants like 0.1 or 1/2. Bronze Age Lisp does not support these
+    features and does not implement the syntax.
+
+  2.4) ERROR: invalid special token "undefined"
+
+    The #undefined, #i+infinity and #real lexemes are specified in the
+    Inexact module of the Kernel Report. Bronze Age Lisp does not
+    support it.

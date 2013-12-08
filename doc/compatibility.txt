@@ -75,9 +75,9 @@ Part II - Compatibility with Klisp
 
   Bronze Age Lisp supports most of the functionality
   provided by Klisp under the modules Keywords,
-  Errors, Libraries and Ports. Support for the
-  modules Characters, Strings, Vectors, Bytevectors
-  and System is work in progress.
+  Errors, Libraries and Ports (see [KLISPDOC]). Support
+  for the modules Characters, Strings, Vectors,
+  Bytevectors and System is work in progress.
 
 Characters
 ----------

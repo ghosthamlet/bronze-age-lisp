@@ -85,7 +85,7 @@ Bronze Age Lisp Readme File
   is employed for some continuations and environments, allowing
   faster reclamation. Blobs are allocated separately from
   structured values and reclaimed by a mark-and-compact
-  garbage collector.
+  garbage collector. Symbols are never reclaimed.
 
     Since the objects may be stored in read-only memory,
   the objects do not contain mutable mark bits. If necessary,
@@ -104,8 +104,9 @@ Bronze Age Lisp Readme File
     unicode/*            -- generates tables for (char-alphabetic? ...) etc.
     configuration.k      -- contains configuration (heap size, etc.)
     mold.k               -- generates code of the interpreter
-    (other *.k) files    -- contains support procedures
+    other *.k files      -- contain support procedures
     build.sh             -- controls the building and linking
+    quickbuild.sh        -- faster version of build.sh
 
   doc/
     compatibility.txt    -- Notes on compatibility with language definition
@@ -120,9 +121,16 @@ Bronze Age Lisp Readme File
     self/*.k             -- other tests
     test.sh              -- runs all tests
 
+  tools/
+    *.k                  -- small collection of utility scripts
+
   benchmarks/
     *.k                  -- short benchmark programs
     benchmark.sh         -- runs benchmarks and compares performance against klisp
 
+  examples/
+    *.k                  -- example programs
+
   README                 -- this file
   TODO                   -- lists missing functionality
+  TROUBLESHOOTING        -- explains causes of usual problems
