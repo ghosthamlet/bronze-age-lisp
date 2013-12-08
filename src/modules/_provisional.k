@@ -83,6 +83,9 @@
                      (cons c (f)))))))
     (f)))
 
+($define-ground-wrapvau! string-map (f . lists) denv
+  (list->string (apply map (cons f (map string->list lists)) denv)))
+
 ($define-ground-lambda! filter (accept? ls)
   (apply append
     (map ($lambda (x)

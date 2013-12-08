@@ -63,7 +63,6 @@ Missing bindings from klisp:
     string-foldcase
     string-for-each
     string->immutable-string
-    string-map
     string-set!
     string-titlecase
     string-upcase
