@@ -150,7 +150,7 @@ app_digit_Gchar:
   .A1:
     mov ecx, fixint_value(10)
   .A2:
-    mov esi, symbol_value(rom_string_char_Gdigit)
+    mov esi, symbol_value(rom_string_digit_Gchar)
     call char_digit_error.check_base
     mov eax, ebx
     xor al, 1
