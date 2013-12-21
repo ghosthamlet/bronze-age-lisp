@@ -84,6 +84,7 @@ List of combiners bound in the ground environment
   (bitwise-and . INTEGERs)                           ; SRFI-60
   (bitwise-ior . INTEGERs)                           ; SRFI-60
   (bitwise-not INTEGER)                              ; SRFI-60
+  (bitwise-xor INTEGER INTEGER . INTEGERs)           ; SRFI-60
   (boolean? . OBJECTs)
   (bytevector . U8s)                                 ; klisp
   (bytevector? . OBJECTs)                            ; klisp

@@ -91,4 +91,14 @@
      (list 6 5 4 3 2 1 0 -1 -2 -3 -4 -5 -6 -7 -8))
 ($eq (+ 1 (bitwise-not 12345678901234567)) -12345678901234567)
 
+;; bitwise-and, bitwise-ior, bitwise-xor
+;;
+($eq (bitwise-and #x123456 #xFEDCBA) #x121412)
+($eq (bitwise-ior #x123456 #xFEDCBA) #xFEFCFE)
+($eq (bitwise-xor #x123456 #xFEDCBA) #xECE8EC)
+
+($eq (bitwise-and #x123456789ABCDEF #xFEDCBA987654321) #x121412181214121)
+($eq (bitwise-ior #x123456789ABCDEF #xFEDCBA987654321) #xFEFCFEF8FEFCFEF)
+($eq (bitwise-xor #x123456789ABCDEF #xFEDCBA987654321) #xECE8ECE0ECE8ECE)
+
 (summary)

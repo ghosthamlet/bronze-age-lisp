@@ -134,7 +134,8 @@
     set! vector-set! bytevector-u8-set!
     bytevector-copy-partial)
   ($unbounded-app 2 3
-    (- "minus"))
+    (- "minus")
+    bitwise-xor)
   ($unbounded-app 0 3
     (+ "plus") (* "times")
     bitwise-and bitwise-ior)

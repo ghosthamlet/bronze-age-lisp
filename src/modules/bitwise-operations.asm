@@ -218,39 +218,8 @@ app_bitwise_not:
 ;;
 ;; (bitwise-and ...) (bitwise-ior ...)
 ;;
-%macro define_bitwise_operation 3
-  .A0:
-    mov eax, fixint_value(%1)
-    jmp [ebp + cont.program]
-  .A1:
-    call rn_integerP_procz
-    jnz .type_error
-    mov eax, ebx
-    jmp [ebp + cont.program]
-  .A2:
-    call .bitop
-    jmp [ebp + cont.program]
-  .A3:
-    push edx
-    call .bitop
-    pop edx
-    mov ebx, eax
-    mov ecx, edx
-    call .bitop
-    jmp [ebp + cont.program]
-  .type_error:
-    mov eax, err_invalid_argument
-    mov ecx, symbol_value(%2)
-    jmp rn_error
-  .operate:
-    push dword .bitop
-    push dword symbol_value(%2)
-    mov edi, fixint_value(%1)
-    mov esi, ebx
-    call rn_list_metrics
-    test eax, eax
-    jz reduce_finite_list.structure_error
-    jmp reduce_finite_list.list_ok    ; allow cyclic_list
+
+%macro define_bitop 2
   .bitop:
     xor edx, edx
     call rn_integerP_procz
@@ -279,7 +248,10 @@ app_bitwise_not:
     ret
   .fix_fix:
     mov eax, ebx
-    %3 eax, ecx
+    %1 eax, ecx
+    %if (%2 != 0)
+    or al, 1
+    %endif
     ret
   .big_big:
     mov eax, [ebx]
@@ -313,7 +285,10 @@ app_bitwise_not:
   .next_digit_pair:
     mov eax, [esi + 4 * edx]
     mov ebx, [edi + 4 * edx]
-    %3 eax, ebx
+    %1 eax, ebx
+    %if (%2 != 0)
+    or al, 1
+    %endif
     mov [ebp + 4 * edx], eax
     inc edx
     loop .next_digit_pair
@@ -321,7 +296,10 @@ app_bitwise_not:
     pop ebx
   .next_digit:
     mov eax, [esi + 4 * edx]
-    %3 eax, ebx
+    %1 eax, ebx
+    %if (%2 != 0)
+    or al, 1
+    %endif
     mov [ebp + 4 * edx], eax
     inc edx
     loop .next_digit
@@ -339,7 +317,75 @@ app_bitwise_not:
     dd .big_big
 %endmacro
 
+
+%macro define_bitwise_operation 3
+  .A0:
+    mov eax, fixint_value(%1)
+    jmp [ebp + cont.program]
+  .A1:
+    call rn_integerP_procz
+    jnz .type_error
+    mov eax, ebx
+    jmp [ebp + cont.program]
+  .A2:
+    call .bitop
+    jmp [ebp + cont.program]
+  .A3:
+    push edx
+    call .bitop
+    pop edx
+    mov ebx, eax
+    mov ecx, edx
+    call .bitop
+    jmp [ebp + cont.program]
+  .type_error:
+    mov eax, err_invalid_argument
+    mov ecx, symbol_value(%2)
+    jmp rn_error
+  .operate:
+    push dword .bitop
+    push dword symbol_value(%2)
+    mov edi, fixint_value(%1)
+    mov esi, ebx
+    call rn_list_metrics
+    test eax, eax
+    jz reduce_finite_list.structure_error
+    jmp reduce_finite_list.list_ok    ; allow cyclic_list
+  define_bitop %3, 0
+%endmacro
+
 app_bitwise_and:
   define_bitwise_operation -1, rom_string_bitwise_and, and
 app_bitwise_ior:
   define_bitwise_operation 0, rom_string_bitwise_ior, or
+
+app_bitwise_xor:
+  .A2:
+    call .bitop
+    jmp [ebp + cont.program]
+  .A3:
+    push edx
+    call .bitop
+    pop edx
+    mov ebx, eax
+    mov ecx, edx
+    call .bitop
+    jmp [ebp + cont.program]
+  .type_error:
+    mov eax, err_invalid_argument
+    mov ecx, symbol_value(rom_string_bitwise_xor)
+    jmp rn_error
+  .operate:
+    push dword .bitop
+    push dword symbol_value(rom_string_bitwise_xor)
+    mov edi, fixint_value(0)
+    mov esi, ebx
+    call rn_list_metrics
+    test eax, eax
+    jz reduce_finite_list.structure_error
+    test ecx, ecx
+    jnz reduce_finite_list.structure_error
+    cmp edx, 2
+    jb reduce_finite_list.structure_error
+    jmp reduce_finite_list.list_ok
+  define_bitop xor, 1
