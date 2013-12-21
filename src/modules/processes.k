@@ -79,7 +79,7 @@
     (guard-dynamic-extent
       ()
       ($lambda ()
-        (eval (cons $sequence opts) re)
+        (eval-sequence opts re)
         ($define! rs ($remote-eval redirections re))
         ($set! re pid
           (fork
@@ -88,7 +88,7 @@
         ($define! ue (make-environment denv))
         ($set! ue close-pipe ($lambda (p) (redirect-close p rs)))
         (for-each ($lambda (i) (redirect-for-parent ue i)) rs)
-        ($define! r (eval (cons $sequence body) ue))
+        ($define! r (eval-sequence body ue))
         (for-each redirect-cleanup rs)
         (list (cdr (waitpid ($remote-eval pid re))) r))
       (list (list error-continuation cleanup)))))

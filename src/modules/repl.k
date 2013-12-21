@@ -174,7 +174,7 @@
 ($define-private-vau! $abort-on-error (arg-pos . body) denv
   (guard-dynamic-extent
     ()
-    ($lambda () (eval (cons $sequence body) denv))
+    ($lambda () (eval-sequence body denv))
     (list (list error-continuation
                 ($lambda (x divert)
                   (print-error-object x stderr)

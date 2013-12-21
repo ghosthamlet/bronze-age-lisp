@@ -67,7 +67,7 @@
                   (eq? (car exports) #:export))
     (error "Invalid library export list." exports))
   ($let ((e (make-environment denv)))
-    (eval (cons $sequence body) e)
+    (eval-sequence body e)
     ((wrap $register-library!)
       name
       (apply make-library

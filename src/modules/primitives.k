@@ -117,7 +117,7 @@
   ($bounded-app 1 3
     make-error-object execve)
   ($bounded-app 2 2
-    cons eval
+    cons eval eval-sequence
     list-tail list-ref
     set-car! set-cdr!
     string-ref vector-ref bytevector-u8-ref

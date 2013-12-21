@@ -120,6 +120,8 @@ List of combiners bound in the ground environment
   (caddr PAIR)
   (cadr PAIR)
   (call/cc APPLICATIVE)
+  (call-with-binary-input-file STRING COMBINER)
+  (call-with-binary-output-file STRING COMBINER)
   (call-with-input-file STRING COMBINER)
   (call-with-output-file STRING COMBINER)
   (call-with-port PORT COMBINER)                     ; ?
@@ -193,6 +195,7 @@ List of combiners bound in the ground environment
   (error-object-irritants ERROR-OBJECT)              ; klisp
   (error-object-source ERROR-OBJECT)                 ; ext
   (eval OBJECT ENV)
+  (eval-sequence LIST ENV)                           ; ext
   (eval-string STRING ENV)                           ; klisp
   (even? . NUMs)
   (execve PATH [ARGS [ENV]])                         ; ext
@@ -428,10 +431,12 @@ List of combiners bound in the ground environment
   (vector-set! VECTOR INDEX OBJECT)                  ; klisp, r7rs
 
   (waitpid [PID [OPTIONS]])                          ; ext
+  (with-input-from-binary-file FILENAME COMBINER)    ; ext, srfi-56
   (with-input-from-file FILENAME COMBINER)
   (with-input-from-port FILENAME COMBINER)
   (with-input-from-string FILENAME COMBINER)         ; ext
   (with-noncanonical-input COMBINER)                 ; ext
+  (with-output-to-binary-file FILENAME COMBINER)     ; ext, srfi-56
   (with-output-to-file FILENAME COMBINER)
   (with-output-to-port FILENAME COMBINER)
   (with-output-to-string COMBINER)                   ; ext
@@ -532,6 +537,10 @@ Bronze Age Lisp Extensions
 
     The body of the loop should not capture continuations. The
     implementation uses single mutable loop variable internally.
+
+  (eval-sequence LIST ENV)
+
+    Equivalent to (eval (cons $sequence LIST) ENV).
 
   ($formal-parameter-tree? . OBJECTs)
 

@@ -405,4 +405,4 @@
         v))))
 
 ($define-ground-wrapvau! load (s) denv
-  (eval (cons $sequence (read-file s)) denv))
+  (eval-sequence (read-file s) denv))

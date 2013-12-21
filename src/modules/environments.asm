@@ -695,6 +695,31 @@ app_eval:
     jmp rn_error
 
 ;;
+;; app_eval_sequence.A2 (continuation passing procedure)
+;;
+;; Implementation of (eval-sequence OBJECT ENVIRONMENT)
+;; == (eval (cons $sequence OBJECT) ENVIRONMENT)
+;;
+;; preconditions:  EBX = 1st arg = OBJECT
+;;                 ECX = 2nd arg = ENVIRONMENT
+;;                 EDI = dynamic environment (not used)
+;;                 EBP = continuation
+;;
+app_eval_sequence:
+  .A2:
+    test cl, 3
+    jnz .type_error
+    cmp [ecx], byte environment_header(0)
+    jne .type_error
+    mov edi, ecx
+    jmp rn_sequence
+  .type_error:
+    mov eax, err_not_an_environment
+    mov ebx, ecx
+    mov ecx, symbol_value(rom_string_eval)
+    jmp rn_error
+    
+;;
 ;; primop_SbindsP (continuation passing procedure)
 ;;
 ;; Implementation of ($binds? EXPR . SYMBOLS)

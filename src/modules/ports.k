@@ -33,6 +33,12 @@
 ($define-ground-lambda! call-with-output-file (file proc)
   (call-with-port (open-output-file file) proc))
 
+($define-ground-lambda! call-with-binary-input-file (file proc)
+  (call-with-port (open-binary-input-file file) proc))
+
+($define-ground-lambda! call-with-binary-output-file (file proc)
+  (call-with-port (open-binary-output-file file) proc))
+
 ;;
 ;; management of dynamic port variables
 ;;
@@ -74,6 +80,17 @@
 
 ($define-ground-lambda! with-output-to-file (file proc)
   (call-with-output-file file
+    ($lambda (port) (with-output-to-port port proc))))
+
+;; Name it with-input-from-binary-file or with-binary-input-from-file?
+;; I don't know, but the former won Google Fight.
+
+($define-ground-lambda! with-input-from-binary-file (file proc)
+  (call-with-binary-input-file file
+    ($lambda (port) (with-input-from-port port proc))))
+
+($define-ground-lambda! with-output-to-binary-file (file proc)
+  (call-with-binary-output-file file
     ($lambda (port) (with-output-to-port port proc))))
 
 ($define-ground-lambda! with-input-from-string (s proc)
