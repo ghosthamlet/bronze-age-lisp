@@ -159,15 +159,15 @@
         ($set! private-environment script-arguments args)
         ($if interactive
           ($sequence
-            (interpret-stdin env)
+            #8=($abort-on-error #inert (interpret-stdin env))
             (newline)
             (read-eval-print-loop env))
-          (interpret-stdin env)))
+          #8#))
       (#t
         ($set! private-environment script-arguments args)
         ($if interactive
           ($sequence
-            ($abort-on-error args #2=(eval (list load (car args)) env))
+            #2=($abort-on-error #inert (eval-sequence ($abort-on-error args (read-file (car args))) env))
             (read-eval-print-loop env))
           #2#)))))
 
@@ -178,7 +178,9 @@
     (list (list error-continuation
                 ($lambda (x divert)
                   (print-error-object x stderr)
-                  (format stderr
-                    "  The error occured while processing the command line arguments ~w.\n"
-                    (take-at-most-n 2 (eval arg-pos denv)))
+                  ($define! arg-pos (eval arg-pos denv))
+                  ($when (finite-list? arg-pos)
+                    (format stderr
+                      "  The error occured while processing the command line arguments ~w.\n"
+                      (take-at-most-n 2 arg-pos)))
                   (exit 1))))))
