@@ -132,4 +132,17 @@
 
 ($eu (* 0 #e+infinity))
 
+;; (div X Y) (mod X Y) (div-and-mod X Y)
+;;
+($t (x y) ($implies? ($and? (finite? x) (finite? y) (not? (zero? x)))
+                     ($and? (=? (div (* x y) x) y)
+                            (=? (mod (* x y) x) 0)
+                            (equal? (div-and-mod (* x y) x) (list y 0)))))
+
+($t (n q r) ($implies? ($and? (<? -1 r q #e+infinity) (finite? n))
+                       ($let ((t (+ (* n q) r)))
+                         ($and? (=? (div t q) n)
+                                (=? (mod t q) r)
+                                (equal? (div-and-mod t q) (list n r))))))
+
 (summary)
