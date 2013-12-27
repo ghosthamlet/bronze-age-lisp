@@ -54,6 +54,14 @@ Bronze Age Lisp Readme File
 
     $ build/bronze.bin
 
+* Binary distribution
+  -------------------
+
+  If you do not want to build from source, you can download
+  compiled executables from
+
+  https://bitbucket.org/havleoto/bronze-age-lisp/downloads
+
 * Interpreter characteristics
   ---------------------------
 

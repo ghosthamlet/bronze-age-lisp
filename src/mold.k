@@ -158,7 +158,7 @@
     "tui.k"))
 
 ;; add version string and user bindings
-($bind-ground! interpreter-version "Bronze Age Lisp 0.2")
+($bind-ground! interpreter-version "Bronze Age Lisp 0.3")
 (for-each
   ($lambda (x) (apply bind-ground! x))
   ($configured user-ground-bindings))
