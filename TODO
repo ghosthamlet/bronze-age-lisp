@@ -5,6 +5,11 @@ TODO
 - add ground bindings for Klisp compatibility
 - complete binary port features
 - improve unicode support
+    - allow #\xFFFE "invalid BOM" non-character in strings
+      (it is a valid Unicode scalar value (?)
+        http://www.unicode.org/faq/private_use.html)
+    - allow unicode subscripts (0x2080...0x2089) in unquoted symbols
+    - implement normalization
 - improve REPL (full TAB completion)
 - add comments, write documentation
 - consider extending the numeric tower with rationals and floats (low priority)
