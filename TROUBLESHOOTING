@@ -15,7 +15,7 @@ Bronze Age Lisp Troubleshooting
     When building on a 64-bit host, the linker must be told to
     generate 32-bit executable. Try the command
 
-      $ LD='ld -m elf_i386' ./buld.sh
+      $ LD='ld -m elf_i386' ./build.sh
 
 * Interpreter error messages
   --------------------------

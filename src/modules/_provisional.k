@@ -136,3 +136,7 @@
         (apply f (list (vector-ref v i)) denv)
         (loop (+ i 1)))))
   (loop 0))
+
+($define-ground-lambda! vector-copy! (src dst)
+  ($dotimes (i (vector-length src))
+    (vector-set! dst i (vector-ref src i))))

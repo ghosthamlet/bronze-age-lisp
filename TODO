@@ -50,8 +50,13 @@ Missing bindings from klisp:
     rename-file
 
   Vectors:
+    vector-copy
+    vector-copy-partial
+    vector-copy-partial!
     vector-fill!
     vector->immutable-vector
+    vector->string
+    string->vector
 
   Errors:
     raise
