@@ -413,6 +413,8 @@ List of combiners bound in the ground environment
   (tcsetattr PORT BYTEVECTOR)                        ; ext
   (terminal-port? . OBJECTs)                         ; ext
   (textual-port? . OBJECTs)                          ; klisp
+  (textual-input-port? . OBJECTs)                    ; ext
+  (textual-output-port? . OBJECTs)                   ; ext
 
   (u8-ready? [PORT])                                 ; r7rs
   ($unless BOOLEAN . FORMs)                          ; klisp

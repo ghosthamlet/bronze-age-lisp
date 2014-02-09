@@ -106,6 +106,22 @@
     (with-output-to-port port proc)
     (get-output-bytevector port)))
 
+;; optional argument checking
+
+($define-private-vau! $optional-port-argument (rest ok? default name) denv
+  ($define! rest (eval rest denv))
+  ($cond
+    ((null? rest)
+      (eval default denv))
+    (($and? (pair? rest) (null? (cdr rest)))
+      ($if (eval (list ok? (car rest)) denv)
+        (car rest)
+        (eval (list $error1 name "Invalid port argument." (car rest))
+              denv)))
+    (#t
+      (eval (list $error1 name "Invalid argument structure." rest)
+            denv))))
+
 ;; get-module (definition adapted from KR)
 
 ($define-ground-lambda! get-module (filename . opt)
@@ -241,7 +257,7 @@
 ;; read-line
 ;;
 ($define-ground-lambda! read-line args
-  ($define! p ($if (pair? args) (car args) stdin))
+  ($define! p ($optional-port-argument args textual-input-port? stdin read-line))
   #1=($define! c (read-char p))
   ($cond
     (#2=(eof-object? c) c)

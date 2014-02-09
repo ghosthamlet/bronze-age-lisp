@@ -29,21 +29,32 @@
         "Cannot traverse list structure."
         "Match failure"))
 
+($define! invalid-argument-structure-messages-unwrap
+  (cons "Invalid argument." invalid-argument-structure-messages))
+
 ($define! $nonlist-test
-  ($vau symbols #ignore
+  ($vau ((#:nounwrap . nounwrap) . symbols) #ignore
     ($define! test-pair
       ($lambda (symbol nonlist)
         (check-error (cons symbol nonlist)
                      (list invalid-argument-structure-messages
                            nonlist
-                           symbol))))
+                           symbol))
+        ($when ($and? (not? (member? symbol nounwrap))
+                      (applicative? (eval symbol (make-kernel-standard-environment))))
+          (check-error (cons (list unwrap symbol) nonlist)
+                       (list invalid-argument-structure-messages-unwrap
+                             nonlist
+                             #ignore)))))
     (for-each
       ($lambda (arg)
-        (for-each ($lambda (sym) (test-pair sym arg)) symbols))
-      (list #t #f #inert #ignore 0 -1 1
-            (make-environment)))))
+        (for-each
+          ($lambda (sym) (test-pair sym arg))
+          symbols))
+      (list #t #f #inert #ignore 0 -1 1 (make-environment)))))
 
 ($nonlist-test
+    (#:nounwrap list append)
   boolean? not? and? or? $and? $or?
   eq? equal?
   symbol? symbol->string string->symbol
@@ -238,6 +249,7 @@
 ($define! type-error-messages (list "Invalid argument."))
 ($type-test symbol->string #:symbol)
 ($type-test string->symbol #:string)
+($type-test error #:string)
 
 ($define! type-error-messages
   (list "Invalid argument."

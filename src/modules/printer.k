@@ -60,7 +60,7 @@
   ($with-printer-flags ((escape #f)) (apply write args)))
 
 ($define-ground-lambda! write (x . r)
-  ($let1 p ($if (null? r) stdout (car r))
+  ($let1 p ($optional-port-argument r textual-output-port? stdout write)
     (write-shared
       x
       (list (shared-structure-indicator
@@ -284,6 +284,6 @@
     (write-colored-parenthesis #\) s p)))
 
 ($define-ground-lambda! newline r
-  ($let1 p ($if (pair? r) (car r) stdout)
+  ($let1 p ($optional-port-argument r textual-output-port? stdout newline)
     (write-char #\newline p)
     (flush-output-port p)))

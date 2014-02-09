@@ -36,12 +36,15 @@
 
 ($define-ground-lambda! read r
   (read-aux
-    ($if (null? r)
-      ($sequence
+    ($cond
+      ((null? r)
         (flush-output-port stdout)
         (flush-output-port stderr)
         stdin)
-      (car r))))
+      (($and? (pair? r) (null? (cdr r)))
+        (car r))
+      (#t
+        ($error1 read "Invalid argument structure." r)))))
 
 ;;
 ;; (read-signed-number PORT BASE)
