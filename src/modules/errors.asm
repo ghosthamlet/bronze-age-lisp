@@ -11,13 +11,24 @@ app_error:
     mov eax, ebx
     mov ebx, nil_tag
   .throw:
+    cmp al, string_tag
+    jne .fail_eax
     mov ecx, symbol_value(rom_string_error)
     jmp rn_error
   .An:
   .operate:
+    test ebx, 3
+    jz .fail
+    jnp .fail
     mov eax, car(ebx)
     mov ebx, cdr(ebx)
     jmp .throw
+  .fail_eax:
+    mov ebx, eax
+  .fail:
+    mov eax, err_invalid_argument
+    mov ecx, symbol_value(rom_string_error)
+    jmp rn_error
 
 app_make_error_object:
   .A1:
