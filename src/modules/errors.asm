@@ -57,6 +57,8 @@ app_make_error_object:
     mov [eax + error.source], edx
     mov ecx, error_continuation
     mov [eax + error.cc], ecx
+    mov [eax + error.env], dword inert_tag
+    mov [eax + error.pad], dword inert_tag
     jmp [ebp + cont.program]
 
 app_error_object_message:
@@ -99,6 +101,13 @@ app_error_object_continuation:
     mov eax, [ebx + error.cc]
     jmp [ebp + cont.program]
 
+app_error_object_environment:
+  .A1:
+    mov esi, symbol_value(rom_string_error_object_environment)
+    call check_error_object
+    mov eax, [ebx + error.env]
+    jmp [ebp + cont.program]
+
 check_error_object:
     test bl, 3
     jnz .fail
@@ -122,4 +131,63 @@ app_guess_object_name:
     jne .done
     ;; TODO: try harder, scan the whole heap!
   .done:
+    jmp [ebp + cont.program]
+
+;;
+;; Implementation of private combiner
+;;
+;;   (deconstruct-environment ENV) => #:ground
+;;                                    #:private
+;;                                    #:multiparent
+;;                                    (PARENT-ENV (SYM . VAL) ...)
+;;
+app_deconstruct_environment:
+  .error:
+    mov eax, err_invalid_argument
+    mov ecx, symbol_value(rom_string_deconstruct_environment)
+    jmp rn_error
+  .A1:
+    test bl, 3
+    jnz .error
+    cmp byte [ebx], environment_header(0)
+    jne .error
+    mov edi, ebx
+    mov esi, nil_tag
+  .iter:
+    cmp [edi + environment.program], dword tail_env_lookup
+    je .list_or_tail
+    cmp [edi + environment.program], dword list_env_lookup
+    je .list_or_tail
+    cmp edi, dword ground_env_object
+    je .ground
+    cmp [edi + environment.program], dword multiparent_env_lookup
+    je .multiparent
+  .private:
+    mov eax, keyword_value(rom_string_private)
+    jmp [ebp + cont.program]
+  .ground:
+    mov eax, keyword_value(rom_string_ground)
+    jmp [ebp + cont.program]
+  .multiparent:
+    mov eax, keyword_value(rom_string_multiparent)
+    jmp [ebp + cont.program]
+  .list_or_tail:
+    mov ebx, [edi + environment.key0]
+    mov ecx, [edi + environment.val0]
+    push ebx
+    push ecx
+    call rn_cons
+    push eax
+    push esi
+    call rn_cons
+    mov esi, eax
+    cmp [edi + environment.program], dword list_env_lookup
+    jne .tail
+  .next:
+    mov edi, [edi + environment.parent]
+    jmp .iter
+  .tail:
+    push dword [edi + environment.parent]
+    push esi
+    call rn_cons
     jmp [ebp + cont.program]

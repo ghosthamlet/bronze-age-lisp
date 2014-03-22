@@ -39,10 +39,39 @@
             s
             (guess-object-name s #t)))
         port)
-       (write-char #\newline port))
+      ($when (environment? (error-object-environment x))
+        (print-environment (error-object-environment x) port))
+      (write-char #\newline port))
     (#t
       (format port "~w\n" x)))
   (flush-output-port port))
+
+($bind-private! private 0)
+($bind-private! ground 0)
+($bind-private! multiparent 0)
+
+($bind-private! deconstruct-environment
+  (make-bounded-applicative
+    (list 1 1) (list "app_deconstruct_environment.A1") ()))
+
+($define-private-lambda! show-environment (env width depth)
+  ($define! repr (deconstruct-environment env))
+  ($cond
+    ((not? (positive? depth))
+      ())
+    ((pair? repr)
+      ($define! (env . items) repr)
+      (cons (take-at-most-n width
+                            (map ($lambda ((s . v)) (list s v))
+                                 (filter ($lambda ((s . v)) (symbol? s))
+                                         (cdr repr))))
+            (show-environment env width (- depth 1))))
+    (#t
+      repr)))
+
+($define-private-lambda! print-environment (env port)
+  (write-string "\n    environment: " port)
+  (write (show-environment env 5 3) port))
 
 ;;
 ;; linux errno codes

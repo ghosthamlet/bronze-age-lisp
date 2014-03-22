@@ -96,7 +96,8 @@
     open-input-bytevector
     string->symbol symbol->string string->keyword keyword->string symbol->keyword keyword->symbol
     string->utf8
-    error-object-message error-object-irritants error-object-source error-object-continuation
+    error-object-message error-object-irritants error-object-source
+    error-object-continuation error-object-environment
     open-raw-input-file open-raw-output-file
     open-buffered-binary-input-port
     make-keyed-dynamic-variable*

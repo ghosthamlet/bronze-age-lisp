@@ -41,7 +41,7 @@
     ;; top two bits of vector and environment tag must be zero!
     (#b00000001 "vector" () "element")
     (#b00000101 "encapsulation" ("class") "var")
-    (#b00001001 "error" ("message" "irritants" "source" "cc" "address"))
+    (#b00001001 "error" ("message" "irritants" "source" "cc" "address" "env" "pad"))
     (#b00001101 "critbit" ("index" "child0" "child1"))
 
     ;; N.B. common bits in the tags, see predicates.k

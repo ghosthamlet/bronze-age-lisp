@@ -121,6 +121,7 @@ rn_out_of_memory:
   .done:
     mov ebx, inert_tag
     mov ecx, inert_tag
+    mov edi, inert_tag
     jmp rn_error
   .invalid_continuation:
     mov ebx, err_internal_error
@@ -151,10 +152,13 @@ rn_error:
     mov edx, inert_tag
   .discard_stack:
     mov esp, [stack_limit]
+    push edi
     push edx
     push ecx
     push ebx
     push eax
+    mov eax, edi      ; capture dynamic environment
+    call rn_capture   ;  (in case it was created by e.g. $let1)
   .force_gc:
     mov edi, [lisp_heap_pointer]
     lea eax, [edi + 8192 + configured_lisp_transient_size + configured_lisp_heap_threshold]
@@ -183,6 +187,8 @@ rn_error:
     pop eax
     lea eax, [4*eax + 1]
     mov [ecx + error.address], eax
+    pop dword [ecx + error.env]
+    mov dword [ecx + error.pad], inert_tag
     mov ebx, error_continuation
     mov esp, [stack_limit]
     mov [rn_error_active], dword 0

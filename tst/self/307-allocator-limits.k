@@ -7,9 +7,10 @@
 ($define! run-test
   ($lambda (exprs msg)
     ($let
-      ((a (protect-eval (cons $sequence exprs)
-                        (make-kernel-standard-environment)))
-       (b (list "error" msg #inert #inert)))
+      ((b (list "error" msg #inert #inert))
+       ;; Discard result of "exprs" to free memory before evaluating the test.
+       (a (protect-eval (list $sequence (cons $sequence exprs) #inert)
+                        (make-kernel-standard-environment))))
       ($if (equal? a b)
         (pass)
         (fail-with-report
@@ -65,6 +66,8 @@
 ;;
 ($om
   (arithmetic-shift -6291456 65152345))
+($om
+  (expt 12345 67890))
 
 ;; Allocation of various objects.
 ;;
@@ -89,8 +92,10 @@
 (om-repeat () ($lambda (x) ($vau (y) #ignore x)))
 (om-repeat () ($lambda (x) ($vau (y) env e)))
 
-(om-repeat 2 ($lambda (x) (* x x)))
-(om-repeat 2 ($lambda (n) (* n (+ 1 n))))
-(om-repeat (list 2 3) ($lambda ((x y)) (list y (* x y))))
+;; This takes ages to run:
+;;
+;; (om-repeat 2 ($lambda (x) (* x x)))
+;; (om-repeat 2 ($lambda (n) (* n (+ 1 n))))
+;; (om-repeat (list 2 3) ($lambda ((x y)) (list y (* x y))))
 
 (summary)
