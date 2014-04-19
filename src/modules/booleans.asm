@@ -97,7 +97,7 @@ app_%1P:
   .invalid_structure:
     mov eax, err_invalid_argument_structure
   .fail:
-    mov ecx, symbol_value(rom_string_andP)
+    mov ecx, symbol_value(rom_string_%1P)
     jmp rn_error
   .operate:
     mov esi, ebx
