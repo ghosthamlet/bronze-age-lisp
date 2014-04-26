@@ -140,3 +140,8 @@
 ($define-ground-lambda! vector-copy! (src dst)
   ($dotimes (i (vector-length src))
     (vector-set! dst i (vector-ref src i))))
+
+($define-ground-lambda! binds? xs
+  ($if ($and? (pair? xs) (environment? (car xs)))
+    (eval (cons $binds? xs) private-environment)
+    ($error1 binds? "Invalid argument structure." xs)))

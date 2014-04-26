@@ -74,6 +74,7 @@ List of combiners bound in the ground environment
   (apply-continuation CONT OBJECT)
   (apply APPLICATIVE OBJECT [ENV])
   (arithmetic-shift NUM NUM)                         ; SRFI-60
+  ($assert BOOLEAN . FORMs)                          ; ext
   (assoc KEY LIST)
   (assq KEY LIST)
 
@@ -81,6 +82,7 @@ List of combiners bound in the ground environment
   (binary-port? . OBJECTs)                           ; klisp
   ($bindings->environment BINDINGs)
   ($binds? ENV . SYMBOLs)
+  (binds? ENV . SYMBOLs)                             ; ext
   (bitwise-and . INTEGERs)                           ; SRFI-60
   (bitwise-ior . INTEGERs)                           ; SRFI-60
   (bitwise-not INTEGER)                              ; SRFI-60
@@ -194,6 +196,7 @@ List of combiners bound in the ground environment
   (error-object-message ERROR-OBJECT)                ; klisp
   (error-object-irritants ERROR-OBJECT)              ; klisp
   (error-object-source ERROR-OBJECT)                 ; ext
+  (es-symbols OBJECT)                                ; ext
   (eval OBJECT ENV)
   (eval-sequence LIST ENV)                           ; ext
   (eval-string STRING ENV)                           ; klisp
@@ -502,6 +505,13 @@ Bronze Age Lisp Extensions
     arguments in the dynamic environment, and matches
     PTREE with OBJECT in the environment ENV.
 
+  (binds? ENV . SYMBOLs)
+      => #inert
+
+    Fully applicative version of $binds?. Evaluates all
+    arguments in the dynamic environment. Returns #t,
+    if all SYMBOLs are bound in ENV.
+
   (file-exists? . STRINGs)
 
     Return #t if each of the arguments refers to an existing file
@@ -539,6 +549,12 @@ Bronze Age Lisp Extensions
 
     The body of the loop should not capture continuations. The
     implementation uses single mutable loop variable internally.
+
+  (es-symbols ES) => SYMBOLs
+
+    Returns a list of all symbols in the evaluation structure ES.
+    The order of symbols in the output list is not specified. Symbols
+    occuring multiple times in ES are not duplicated. 
 
   (eval-sequence LIST ENV)
 
@@ -600,6 +616,13 @@ Bronze Age Lisp Extensions
  4) interpreter control and diagnostics
     -----------------------------------
 
+  ($assert CONDITION . COMMENTs)
+
+    Raises an error and prints a message to the standard output port,
+    unless CONDITION evaluates to #t. The message mentions CONDITION
+    and COMMENTs. For convenience, values of all non-standard symbols
+    occuring in CONDITION and COMMENTs are printed as well.
+
   (collect-garbage)
       => #inert
 
@@ -652,8 +675,8 @@ Bronze Age Lisp Extensions
       (errno-keyword 2) => #:ENOENT
 
     The meaning of the symbolic name like ENOENT can be found in
-    the Linux manual pages. The human-readable textual messages
-    in the style of streror() like "No such file or directory" are
+    the Linux manual pages. Human-readable textual messages
+    in the style of strerror() like "No such file or directory" are
     not provided by the interpreter.
 
     The applicative errno-keywords knowns only small subset of system

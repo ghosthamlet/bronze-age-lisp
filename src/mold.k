@@ -144,6 +144,7 @@
   "system.k"
   "libraries.k"
   "format.k"
+  "assertions.k"
   "hash-tables.k"
   "native-interfaces.k"
   "_provisional.k"
