@@ -321,6 +321,7 @@ List of combiners bound in the ground environment
   (member? OBJECT LIST)
   (memoize OBJECT)
   (memq? OBJECT LIST)
+  (merge SORTED-LIST1 SORTED-LIST2 LESS? [KEY])      ; srfi-95
   (min . NUMs)
   (mod INTEGER INTEGER)
   (mod0 INTEGER INTEGER)
@@ -389,6 +390,8 @@ List of combiners bound in the ground environment
   (set-cdr! PAIR OBJECT)
   (shared-structure-indicator OBJECT)                ; ext
   (signum NUM)                                       ; ext
+  (sort LIST LESS? [KEY])                            ; srfi-95
+  (sorted? LIST LESS? [KEY])                         ; srfi-95
   (string? . STRINGs)
   (string<? . STRINGs)
   (string<=? . STRINGs)

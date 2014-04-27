@@ -144,6 +144,7 @@
   "system.k"
   "libraries.k"
   "format.k"
+  "sorting.k"
   "assertions.k"
   "hash-tables.k"
   "native-interfaces.k"
