@@ -253,10 +253,6 @@
           (list (list error-continuation
                       ($lambda (obj divert)
                         (apply divert str))))))))
-  (take (xs n)
-    ($if (<? 0 n)
-      (cons (car xs) (take (cdr xs) (- n 1)))
-      ()))
   (trim-display (left right w)
     ($let ((nl (length left)) (nr (length right)))
       ($cond

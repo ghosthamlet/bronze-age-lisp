@@ -129,3 +129,9 @@
 ;;
 ($define-ground-lambda! list-copy (xs)
   (map list* xs))
+
+;; take from SRFI-1
+($define-ground-lambda! take (xs n)
+  ($if (positive? n)
+    (cons (car xs) (take (cdr xs) (- n 1)))
+    ()))
