@@ -69,9 +69,8 @@ app_guard_continuation:
     mov eax, [ecx]
     cmp al, cont_header(0)
     jne .error
-    push ebx
+    push edx
     ;; create outer continuation
-    mov ebx, edx
     mov edx, ecx
     mov ecx, cont_outer
     call make_guard_continuation
