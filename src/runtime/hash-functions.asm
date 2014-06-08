@@ -53,7 +53,7 @@ rn_hash:
   .recurse:
     jecxz .out_of_fuel
     test bl, 3
-    jz .header
+    jz .aligned
     jp .pair
     mov al, bl
     xor al, symbol_tag
@@ -115,6 +115,11 @@ rn_hash:
     mov esi, scratchpad_start
     jmp siphash_step_mem64    ; hash the word
 
+  .aligned:
+    mov eax, [lisp_heap_pointer]
+    xor eax, ebx
+    test eax, ~(configured_lisp_heap_size - 1)
+    jnz .immediate
   .header:
     mov edx, [ebx]
     cmp dl, bigint_header(0)
@@ -125,6 +130,8 @@ rn_hash:
     je .applicative
     cmp dl, cont_header(0)
     je .continuation
+    cmp dl, operative_header(0)
+    je .vector
     mov esi, ebx
     jmp siphash_step_mem64
 
@@ -148,13 +155,13 @@ rn_hash:
     shr ecx, 8
   .vector_loop:
     push ecx
-    mov ecx, [esp + 12]
-    mov esi, [esp + 8]
+    mov ecx, [esp + 8]
+    mov esi, [esp + 4]
     mov ebx, [esi]
     call .recurse
-    mov esi, [esp + 8]
+    mov esi, [esp + 4]
     lea esi, [esi + 4]
-    mov [esp + 8], esi
+    mov [esp + 4], esi
     pop ecx
     loop .vector_loop
     add esp, 8
@@ -162,13 +169,13 @@ rn_hash:
 
   .applicative:
     dec ecx
-    push ebx
+    push dword [ebx + applicative.underlying]
     push ecx
     mov esi, edx
     call siphash_step_reg32
-    pop ebx
     pop ecx
-    jmp rn_hash
+    pop ebx
+    jmp .recurse
 
   .continuation:
     dec ecx

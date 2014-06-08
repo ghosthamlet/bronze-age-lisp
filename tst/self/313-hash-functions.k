@@ -77,6 +77,28 @@
 (distinct-hash-values 4096 small-inputs)
 
 ;;
+;; no colisions for values of different types
+;;
+
+($define! various-inputs
+  ($let (((enc #ignore #ignore) (make-encapsulation-type)))
+    (list
+      the-eof-object
+      (make-environment)
+      ($vau #ignore #ignore #inert)
+      ($lambda #ignore #ignore #inert)
+      (vector 1 2)
+      (list 1 2)
+      root-continuation
+      ($lazy 0)
+      (enc 1)
+      "a"
+      #:a
+      ($quote a))))
+
+(distinct-hash-values 4096 various-inputs)
+
+;;
 ;; Test vectors from the reference SipHash implementation
 ;; https://131002.net/siphash/siphash24.c
 ;;
