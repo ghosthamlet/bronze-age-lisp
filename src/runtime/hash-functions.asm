@@ -67,6 +67,13 @@ rn_hash:
     jmp siphash_step_reg32
 
   .pair:
+    mov eax, [lisp_heap_pointer]
+    shr eax, 1
+    or  eax, 0x80000003
+    xor eax, ebx
+    test eax, ~(configured_lisp_heap_size/2 - 1)
+    jnz .immediate
+
     mov edx, ecx
     shr ecx, 2
     sub edx, ecx
@@ -130,6 +137,8 @@ rn_hash:
     je .applicative
     cmp dl, cont_header(0)
     je .continuation
+    cmp dl, environment_header(0)
+    je .environment
     cmp dl, operative_header(0)
     je .vector
     mov esi, ebx
@@ -185,6 +194,10 @@ rn_hash:
     pop ecx
     mov ebx, [esi + cont.parent]
     jmp .recurse
+
+  .environment:
+    mov esi, [ebx + environment.hashcode]
+    jmp siphash_step_reg32
 
 ;;
 ;; rn_hash_buffer (native procedure)

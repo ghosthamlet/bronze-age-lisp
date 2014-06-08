@@ -333,9 +333,10 @@
         (asm "mov [eax + environment.parent], edi")
         (asm "mov [eax + environment.val0], "
           (cdr (assoc k argument-register-alist)))
+        (asm "lea ebx, [eax + 1]")
+        (asm "mov [eax + environment.hashcode], ebx")
         (asm "mov ebx, [esi +" (symbol-slot k) "]")
         (asm "mov [eax + environment.key0], ebx")
-        (asm "mov [eax + environment.key1], ebx")
         (asm "mov edi, eax")
         ($unless (=? k (- n 1))
           (asm "lea eax, [eax + 24]")))

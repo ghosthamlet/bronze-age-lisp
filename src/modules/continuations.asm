@@ -43,7 +43,8 @@ primop_Slet_cc:
     mov [eax + environment.parent], edi
     mov [eax + environment.key0], edx
     mov [eax + environment.val0], ebp
-    mov [eax + environment.key1], edx ; unused, padding only
+    lea edi, [eax + 1]
+    mov [eax + environment.hashcode], eax ; hash code = initial address
     mov edi, eax
     mov ebx, cdr(ebx)
     jmp rn_sequence

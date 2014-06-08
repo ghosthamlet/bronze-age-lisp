@@ -48,7 +48,7 @@
     (#b00010001 "operative" ("program") "var")
     (#b00010101 "applicative" ("program" "underlying") "var")
     (#b00011001 "cont" ("program" "parent") "var")
-    (#b00011101 "environment" ("program" "parent") "key" "val")
+    (#b00011101 "environment" ("program" "hashcode" "parent") "key" "val")
 
     ;; N.B. common bits in the tags, see predicates.k
     (#b00100001 "txt-in" ("env" "close" "read" "peek")  "var")

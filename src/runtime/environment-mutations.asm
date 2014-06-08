@@ -19,11 +19,12 @@ rn_make_list_environment:
     call rn_allocate
     mov [eax + environment.header], dword environment_header(6)
     mov [eax + environment.program], dword tail_env_lookup
+    lea ecx, [eax + 1]
+    mov [eax + environment.hashcode], ecx  ; hash code = initial address
     mov [eax + environment.parent], ebx
     mov ecx, inert_tag
     mov [eax + environment.key0], ecx
     mov [eax + environment.val0], ecx
-    mov [eax + environment.key1], ecx   ; unused, padding only
     pop ecx
     ret
 
@@ -40,12 +41,12 @@ rn_make_list_environment:
 ;;
 ;; postconditions: EAX = new environment
 ;; preserves:      ECX, ECX, EDX, ESI, EDI, EBP
-;; clobbers:       EAX
+;; clobbers:       EAX, EBX
 ;; stack usage:    ?
 ;;
 rn_make_multiparent_environment:
     push ecx
-    add ecx, 3
+    add ecx, 4
     and ecx, ~1
     call rn_allocate
     push edx
@@ -56,9 +57,11 @@ rn_make_multiparent_environment:
     mov dl, environment_header(0)
     mov [eax + environment.header], edx
     mov [eax + environment.program], dword multiparent_env_lookup
+    lea ebx, [eax + 1]
+    mov [eax + environment.hashcode], ebx ; hash code = initial address
     mov ecx, [esp + 3*4]
     test cl, 1
-    jz .copy
+    jnz .copy
     mov [eax + environment.parent + 4*ecx], dword ignore_tag
   .copy:
     lea esi, [esp + 5*4]

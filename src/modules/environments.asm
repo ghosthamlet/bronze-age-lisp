@@ -206,9 +206,10 @@ primop_Slet1:
     mov [eax + environment.program], dword tail_env_lookup
     mov [eax + environment.parent], edi
     mov [eax + environment.val0], edx
+    lea edx, [eax + 1]
+    mov [eax + environment.hashcode], eax ; hashcode = initial address
     mov edx, car(ebx)
     mov [eax + environment.key0], edx
-    mov [eax + environment.key1], edx  ; unused, padding only
     mov edi, eax
     mov ebx, cdr(ebx)
     mov ebx, cdr(ebx)
