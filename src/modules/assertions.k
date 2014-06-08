@@ -54,7 +54,7 @@
                   (not? ($and? (binds? private-environment v)
                                (equal? (eval v private-environment)
                                        (eval v env)))))
-            (format p "    ~w = ~w~%" v (eval var env)))
+            (format p "    ~w = ~w~%" v (eval v env)))
           ((not? (binds? env v))
             (format p "    ~w is not bound~%" v))))
       (es-symbols (cons x rest)))
