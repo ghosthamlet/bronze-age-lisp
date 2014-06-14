@@ -155,10 +155,14 @@
 ($bind-private! read-special-token-cases
   ($quote*
     (#\\ . (read-character-literal p))
-    (#\x . (read-signed-number p 16))
-    (#\d . (read-signed-number p 10))
-    (#\o . (read-signed-number p 8))
-    (#\b . (read-signed-number p 2))
+    (#\x . #10=(read-signed-number p 16))
+    (#\X . #10#)
+    (#\d . #11=(read-signed-number p 10))
+    (#\D . #11#)
+    (#\o . #12=(read-signed-number p 8))
+    (#\O . #12#)
+    (#\b . #13=(read-signed-number p 2))
+    (#\B . #13#)
     (#\! . ($sequence (skip-line p) (read-token p)))
     (#\| . ($sequence (skip-block-comment 1 (read-char p) p)
                       (read-token p)))
@@ -210,8 +214,9 @@
               (list k n)
               (parse-error p "invalid S-expression label" n k))))
         (#t
-          ($let1 s (get-output-string
-                     (read-symbol-tail p (open-output-string* c)))
+          ($let1 s (string-foldcase
+                     (get-output-string
+                       (read-symbol-tail p (open-output-string* c))))
             ($let1 x (assoc s special-tokens)
               ($if (null? x)
                 (parse-error p "invalid special token" s c)
@@ -317,6 +322,23 @@
       (write-char c q)
       q)))
 
+;;
+;; limited case-insensitivity
+;; TODO unicode case folding
+;;
+
+($defun-privates!
+  (char-foldcase (c)
+    ($if (char<=? #\A c #\Z)
+      (integer->char (+ 32 (char->integer c)))
+      c))
+  (string-foldcase (s)
+    ($define! p (open-input-string s))
+    ($define! q (open-output-string))
+    #2=($when ($sequence ($define! c (read-char p)) (char? c))
+      (write-char (char-foldcase c) q)
+      #2#)
+    (get-output-string q)))
 
 ;;
 ;; (read-aux PORT)
