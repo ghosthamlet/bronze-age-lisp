@@ -48,6 +48,12 @@
 
 ($define-ground-lambda! sort (a . rest)
   ($let1 n (length a)
-    ($if (finite? n)
-      (sort-prefix a n (sort-predicate rest))
-      ($error sort "Unable to sort cyclic list." a))))
+    ($cond
+      ((zero? n)
+        ($if (null? a)
+          ()
+          ($error sort "Argument is not a list." a)))
+      ((finite? n)
+        (sort-prefix a n (sort-predicate rest)))
+      (#t
+        ($error sort "Unable to sort cyclic list." a)))))
