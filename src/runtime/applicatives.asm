@@ -67,8 +67,8 @@ rn_wrap:
 ;; preconditions:  EBP = continuation
 ;; postconditions: EBP = continuation which can be mutated
 ;;
-;; preserves:      EDX, ESI, EDI
-;; clobbers:       EAX, EBX, ECX, EBP, EFLAGS
+;; preserves:      EAX, EDX, ESI, EDI
+;; clobbers:       EBX, ECX, EBP, EFLAGS
 ;; stack usage:    16 dwords (incl. call/ret)
 ;;
 rn_force_transient_continuation:

@@ -42,6 +42,11 @@
 ;;
 ($rep 100000 (open-output-string))
 
+;; create combiners on the heap
+;;
+($rep 100000
+  (map ($lambda #ignore ($quote* 1)) ($quote* 2)))
+
 ;; end of test
 ;;
 (summary)

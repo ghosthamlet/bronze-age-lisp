@@ -17,6 +17,7 @@ app_map:
     jz .empty
     test ecx, ecx
     jnz .cyclic
+    add esp, 8
     push aux_map_simple.map.continue
     jmp aux_map_simple
   .empty:
@@ -156,12 +157,12 @@ aux_map_simple:
     mov edx, [ebp + cont.map.length]
     cmp edx, fixint_value(0)
     je .map.evaluated
+    call rn_force_transient_continuation
     push eax
     push dword [ebp + cont.map.accumulator]
     call rn_cons
     mov [ebp + cont.map.accumulator], eax
   .next:
-    call rn_force_transient_continuation
     mov edi, [ebp + cont.map.environment]
     mov ecx, [ebp + cont.map.list]
     push dword car(ecx)
@@ -177,7 +178,9 @@ aux_map_simple:
   .foreach.continue:
     mov edx, [ebp + cont.map.length]
     cmp edx, fixint_value(0)
-    jne .next
+    je .foreach.done
+    call rn_force_transient_continuation
+    jmp .next
   .foreach.done:
     mov ebp, [ebp + cont.parent]
     mov eax, inert_tag
