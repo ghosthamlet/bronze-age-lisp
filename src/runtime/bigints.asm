@@ -90,7 +90,7 @@ rn_u8P_procz:
 ;;
 ;; preconditions:  EBX = object
 ;;
-;; postconditions: ZF = 1 if EBX represents a number (fixint or bigint)
+;; postconditions: ZF = 1 if EBX represents a number (fixint, bigint or infinity)
 ;;                 ZF = 0 if EBX is does not represent any number
 ;;                 EAX = S * M (untagged signed integer)
 ;;
@@ -122,7 +122,8 @@ rn_siglog:
     ret
   .infinite:
     mov eax, ebx
-    or eax, 0x0FFFFFFF
+    xor al, al
+    shl eax, 20
     cmp eax, eax           ; set ZF = 1
     ret
   .header:

@@ -34,10 +34,12 @@ _start:
     mov [stack_limit], esp
     call init_lisp_heap
     call test_siglog_nan
+    call test_siglog_inf
     call test_siglog_fixint
     call test_siglog_bigint
     call test_compare_fixint
     call test_compare_bigint
+    call test_compare_inf
     call test_compare_mix
     jmp test_finished
 
@@ -86,6 +88,12 @@ test_siglog_nan:
     check_siglog_ni boolean_value(0)
     check_siglog_ni rom_pair_value(dummy_obj)
     check_siglog_ni dummy_obj
+    ret
+
+test_siglog_inf:
+    call next_subtest
+    check_siglog_i einf_value(1), 0x10000000
+    check_siglog_i einf_value(-1), 0xF0000000
     ret
 
 test_siglog_fixint:
@@ -148,6 +156,12 @@ test_compare_bigint:
     check_lt bigint_10000000000, bigint_10600228229
     ret
 
+test_compare_inf:
+    call next_subtest
+    check_lt einf_value(-1), einf_value(1)
+    check_gt einf_value(1), einf_value(-1)
+    ret
+
 test_compare_mix:
     call next_subtest
     check_gt bigint_pos_4a, fixint_value(0)
@@ -158,6 +172,11 @@ test_compare_mix:
     check_lt bigint_neg_4a, fixint_value(min_fixint)
     check_lt bigint_neg_4a, fixint_value(max_fixint)
     check_lt bigint_neg_4a, fixint_value(-1)
+    check_lt einf_value(-1), bigint_neg_4a
+    check_lt einf_value(-1), fixint_value(-1)
+    check_lt einf_value(-1), fixint_value(0)
+    check_lt einf_value(-1), fixint_value(1)
+    check_lt einf_value(-1), bigint_pos_4a
     ret
 
 section .lisp_rom
