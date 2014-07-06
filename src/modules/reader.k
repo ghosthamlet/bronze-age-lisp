@@ -139,7 +139,7 @@
                  (string->symbol
                    (get-output-string
                      (read-symbol-tail p (open-output-string* #\.)))))
-               ((char-digit? c)
+               (($and? (char? c) (char-digit? c))
                  (parse-error p "reader: dot followed by a digit is not supported syntax"))
                (#t
                  t-dot))))
@@ -389,6 +389,10 @@
                        ($lambda (v)
                          (p! v)
                          (read-label-set! e (cadr t) v))))
+          ((eq? t t-dot)
+            (parse-error e "read-form: unexpected dot token"))
+          ((eq? t t-right)
+            (parse-error e "read-form: unexpected right parenthesis"))
           (#t
             (parse-error e "read-form: unexpected character" (car t))))
         (p! t))))
