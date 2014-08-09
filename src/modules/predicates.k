@@ -36,7 +36,7 @@
     ($quote*
       inert ignore
       symbol keyword string bytevector
-      char boolean))
+      char boolean socket))
 
   ($define! $bind-header-predicate!
     ($vau (symbol type-tag mask) denv

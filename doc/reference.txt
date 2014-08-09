@@ -65,6 +65,7 @@ List of combiners bound in the ground environment
   (>? . NUMs)
 
   (abs NUM)
+  (accept SOCKET)                                    ; ext
   (alist->hash-table ALIST)                          ; srfi-69
   (and . FORMs)
   ($and . FORMs)
@@ -80,6 +81,7 @@ List of combiners bound in the ground environment
 
   (bigint? . OBJECTs)                                ; ext
   (binary-port? . OBJECTs)                           ; klisp
+  (bind SOCKET BV-SOCKADDR)                          ; ext
   ($bindings->environment BINDINGs)
   ($binds? ENV . SYMBOLs)
   (binds? ENV . SYMBOLs)                             ; ext
@@ -162,10 +164,12 @@ List of combiners bound in the ground environment
   (close-output-port PORT)                           ; r7rs
   (close-port PORT)
   (close-port-ignore-errors PORT)                    ; ext
+  (close-socket SOCKET)                              ; ext
   (collect-garbage)                                  ; ext
   (color-port? PORT)                                 ; ext
   (combiner? . OBJECTs)
   ($cond (BOOLEAN . BODY) ...)
+  (connect SOCKET BV-SOCKADDR)                       ; ext
   (cons OBJECT OBJECT)
   (continuation->applicative CONT)
   (continuation? . OBJECTs)
@@ -291,6 +295,7 @@ List of combiners bound in the ground environment
   (list* . OBJECTs)
   (list->bytevector LIST)                            ; klisp
   (list-copy LIST)                                   ; SRFI-1
+  (listen SOCKET BACKLOG)                            ; ext
   (list->string LIST)
   (list->tabulate N APPLICATIVE)                     ; SRFI-1
   (list->vector LIST)                                ; klisp
@@ -388,8 +393,15 @@ List of combiners bound in the ground environment
   ($set! ENV SYMBOL FORM)
   (set-car! PAIR OBJECT)
   (set-cdr! PAIR OBJECT)
+  (setsockopt SOCKET LEVEL OPTNAME BV-OPTVAL)        ; ext
   (shared-structure-indicator OBJECT)                ; ext
   (signum NUM)                                       ; ext
+  (socket DOMAIN TYPE PROTOCOL)                      ; ext
+  (socket? . OBJs)                                   ; ext
+  (socket-binary-input-port SOCKET)                  ; ext
+  (socket-binary-output-port SOCKET)                 ; ext
+  (socket-textual-input-port SOCKET)                 ; ext
+  (socket-textual-output-port SOCKET)                ; ext
   (sort LIST LESS? [KEY])                            ; srfi-95
   (sorted? LIST LESS? [KEY])                         ; srfi-95
   (string? . STRINGs)
@@ -408,6 +420,9 @@ List of combiners bound in the ground environment
   (string-size STRING)
   (string->symbol STRING)
   (string->utf8 STRING)                              ; r7rs
+  (struct-sockaddr-ipv4 PORT ADDRESS)                ; ext
+  (struct-sockaddr-ipv6 PORT ADDRESS)                ; ext
+  (struct-sockaddr-unix IDENTIFIER)                  ; ext
   (substring STRING INDEX INDEX)
   (symbol? . OBJECTs)
   (symbol->keyword SYMBOL)                           ; klisp
@@ -1110,6 +1125,92 @@ Bronze Age Lisp Extensions
     [1] Jean-Philippe Aumasson and Daniel J. Bernstein:
         SipHash: a fast short-input PRF,
         https://131002.net/siphash/
+
+ 11) Low-level socket API
+
+   Interface to linux socket system calls is provided. Higher
+   level features (e.g. parsing and resolving internet addresses)
+   are not yet implemented.
+
+   Socket file descriptors are encapsulated. 
+
+     (accept SOCKET) => SOCKET
+
+       See accept(2) in the linux manual pages.
+
+     (bind SOCKET SOCKADDR) => #inert
+
+       See bind(2). The SOCKADDR is a bytevector containing the
+       contents of the "struct sockaddr" passed to bind(). The
+       bytevector can be created by one of the applicatives
+       struct-sockaddr-XXX.
+
+     (close-socket SOCKET) => #inert
+
+       Close the file descriptor wrapped in the socket value.
+       See close(2).
+
+     (connect SOCKET SOCKADDR) => #inert
+
+       See connect(2) and the description of (bind ...) above.
+
+     (listen SOCKET BACKLOG) => #inert
+
+       See listen(2).
+
+     (setsockopt SOCKET LEVEL OPTNAME OPTVAL) => #inert
+
+       The arguments LEVEL and OPTNAME are integers. The constants
+       SOL_SOCKET and SO_REUSEADDR are provided in the ground
+       environment. See setsockopt(2).
+
+     (socket DOMAIN TYPE PROTOCOL)
+
+       The arguments DOMAIN, TYPE and PROTOCOL are integers. Important
+       constants are provided in the ground environment: PF_INET,
+       PF_INET6, PF_UNIX, SOCK_STREAM and SOCK_DGRAM. See socket(2).
+
+     (socket? . OBJs)
+
+       Socket type predicate.
+
+     (struct-sockaddr-ipv4 PORT ADDRESS) => BYTEVECTOR
+
+       Create IPv4 address (struct sockaddr_in).
+
+       The PORT is an integer (in the range 1-65535) and the ADDRESS
+       is a list of four integers (A B C D) representing the IPv4
+       address A.B.C.D. The constants INADDR_ANY and INADDR_LOOPBACK
+       can be used in place of ADDRESS. See ip(7).
+
+     (struct-sockaddr-ipv6 PORT ADDRESS) => BYTEVECTOR
+
+       Create IPv6 address (struct sockaddr_in6).
+
+       The PORT is an integer (in the range 1-65535) and the ADDRESS
+       is a list of sixteen integers (A1 A2 ... A16) representing the
+       IPv6 address A1:A2:...:A16. See ipv6(7).
+
+     (struct-sockaddr-unix IDENTIFIER) => BYTEVECTOR
+
+       Create local unix address (struct sockaddr_un). See unix(7).
+       The IDENTIFIER is either
+
+         1) a string containing file system pathname (e.g. "/tmp/xyz")
+         2) #inert (unnamed socket)
+         3) a keyword (abstract socket address)
+
+   Once a connection is open by (connect ...) or (accept ...),
+   the communication is done through ports created by:
+
+     (socket-binary-input-port SOCKET) => PORT
+     (socket-binary-output-port SOCKET) => PORT
+     (socket-textual-input-port SOCKET) => PORT
+     (socket-textual-output-port SOCKET) => PORT
+
+   Note that closing the PORT does not close the socket. The socket
+   should be closed using (socket-close ...). The ports are buffered,
+   you may want to call (flush-output-port PORT).
 
 Part II - REPL
 ==============

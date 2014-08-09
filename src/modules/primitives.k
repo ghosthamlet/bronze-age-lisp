@@ -59,7 +59,8 @@
     $lazy
     $let/cc)
   ($prim-app
-    bytevector-copy-partial!)
+    bytevector-copy-partial!
+    setsockopt)
   ($bounded-app 0 0
     get-current-environment
     make-kernel-standard-environment
@@ -107,7 +108,8 @@
     integer-length bitwise-not
     shared-structure-indicator
     make-hash-function
-    delete-file)
+    delete-file
+    accept close-socket)
   ($bounded-app 1 2
     char-digit? char->digit digit->char
     open-utf-encoder
@@ -126,14 +128,16 @@
     arithmetic-shift
     apply-continuation
     hash-bytevector
-    dup2)
+    dup2
+    connect bind listen)
   ($bounded-app 2 3
     apply extend-continuation)
   ($bounded-app 3 3
     encycle!
     guard-continuation guard-dynamic-extent
     set! vector-set! bytevector-u8-set!
-    bytevector-copy-partial)
+    bytevector-copy-partial
+    socket)
   ($unbounded-app 2 3
     (- "minus")
     bitwise-xor)

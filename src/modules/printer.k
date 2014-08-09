@@ -147,7 +147,20 @@
       ((environment? x)
         (write-string "#[environment]" p))
       ((port? x)
-        (write-string "#[port]" p))
+        (write-string "#[" p)
+        (write-string
+          ($cond
+            ((textual-port? x) "textual ")
+            ((binary-port? x)  "binary ")
+            (#t                "unknown "))
+          p)
+        (write-string
+          ($cond
+            ((input-port? x)   "input ")
+            ((output-port? x)  "output ")
+            (#t                "unknown "))
+          p)
+        (write-string "port]" p))
       ((continuation? x)
         (write-named "continuation" x p))
       ((vector? x)
@@ -164,6 +177,10 @@
         (write-bytevector-aux x s p))
       ((hash-table? x)
         (write-string "#[hash-table]" p))
+      ((socket? x)
+        (write-string "#[socket " p)
+        (write-shared (socket-fd x) s p)
+        (write-string "]" p))
       (#t
         (write-string "#[encapsulation]" p))))
   (write-tail (x s p)
