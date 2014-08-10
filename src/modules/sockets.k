@@ -29,35 +29,72 @@
 ($bind-ground! INADDR_ANY (list 0 0 0 0))
 ($bind-ground! INADDR_LOOPBACK (list 127 0 0 1))
 
-($define-ground-lambda! struct-sockaddr-ipv4 (port (a1 a2 a3 a4))
-  (bytevector PF_INET 0
-              (bitwise-and #xFF (arithmetic-shift port -8))
-              (bitwise-and #xFF port)
-              a1 a2 a3 a4
-              0 0 0 0 0 0 0 0))
+($define-ground-lambda! make-struct-sockaddr (family . rest)
+  (apply
+    ($cond
+      ((eq? family #:ipv4) struct-sockaddr-ipv4)
+      ((eq? family #:ipv6) struct-sockaddr-ipv6)
+      ((eq? family #:unix) struct-sockaddr-unix))
+    rest))
 
-($define-ground-lambda! struct-sockaddr-ipv6 (port addr)
-  ($define! v (make-bytevector 28 0))
-  (bytevector-u8-set! 0 PF_INET6)
-  (bytevector-u8-set! 2 (bitwise-and #xFF (arithmetic-shift port -8)))
-  (bytevector-u8-set! 3 (bitwise-and #xFF port))
-  (bytevector-copy-partial! (list->bytevector addr) 0 16 v 8)
-  v)
+($defun-privates!
+  (struct-sockaddr-ipv4 (port (a1 a2 a3 a4))
+    (bytevector PF_INET 0
+                (bitwise-and #xFF (arithmetic-shift port -8))
+                (bitwise-and #xFF port)
+                a1 a2 a3 a4
+                0 0 0 0 0 0 0 0))
+  (struct-sockaddr-ipv6 (port addr)
+    ($define! v (make-bytevector 28 0))
+    (bytevector-u8-set! 0 PF_INET6)
+    (bytevector-u8-set! 2 (bitwise-and #xFF (arithmetic-shift port -8)))
+    (bytevector-u8-set! 3 (bitwise-and #xFF port))
+    (bytevector-copy-partial! (list->bytevector addr) 0 16 v 8)
+    v)
+  (struct-sockaddr-unix (str)
+    ($cond
+      ((string? str)
+        ($define! v (make-bytevector 110 0))
+        ($define! n (string->utf8 str))
+        (bytevector-u8-set! v 0 PF_UNIX)
+        (bytevector-copy-partial! n 0 (bytevector-length n) v 2)
+        v)
+      ((keyword? str)
+        (struct-sockaddr-unix (string-append "\x00;" (keyword->string str))))
+      ((eq? str #inert)
+        (bytevector PF_UNIX 0))
+      (#t
+        ($error1 struct-sockaddr-unix "Invalid argument." str))))
+  (decode-ip-port (b)
+    (bitwise-ior (arithmetic-shift (bytevector-u8-ref b 2) 8)
+                 (bytevector-u8-ref b 3))))
 
-($define-ground-lambda! struct-sockaddr-unix (str)
+($define-ground-lambda! decode-struct-sockaddr (b)
+  ($define! af (bytevector-u8-ref b 0))
   ($cond
-    ((string? str)
-      ($define! v (make-bytevector 110 0))
-      ($define! n (string->utf8 str))
-      (bytevector-u8-set! v 0 PF_UNIX)
-      (bytevector-copy-partial! n 0 (bytevector-length n) v 2)
-      v)
-    ((keyword? str)
-      (struct-sockaddr-unix (string-append "\x00;" (keyword->string str))))
-    ((memq? str #inert)
-      (bytevector PF_UNIX 0))
+    ((eq? af PF_INET)
+      (list #:ipv4
+            (decode-ip-port b)
+            (bytevector->list (bytevector-copy-partial b 4 8))))
+    ((eq? af PF_INET6)
+      (list #:ipv6
+            (decode-ip-port b)
+            (bytevector->list (bytevector-copy-partial b 8 24))))
+    ((eq? af PF_UNIX)
+      (list #:unix
+            ($let ((len (bytevector-length b)))
+              ($cond
+                ((=? len 2)
+                  #inert)
+                ((=? (bytevector-u8-ref b 2) 0)
+                  (string->keyword
+                    (utf8->string
+                      (bytevector-copy-partial b 2 len))))
+                (#t
+                  (utf8->string
+                    (bytevector-copy-partial b 2 len)))))))
     (#t
-      ($error1 struct-sockaddr-unix "Invalid argument." str))))
+      ($error1 decode-struct-sockaddr "Unsupported address family" b))))
 
 ;; port interface
 

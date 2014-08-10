@@ -145,6 +145,168 @@ app_setsockopt:
     mov eax, inert_tag
     jmp [ebp + cont.program]
 
+app_sendto:
+  .A2:
+    mov edx, fixint_value(0);
+  .A3:
+    mov edi, inert_tag
+  .check:
+    mov esi, symbol_value(rom_string_sendto)
+    ;; sockfd
+    cmp bl, socket_tag
+    jne socket_type_error
+    shr ebx, 8
+    mov [scratchpad_start], ebx
+    ;; buffer
+    mov ebx, ecx
+    cmp bl, bytevector_tag
+    jne socket_type_error
+    call rn_get_blob_data
+    mov [scratchpad_start + 4], ebx
+    mov [scratchpad_start + 8], ecx
+    ;; flags
+    mov ebx, edx
+    call rn_fixintP_procz
+    jnz socket_type_error
+    sar ebx, 2
+    mov [scratchpad_start + 12], ebx
+    ;; address
+    mov ebx, edi
+    cmp bl, inert_tag
+    je .no_address
+    cmp bl, bytevector_tag
+    jne socket_type_error
+    call rn_get_blob_data
+    mov [scratchpad_start + 16], ebx
+    mov [scratchpad_start + 20], ecx
+  .execute:
+    mov ecx, scratchpad_start
+    mov ebx, 11                          ; SYS_SENDTO
+    call linux_socketcall
+    mov eax, inert_tag
+    jmp [ebp + cont.program]
+  .no_address:
+    xor eax, eax
+    mov [scratchpad_start + 16], eax
+    mov [scratchpad_start + 20], eax
+    jmp .execute
+  .operate:
+    mov esi, symbol_value(rom_string_sendto)
+    call rn_count_parameters
+    cmp ecx, 2
+    je .operate_2
+    cmp ecx, 3
+    je .operate_3
+    cmp ecx, 4
+    jne socket_type_error
+  .operate_4:
+    mov edi, ebx
+    mov ebx, car(edi)
+    mov edi, cdr(edi)
+    mov ecx, car(edi)
+    mov edi, cdr(edi)
+    mov edx, car(edi)
+    mov edi, cdr(edi)
+    mov edi, car(edi)
+    jmp .check
+  .operate_3:
+    mov edi, ebx
+    mov ebx, car(edi)
+    mov edi, cdr(edi)
+    mov ecx, car(edi)
+    mov edi, cdr(edi)
+    mov edx, car(edi)
+    jmp .A3
+  .operate_2:
+    mov edi, ebx
+    mov ebx, car(edi)
+    mov edi, cdr(edi)
+    mov ecx, car(edi)
+    jmp .A2
+
+%define address_buffer_size ((scratchpad_end - scratchpad_start) - 32)
+
+app_recvfrom:
+  .A1:
+    mov ecx, fixint_value(0)
+  .A2:
+    mov edx, fixint_value(8192)
+  .A3:
+    mov esi, symbol_value(rom_string_recvfrom)
+    ;; sockfd
+    cmp bl, socket_tag
+    jne socket_type_error
+    shr ebx, 8
+    mov [scratchpad_start], ebx
+    ;; flags
+    mov ebx, ecx
+    call rn_fixintP_procz
+    jnz socket_type_error
+    sar ebx, 2
+    mov [scratchpad_start + 12], ebx
+    ;; buffer size
+    mov ebx, edx
+    call rn_fixintP_procz
+    jnz socket_type_error
+    mov ecx, ebx
+    sar ecx, 2
+    ;; reserve 256 bytes for the address
+    add ecx, 256
+    ;; maximum buffer size 64K
+    cmp ecx, 65536
+    ja socket_type_error
+    ;; allocate buffer
+    call rn_allocate_blob
+    push eax
+    mov ebx, eax
+    call rn_get_blob_data
+    sub ecx, address_buffer_size
+    mov [scratchpad_start + 4], ebx
+    mov [scratchpad_start + 8], ecx
+    mov edx, scratchpad_start + 32
+    mov eax, address_buffer_size
+    mov [scratchpad_start + 16], edx           ; address buffer
+    mov [scratchpad_start + 24], eax           ; address buffer size
+    mov eax, scratchpad_start + 24
+    mov [scratchpad_start + 20], eax           ; pointer to addres length
+    ;; the syscall
+    mov ecx, scratchpad_start
+    mov ebx, 12                                ; SYS_RECVFROM
+    call linux_socketcall
+    ;; check message size
+    mov edx, eax                               ; edx = message size
+    mov ebx, [esp]
+    call rn_get_blob_data
+    sub ecx, address_buffer_size
+    cmp edx, ecx
+    ja .overflow
+    ;; shring bytevector to fit the message
+    mov ecx, edx
+    mov ebx, [esp]
+    call rn_shrink_last_blob
+    ;; allocate new bytevector for the address
+    mov ecx, [scratchpad_start + 24]
+    cmp ecx, address_buffer_size
+    ja .overflow
+    call rn_allocate_blob
+    push eax
+    push dword nil_tag
+    ;; copy data
+    mov ebx, eax
+    mov eax, [scratchpad_start + 16]
+    cld
+    call rn_copy_blob_data
+    ;; allocate list (MESSAGE ADDRESS)
+    call rn_cons
+    push eax
+    call rn_cons
+    jmp [ebp + cont.program]
+  .overflow:
+    mov eax, err_buffer_overflow
+    lea ebx, [4*ecx + 1]
+    mov ecx, symbol_value(rom_string_recvfrom)
+    jmp rn_error
+
 ;;
 ;; socket_prepare_sockaddr (native procedure)
 ;;

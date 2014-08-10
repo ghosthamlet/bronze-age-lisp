@@ -60,4 +60,5 @@
     (syscall "System call error.")
     (invalid-key-length "Invalid key length.")
     (closed-port "The port is closed.")
+    (buffer-overflow "Buffer overflow.")
   ))

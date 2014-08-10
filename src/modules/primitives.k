@@ -118,7 +118,7 @@
     fork
     hash)
   ($bounded-app 1 3
-    make-error-object execve)
+    make-error-object execve recvfrom)
   ($bounded-app 2 2
     cons eval eval-sequence
     list-tail list-ref
@@ -140,7 +140,8 @@
     socket)
   ($unbounded-app 2 3
     (- "minus")
-    bitwise-xor)
+    bitwise-xor
+    sendto)
   ($unbounded-app 0 3
     (+ "plus") (* "times")
     bitwise-and bitwise-ior)

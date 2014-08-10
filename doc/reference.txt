@@ -177,6 +177,7 @@ List of combiners bound in the ground environment
   (copy-es-immutable OBJECT)
   (countable-list? OBJECT)
 
+  (decode-struct-sockaddr BYTEVECTOR)                ; ext
   ($define! PTREE FORM)
   (defined-environment-variable? STRING)             ; klisp
   (delete-file STRING)                               ; r7rs
@@ -420,9 +421,7 @@ List of combiners bound in the ground environment
   (string-size STRING)
   (string->symbol STRING)
   (string->utf8 STRING)                              ; r7rs
-  (struct-sockaddr-ipv4 PORT ADDRESS)                ; ext
-  (struct-sockaddr-ipv6 PORT ADDRESS)                ; ext
-  (struct-sockaddr-unix IDENTIFIER)                  ; ext
+  (make-struct-sockaddr FAMILY . REST)               ; ext
   (substring STRING INDEX INDEX)
   (symbol? . OBJECTs)
   (symbol->keyword SYMBOL)                           ; klisp
@@ -1129,8 +1128,8 @@ Bronze Age Lisp Extensions
  11) Low-level socket API
 
    Interface to linux socket system calls is provided. Higher
-   level features (e.g. parsing and resolving internet addresses)
-   are not yet implemented.
+   level services (e.g. parsing and resolving internet addresses)
+   are not (yet?) implemented.
 
    Socket file descriptors are encapsulated. 
 
@@ -1158,6 +1157,14 @@ Bronze Age Lisp Extensions
 
        See listen(2).
 
+     (recvfrom SOCKET [FLAGS [BUFFER-SIZE]]) => (BYTEVECTOR ADDRESS)
+
+       See recv(2).
+
+     (sendto SOCKET DATA [FLAGS [ADDRESS]]) => #inert
+
+       See send(2).
+
      (setsockopt SOCKET LEVEL OPTNAME OPTVAL) => #inert
 
        The arguments LEVEL and OPTNAME are integers. The constants
@@ -1174,31 +1181,39 @@ Bronze Age Lisp Extensions
 
        Socket type predicate.
 
-     (struct-sockaddr-ipv4 PORT ADDRESS) => BYTEVECTOR
+     (make-struct-sockaddr FAMILY . REST) => BYTEVECTOR
 
-       Create IPv4 address (struct sockaddr_in).
+       Create socket address (struct sockaddr).
 
-       The PORT is an integer (in the range 1-65535) and the ADDRESS
-       is a list of four integers (A B C D) representing the IPv4
-       address A.B.C.D. The constants INADDR_ANY and INADDR_LOOPBACK
-       can be used in place of ADDRESS. See ip(7).
+       (make-struct-sockaddr #:ipv4 PORT ADDRESS)
 
-     (struct-sockaddr-ipv6 PORT ADDRESS) => BYTEVECTOR
+          Create IPv4 address (struct sockaddr_in).
 
-       Create IPv6 address (struct sockaddr_in6).
+          The PORT is an integer (in the range 1-65535) and the ADDRESS
+          is a list of four integers (A B C D) representing the IPv4
+          address A.B.C.D. The constants INADDR_ANY and INADDR_LOOPBACK
+          can be used in place of ADDRESS. See ip(7).
 
-       The PORT is an integer (in the range 1-65535) and the ADDRESS
-       is a list of sixteen integers (A1 A2 ... A16) representing the
-       IPv6 address A1:A2:...:A16. See ipv6(7).
+       (make-struct-sockaddr #:ipv6 PORT ADDRESS)
 
-     (struct-sockaddr-unix IDENTIFIER) => BYTEVECTOR
+          Create IPv6 address (struct sockaddr_in6).
 
-       Create local unix address (struct sockaddr_un). See unix(7).
-       The IDENTIFIER is either
+          The PORT is an integer (in the range 1-65535) and the ADDRESS
+          is a list of sixteen integers (A1 A2 ... A16) representing the
+          IPv6 address A1:A2:...:A16. See ipv6(7).
 
-         1) a string containing file system pathname (e.g. "/tmp/xyz")
-         2) #inert (unnamed socket)
-         3) a keyword (abstract socket address)
+       (make-struct-sockaddr #:unix IDENTIFIER)
+
+          Create local unix address (struct sockaddr_un). See unix(7).
+          The IDENTIFIER is either
+
+            1) a string containing file system pathname (e.g. "/tmp/xyz")
+            2) #inert (unnamed socket)
+            3) a keyword (abstract socket address)
+
+     (decode-struct-sockaddr BYTEVECTOR) => (FAMILY . REST)
+
+       Inverse of (make-struct-sockaddr ...).
 
    Once a connection is open by (connect ...) or (accept ...),
    the communication is done through ports created by:
