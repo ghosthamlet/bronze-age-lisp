@@ -109,7 +109,7 @@
     shared-structure-indicator
     make-hash-function
     delete-file
-    accept close-socket)
+    accept close-socket integer->socket)
   ($bounded-app 1 2
     char-digit? char->digit digit->char
     open-utf-encoder

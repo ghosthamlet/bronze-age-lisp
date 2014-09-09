@@ -274,6 +274,7 @@ List of combiners bound in the ground environment
   (integer? . OBJECTs)
   (integer->char INTEGER)
   (integer-length INTEGER)
+  (integer->socket INTEGER)                          ; ext
 
   (keyword? . OBJECTs)                               ; klisp
   (keyword->string KEYWORD)                          ; klisp
@@ -1183,6 +1184,10 @@ Bronze Age Lisp Extensions
      (socket? . OBJs)
 
        Socket type predicate.
+
+     (integer->socket INTEGER) => SOCKET
+
+       Create socket object from a file descriptor.
 
      (make-struct-sockaddr FAMILY . REST) => BYTEVECTOR
 

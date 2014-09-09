@@ -4,6 +4,16 @@
 ;;; Low-level interface to Linux networking system calls (asm part).
 ;;;
 
+app_integer_Gsocket:
+  .A1:
+    ;; ebx = file descriptor (tagged integer)
+    call rn_fixintP_procz
+    jnz socket_type_error
+    mov eax, ebx
+    shl eax, 6
+    mov al, socket_tag
+    jmp [ebp + cont.program]
+
 app_socket_fd:
   .A1:
     ;; ebx = socket (tagged)
