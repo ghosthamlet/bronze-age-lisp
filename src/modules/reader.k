@@ -4,36 +4,6 @@
 ;;; Lisp reader.
 ;;;
 
-#|
-($define! $define-ground-lambda!
-  ($vau (name args . body) denv
-    (eval (list $define! name (list* $lambda args body))
-          denv)))
-
-($define! $bind-private! $define!)
-($define! $quote* (unwrap list))
-($define! $let1
-  ($vau (sym val . body) denv
-    (eval (list* $let (list (list sym val)) body) denv)))
-($define! $defun-privates!
-  ($vau items denv
-    (for-each
-      ($lambda ((name args . body))
-        (eval (list $define! name (list* $lambda args body))
-              denv))
-      items)))
-
-($define! ttk
-  ($lambda (s)
-    ($let ((p (open-input-string s)))
-      (list (read-token p) (read-token p) (read-token p)))))
-
-($define! tr
-  ($lambda (s)
-    (read-aux (open-input-string s))))
-|#
-
-
 ($define-ground-lambda! read r
   (read-aux
     ($cond
@@ -101,14 +71,7 @@
     ("t" . #t)
     ("f" . #f)
     ("e+infinity" . #e+infinity )
-    ("e-infinity" . #e-infinity )
-   ; ("i+infinity" . 999)
-   ; ("i-infinity" . -999)
-   ; ("e-infinity" . -999)
-   ; ("undefined" . "?undefined")
-   ; ("real" . "?real")
-   ; ("e-infinity" . -999)
-    ))
+    ("e-infinity" . #e-infinity )))
 
 ($bind-private! character-names
   ($quote*
@@ -166,7 +129,31 @@
     (#\! . ($sequence (skip-line p) (read-token p)))
     (#\| . ($sequence (skip-block-comment 1 (read-char p) p)
                       (read-token p)))
-    (#\; . ($sequence (read-aux p) (read-token p)))))
+    (#\; . ($sequence (read-aux p) (read-token p)))
+    (#\. . ($let ((e (get-read-time-evaluation-environment)))
+             ($if (environment? e)
+               ($let*
+                   ((x (read-aux p))
+                    (y (guard-dynamic-extent
+                         (list (list root-continuation
+                                     ($lambda (obj divert)
+                                       (error "re-entered dynamic extent of read-time evaluation"))))
+                         ($lambda () (eval x e))
+                         (list (list root-continuation
+                                       ($lambda (obj divert)
+                                         (parse-error p "error in dynamic extent of read-time evaluation" x obj)))))))
+                 ($if (eof-object? y)
+                   (parse-error p "read-time evaluation resulted in the eof-object" x)
+                   (cons $quote* y)))
+               (parse-error p "read-time evaluation (#.) disabled"))))))
+
+($bind-ground! with-read-time-evaluation-environment ())
+($bind-ground! get-read-time-evaluation-environment ())
+
+(init-forms-add!
+  ($quote
+    ($define! (with-read-time-evaluation-environment get-read-time-evaluation-environment)
+      (make-keyed-dynamic-variable* #f))))
 
 ($defun-privates!
   (read-token (p)
@@ -389,6 +376,8 @@
                        ($lambda (v)
                          (p! v)
                          (read-label-set! e (cadr t) v))))
+          ((eq? (car t) $quote*)
+            (p! (cdr t)))
           ((eq? t t-dot)
             (parse-error e "read-form: unexpected dot token"))
           ((eq? t t-right)
@@ -420,7 +409,9 @@
 
 ;;
 ;; (load FILE)
+;; (load/rte FILE)
 ;;
+
 ($defun-privates!
   (read-all (p a)
     ($let1 x (read p)
@@ -435,3 +426,10 @@
 
 ($define-ground-wrapvau! load (s) denv
   (eval-sequence (read-file s) denv))
+
+($define-ground-wrapvau! load/rte (s) denv
+  (eval-sequence
+    (with-read-time-evaluation-environment
+      denv
+      ($lambda () (read-file s)))
+    denv))

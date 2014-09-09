@@ -244,6 +244,7 @@ List of combiners bound in the ground environment
   (get-performance-statistics)                       ; ext
   (getpid)                                           ; ext
   ($get-printer-flag SYMBOL)                         ; ext
+  (get-read-time-evaluation-environment)             ; ext
   ($get-registered-library LIBRARY-NAME)             ; klisp
   (get-script-arguments)                             ; klisp
   (get-textual-input-position [PORT])                ; ext
@@ -305,6 +306,7 @@ List of combiners bound in the ground environment
   (list-set! LIST INDEX OBJECT)                      ; klisp
   (list-tail LIST INTEGER)
   (load FILENAME)
+  (load/rte FILENAME)                                ; ext
 
   (make-bytevector INTEGER [U8])
   (make-compiled-operative VAR VAR PROGRAM)          ; ext
@@ -464,6 +466,7 @@ List of combiners bound in the ground environment
   (with-output-to-string COMBINER)                   ; ext
   (with-output-to-bytevector COMBINER)               ; ext
   ($with-printer-flags BINDINGS COMBINER)            ; ext
+  (with-read-time-evaluation-environment ENV APP)    ; ext
   (with-signal-handler (SIGSPEC HANDLER) COMBINER)   ; ext
   ($with-subprocess EXECVE-ARGS REDIRECTIONS . BODY) ; ext
   ($with-subshell COMMAND REDIRECTIONS . BODY)       ; ext
@@ -1226,6 +1229,45 @@ Bronze Age Lisp Extensions
    Note that closing the PORT does not close the socket. The socket
    should be closed using (socket-close ...). The ports are buffered,
    you may want to call (flush-output-port PORT).
+
+ 12) Read-time evaluation
+
+   The reader implements the syntax
+
+     #.X
+
+   where X is arbitrary expression. The syntax is read as the result
+   of evaluation of the expression X. The expression is evaluated
+   at read time, i.e. in the dynamic extend of (read) or (load),
+   in a designated environment.
+
+   The environment (RTEE for short) is stored in a dynamic variable
+   manipulated by the following two combiners:
+
+     (with-read-time-evaluation-environment ENV APP)
+
+       Call (APP) with the read-time evaluation environment set to ENV.
+
+     (get-read-time-evaluation-environment)
+
+       Return the current read-time evaluation environment.
+
+   The RTEE dynamic variable is initially bound to #f, indicating that
+   run-time evaluation is disabled. To enable, bind the dynamic variable
+   to some environment, for example
+
+     (with-read-time-evaluation-environment
+       (make-kernel-standard-environment)
+       ($lambda () (load "program.k")))
+
+   There is a shorthand applicative:
+
+     (load/rte FILE)
+
+       Load FILE as in (load FILE), but the file is read with the
+       RTEE set to the dynamic environment of the combination
+       (load/rte ...). However, the dynamic binding is undone
+       before evaluating the contents read from FILE.
 
 Part II - REPL
 ==============
