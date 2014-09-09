@@ -8,7 +8,7 @@
   ($lambda (port f)
     ($define! fd (socket PF_INET SOCK_STREAM 0))
     (setsockopt fd SOL_SOCKET SO_REUSEADDR (bytevector 1 0 0 0))
-    (bind fd (struct-sockaddr-ipv4 port INADDR_ANY))
+    (bind fd (make-struct-sockaddr #:ipv4 port INADDR_ANY))
     (listen fd 1)
     (format #t "Waiting for connection. Try 'telnet localhost ~w'.~%" port)
     ($define! server-loop

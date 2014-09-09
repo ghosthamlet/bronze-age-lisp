@@ -29,6 +29,15 @@
 ($bind-ground! INADDR_ANY (list 0 0 0 0))
 ($bind-ground! INADDR_LOOPBACK (list 127 0 0 1))
 
+;; preserve upper case of symbols if the bootstrap interpreter
+;; is not case sensitive
+
+(for-each upper-case-symbols-add!
+  ($quote* PF_UNIX PF_INET PF_INET6
+           SOCK_STREAM SOCK_DGRAM
+           SOL_SOCKET SO_REUSEADDR
+           INADDR_ANY INADDR_LOOPBACK))
+
 ($define-ground-lambda! make-struct-sockaddr (family . rest)
   (apply
     ($cond

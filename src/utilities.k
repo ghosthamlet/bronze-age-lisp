@@ -57,8 +57,8 @@
 ;; ($define-add! SYMBOL VALUE ADD)
 ;;
 ;; Binds SYMBOL to VALUE in the dynamic environment.
-;; Moreover, it binds SYMBOL-set! to an applicative such that
-;; (SYMBOL-set! X) rebinds SYMBOL to the result of
+;; Moreover, it binds SYMBOL-add! to an applicative such that
+;; (SYMBOL-add! X) rebinds SYMBOL to the result of
 ;; (ADD X Y), where Y is the current value.
 ;;
 ($define! $define-add!

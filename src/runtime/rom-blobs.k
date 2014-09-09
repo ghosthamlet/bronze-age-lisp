@@ -13,7 +13,20 @@
 ;;       (EMIT-NAMES) prints selected names in assembler syntax
 ;;       (EMIT-DESCRIPTORS) prints definition of blob descriptor table
 ;;
-($provide! (rom-blobs)
+($provide! (rom-blobs upper-case-symbols-add!)
+
+  ;; list of symbols that must be upper case
+  ($define-add! upper-case-symbols () cons)
+
+  ($unless ($binds? (get-current-environment) string-upcase)
+    ($define! char-upcase
+      ($lambda (x)
+        ($if (char<=? #\a x #\z)
+          (integer->char (+ 32 (char->integer x)))
+          x)))
+    ($define! string-upcase
+      ($lambda (s)
+        (string-map char-upcase s))))
 
   ($define! harvest-blobs
     ($lambda (objects)
@@ -21,17 +34,22 @@
       ($define-add! ordinal 0 +)
       ($define-add! lst () cons)
       ($define! add-string
-        ($lambda (x)
+        ($lambda (x y)
           ($unless (dictionary-exists? d x)
             (ordinal-add! 1)
             (dictionary-add! d x ordinal)
-            (lst-add! (cons x ordinal)))))
+            (lst-add! (cons y ordinal)))))
       (for-each
         ($lambda (x)
           ($cond
-            ((symbol? x) (add-string (symbol->string x)))
-            ((string? x) (add-string x))
-            ((keyword? x) (add-string (keyword->string x)))
+            ((symbol? x)
+               ($let ((str (symbol->string x)))
+                 (add-string str
+                             ($if (memq? x upper-case-symbols)
+                                  (string-upcase str)
+                                  str))))
+            ((string? x) (add-string x x))
+            ((keyword? x) (add-string (keyword->string x) (keyword->string x)))
             (#t #inert)))
         objects)
       (list
