@@ -35,6 +35,14 @@
   ($equal? (hash x1) (hash x2))
   ($equal? (hash x1 123) (hash x2 123)))
 
+($let*
+  ((x1 (list (list 1 2) (list 3 4)))
+   (x2 (copy-es x1))
+   (x3 (copy-es-immutable x1)))
+  ($unless (equal? x1 x2 x3) (error))
+  ($equal? (hash x1) (hash x2) (hash x3))
+  ($equal? (hash x1 123) (hash x2 123) (hash x3 123)))
+
 ;;
 ;; no colisions for "small" inputs
 ;;
@@ -97,6 +105,35 @@
       ($quote a))))
 
 (distinct-hash-values 4096 various-inputs)
+
+;;
+;; Stability of hash values.
+;;
+
+($define! same-hash?
+  ($lambda (x a b)
+    ($if (=? a b)
+      (pass)
+      (fail-with-report "hash function stability"
+        (list hash x)
+        (list a b)
+        (list a a)))))
+
+($let ()
+  ($define! tail (list 1 2 3))
+  ($define! test
+    ($lambda (n f)
+      ($define! x (f (list* f n tail)))
+      ($define! b (hash x))
+      ($define! #ignore (list-tabulate (* 1000 n) list))
+      ($define! c (hash x))
+      (same-hash? x b c)
+      ($when (positive? n)
+        (test (- n 1) f))))
+  (test 15 list)
+  (test 15 list->vector)
+  (test 15 copy-es-immutable))
+
 
 ;;
 ;; Test vectors from the reference SipHash implementation

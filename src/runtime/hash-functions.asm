@@ -69,9 +69,9 @@ rn_hash:
   .pair:
     mov eax, [lisp_heap_pointer]
     shr eax, 1
-    or  eax, 0x80000003
+    or al, 3
     xor eax, ebx
-    test eax, ~(configured_lisp_heap_size/2 - 1)
+    test eax, ~(configured_lisp_heap_size/2 - 1) & 0x7FFFFFFF
     jnz .immediate
 
     mov edx, ecx
