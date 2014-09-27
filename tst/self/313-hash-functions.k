@@ -134,6 +134,14 @@
   (test 15 list->vector)
   (test 15 copy-es-immutable))
 
+($let ()
+  ($define! (b a) (make-keyed-dynamic-variable))
+  ($define! (ha hb) (list (hash a) (hash b)))
+  (b 42
+    ($lambda ()
+      ($define! (ha+ hb+) (list (hash a) (hash b)))
+      (same-hash? a ha ha+)
+      (same-hash? b hb hb+))))
 
 ;;
 ;; Test vectors from the reference SipHash implementation

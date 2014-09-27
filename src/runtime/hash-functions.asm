@@ -140,7 +140,7 @@ rn_hash:
     cmp dl, environment_header(0)
     je .environment
     cmp dl, operative_header(0)
-    je .vector
+    je .operative
     mov esi, ebx
     jmp siphash_step_mem64
 
@@ -157,6 +157,7 @@ rn_hash:
     ret
 
   .vector:
+  .immutable_operative:
     shr ecx, 1
     push ecx
     push ebx
@@ -185,6 +186,17 @@ rn_hash:
     pop ecx
     pop ebx
     jmp .recurse
+
+  .operative:
+    cmp edx, dword operative_header(4)
+    jne .immutable_operative
+    cmp [ebx + operative.program], dword rn_asm_operative.L00
+    jne .immutable_operative
+    cmp [ebx + operative.var0], dword app_access_dynamic_variable.A0
+    jne .immutable_operative
+  .keyed_dynamic_accessor:
+    mov esi, ebx
+    jmp siphash_step_mem64
 
   .continuation:
     dec ecx
