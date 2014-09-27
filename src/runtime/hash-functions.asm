@@ -141,6 +141,8 @@ rn_hash:
     je .environment
     cmp dl, operative_header(0)
     je .operative
+    cmp dl, encapsulation_header(0)
+    je .vector
     mov esi, ebx
     jmp siphash_step_mem64
 

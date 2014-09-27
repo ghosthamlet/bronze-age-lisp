@@ -136,12 +136,18 @@
 
 ($let ()
   ($define! (b a) (make-keyed-dynamic-variable))
+  ($define! (e p d) (make-encapsulation-type))
+  ($define! x (e ($bindings->environment (a 1) (b 2))))
   ($define! (ha hb) (list (hash a) (hash b)))
+  ($define! hx (hash x))
   (b 42
     ($lambda ()
+      (collect-garbage)
       ($define! (ha+ hb+) (list (hash a) (hash b)))
+      ($define! hx+ (hash x))
       (same-hash? a ha ha+)
-      (same-hash? b hb hb+))))
+      (same-hash? b hb hb+)
+      (same-hash? x hx hx+))))
 
 ;;
 ;; Test vectors from the reference SipHash implementation
