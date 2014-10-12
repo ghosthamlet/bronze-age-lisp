@@ -47,6 +47,29 @@
 ($rep 100000
   (map ($lambda #ignore ($quote* 1)) ($quote* 2)))
 
+;; allocate lot of bigints
+;;
+($let ()
+  ($define! m 200)
+  ($define! loop
+    ($lambda (n x y)
+      ($cond
+        ((<=? n 0)
+          x)
+        ((<? (integer-length x) m)
+          (loop (- n 1)
+                (arithmetic-shift (bitwise-xor x (hash n)) 50)
+                y))
+        ((<? (integer-length y) m)
+          (loop (- n 1)
+                x
+                (arithmetic-shift (bitwise-xor y (hash n)) 50)))
+        (#t
+          (loop (- n 1)
+                (mod (bitwise-xor x (hash n)) (+ 17 (bitwise-xor y (hash n))))
+                (+ 3 (arithmetic-shift y -1)))))))
+  (apply (wrap $rep) (list 10 (list loop 100000 0 0))))
+
 ;; end of test
 ;;
 (summary)
