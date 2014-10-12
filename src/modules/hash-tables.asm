@@ -412,7 +412,7 @@ app_hash:
   .A1:
     mov esi, app_hash ; TODO!
   .compute:
-    mov ecx, 42
+    mov ecx, 142
     call rn_hash
     xor eax, ebx
     and eax, 0x1FFFFFFF
