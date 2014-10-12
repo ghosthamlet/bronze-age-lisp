@@ -97,6 +97,13 @@ app_arithmetic_shift:
     or dl, al
     xchg ebx, ecx
     call [.jump_table + 4*edx]
+    ;; Erase untagged values that rn_bigint_shift_left and rn_bigint_shift_right
+    ;; leave in registers. If the values survive to the next GC run, the GC may
+    ;; crash.
+    xor ecx, ecx
+    xor edx, edx
+    xor esi, esi
+    xor edi, edi
     jmp [ebp + cont.program]
   .type_error:
     mov eax, err_not_a_number
