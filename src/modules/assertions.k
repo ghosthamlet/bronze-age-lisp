@@ -27,7 +27,7 @@
 ;; $assert
 ;;
 
-($bind-ground! false-guards ())
+($bind-private! false-guards ())
 
 (init-forms-add!
   ($quote
