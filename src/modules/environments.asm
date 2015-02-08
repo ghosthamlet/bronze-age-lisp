@@ -222,6 +222,7 @@ primop_Slet1:
 ;;
 ;; preconditions:  ESI = input list
 ;;                 ECX = N > 0, input list length (untagged integer)
+;;                 [ESP + 12] = symbol for error reporting
 ;;
 ;; postconditions: EAX = list of CARs
 ;;                 EDX = list of CADRs
@@ -255,6 +256,8 @@ aux_map_car_cadr:
     test bl, 3               ; check type
     jz .error                ;   ...
     jnp .error               ;   ...
+    cmp cdr(ebx), dword nil_tag
+    jne .error
     mov ebx, car(ebx)        ; get CADR of input element
     lea edx, [eax + edi + 8] ; get pointer to next element
     shr edx, 1               ;   of 2nd output list
@@ -279,9 +282,10 @@ aux_map_car_cadr:
     pop ebx
     ret
   .error:
-    mov eax, err_cannot_traverse
-    mov ebx, esi
-    mov ecx, symbol_value(rom_string_Sletrec) ;; TODO: replace hardwired symbol with a parameter
+    mov eax, err_invalid_argument_structure
+    mov ebx, [esp + 8]
+    mov ecx, [esp + 24]
+    mov edi, inert_tag
     push .error
     jmp rn_error
 
@@ -498,6 +502,8 @@ primop_SletX:
     test bl, 3                    ; check structure of binding
     jz .invalid_structure
     jnp .invalid_structure
+    cmp cdr(ebx), dword nil_tag
+    jne .invalid_structure
     mov ebx, car(ebx)             ; EBX = R1
     jmp rn_eval
   .empty:

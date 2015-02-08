@@ -325,4 +325,27 @@
   (() 1234 ())
   ("Invalid argument." 1234))
 
+;; Invalid structure in $let bindings
+;;
+
+($define! $test-binding-structure
+  ($vau (let-symbol . bindings) denv
+    (check-error
+      (list let-symbol bindings)
+      (list (list "Invalid argument structure.")
+            bindings
+            let-symbol))))
+
+($test-binding-structure $let (0))
+($test-binding-structure $let (x 1 2 3))
+($test-binding-structure $let (x 1) (y 2 3))
+($test-binding-structure $let* (#ignore))
+($test-binding-structure $let* (x 1 2))
+($test-binding-structure $letrec (#ignore #ignore #ignore))
+($test-binding-structure $letrec (x 1 2))
+($test-binding-structure $letrec* (x . y))
+($test-binding-structure $letrec* (x 1) (y 2) (z 3 4))
+($test-binding-structure $bindings->environment (a 1 2) (b 3 4))
+($test-binding-structure $bindings->environment () () ())
+
 (summary)
