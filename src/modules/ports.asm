@@ -125,6 +125,8 @@ app_write_u8:
     call rn_u8P_procz
     jnz .invalid_argument
     xchg ebx, ecx
+    test bl, 3
+    jnz .invalid_argument
     mov eax, [ebx]
     cmp al, bin_out_header(0)
     jne .invalid_argument

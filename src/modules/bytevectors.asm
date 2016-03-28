@@ -206,7 +206,7 @@ app_string_Gutf8:
 ;;
 ;; Copy bytes from a bytevector.
 ;;
-;; preconditions: EBX = FROM byetevector
+;; preconditions: EBX = FROM bytevector
 ;;                ECX = START index
 ;;                EDX = END index
 ;;                EBP = current continuation
@@ -344,15 +344,16 @@ bytevector_copy_partial_helpers:
     ret
   .bytevector_arg:
     cmp bl, bytevector_tag
-    jne .type_error
+    jne .type_error_keep_ebx
     call rn_get_blob_data
     ret
   .structure_error:
     mov eax, err_invalid_argument_structure
     jmp .error
   .type_error:
-    mov eax, err_invalid_argument
     mov ebx, car(esi)
+  .type_error_keep_ebx:
+    mov eax, err_invalid_argument
     jmp .error
   .index_error:
     mov eax, err_index_out_of_bounds

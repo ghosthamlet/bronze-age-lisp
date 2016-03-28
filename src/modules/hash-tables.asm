@@ -228,6 +228,8 @@ aux_hash_table_check:
 app_hash_table_lookup:
   .A2:
     instrumentation_point
+    test bl, 3
+    jnz .error
     cmp [ebx], dword hash_table_header
     jne .error
     mov edi, [ebx + hash_table.hashf]

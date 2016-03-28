@@ -186,16 +186,18 @@ primop_Slet1:
     mov eax, car(ebx)   ; eax = symbol
     cmp al, symbol_tag
     jne .error
-    mov eax, cdr(ebx)
-    mov ecx, cdr(ebx)   ; expr
-    mov edx, ebx
-    mov ebx, cdr(eax)   ; body
+    mov edx, ebx        ; edx = (SYMBOL VALUE . BODY)
+    mov ebx, cdr(ebx)   ; ebx = (VALUE . BODY)
     call rn_pairP_procz
-    mov ebx, edx
+    jnz .error
+    mov ecx, ebx        ; ecx = (VALUE . BODY)
+    mov ebx, cdr(ebx)   ; ebx = BODY
+    call rn_pairP_procz
+    mov ebx, edx        ; ebx = (SYMBOL VALUE . BODY)
     jnz .error
     mov edx, .next
     call make_helper_continuation
-    mov ebx, car(ecx)
+    mov ebx, car(ecx)   ; ebx = VALUE
     jmp rn_eval
   .error:
     mov eax, err_invalid_argument_structure
