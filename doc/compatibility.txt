@@ -137,6 +137,7 @@ Part III - Compatibility with the host environment
     ioctl        0x36
     dup2         0x3F
     gettimeofday 0x4E
+    ipc (shmat)  0x75  (used only for AFL fuzzer instrumentation)
     rt_sigaction 0xAE
     sigaltstack  0xBA
     stat64       0xC3

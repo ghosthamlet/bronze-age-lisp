@@ -17,6 +17,7 @@
 
 app_memoize:
   .A1:
+    instrumentation_point
     mov edi, nil_tag
   .allocate_promise:
     mov ecx, 4
@@ -31,6 +32,7 @@ app_memoize:
     jmp [ebp + cont.program]
 
 primop_Slazy:
+    instrumentation_point
     test bl, 3
     jz .error
     jnp .error
@@ -48,6 +50,7 @@ primop_Slazy:
 
 app_promise_ref:
   .A1:
+    instrumentation_point
     test bl, 3
     jnz .error
     mov eax, [ebx]
@@ -62,6 +65,7 @@ app_promise_ref:
 
 app_promise_setB:
   .A2:
+    instrumentation_point
     test bl, 3
     jnz .error
     mov eax, [ebx]

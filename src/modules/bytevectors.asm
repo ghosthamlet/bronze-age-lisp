@@ -25,6 +25,7 @@ rn_nonnegative_fixint_procz:
 ;;
 app_bytevector_length:
   .A1:
+    instrumentation_point
     cmp bl, bytevector_tag
     jne .error
     call rn_get_blob_data
@@ -46,8 +47,10 @@ app_bytevector_length:
 ;;
 app_make_bytevector:
   .A1:
+    instrumentation_point
     mov ecx, fixint_value(0)
   .A2:
+    instrumentation_point
     call rn_nonnegative_fixint_procz ; LENGTH must be fixint >= 0
     jne .error
     xchg ebx, ecx                    ; EBX = FILL, ECX = LENGTH
@@ -79,6 +82,7 @@ app_make_bytevector:
 ;;
 app_bytevector_u8_ref:
   .A2:
+    instrumentation_point
     xchg ebx, ecx
     call rn_nonnegative_fixint_procz ; INDEX must be fixint >= 0
     jne .type_error
@@ -115,6 +119,7 @@ app_bytevector_u8_ref:
 ;;
 app_bytevector_u8_setB:
   .A3:
+    instrumentation_point
     xchg ebx, edx                    ; EBX = ELEMENT, EDX = BLOB
     call rn_u8P_procz
     jne .type_error
@@ -154,6 +159,7 @@ app_bytevector_u8_setB:
 ;;
 app_bytevector_copy:
   .A1:
+    instrumentation_point
     cmp bl, bytevector_tag
     jne .error
     mov esi, ebx            ; ESI := source
@@ -179,6 +185,7 @@ app_bytevector_copy:
 ;;
 app_string_Gutf8:
   .A1:
+    instrumentation_point
     cmp bl, string_tag
     jne .error
     mov esi, ebx            ; ESI := source
@@ -206,6 +213,7 @@ app_string_Gutf8:
 ;;
 app_bytevector_copy_partial:
   .A3:
+    instrumentation_point
     mov edi, symbol_value(rom_string_bytevector_copy_partial)
     mov esi, ecx
     call bytevector_copy_partial_helpers.bytevector_arg

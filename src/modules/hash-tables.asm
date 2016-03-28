@@ -62,6 +62,7 @@ app_make_hash_table:
 ;;
 app_replace_hash_tableB:
   .A2:
+    instrumentation_point
     lea edi, [ebx + 4]
     lea esi, [ecx + 4]
     mov ecx, 7
@@ -182,6 +183,7 @@ define_hash_table_getter length
 
 app_adjust_hash_table_lengthB:
   .A2:
+    instrumentation_point
     call aux_hash_table_check
     mov eax, ecx
     xor cl, 1
@@ -225,6 +227,7 @@ aux_hash_table_check:
 ;;
 app_hash_table_lookup:
   .A2:
+    instrumentation_point
     cmp [ebx], dword hash_table_header
     jne .error
     mov edi, [ebx + hash_table.hashf]
@@ -322,6 +325,7 @@ app_hash_table_lookup:
 ;;
 app_make_hash_function:
   .A1:
+    instrumentation_point
     mov eax, ebx
     xor eax, 0x80000001
     test eax, 3
@@ -410,6 +414,7 @@ app_make_hash_function:
 ;;
 app_hash:
   .A1:
+    instrumentation_point
     mov esi, app_hash ; TODO!
   .compute:
     mov ecx, 142
@@ -420,6 +425,7 @@ app_hash:
     xor esi, esi
     jmp [ebp + cont.program]
   .A2:
+    instrumentation_point
     mov al, cl
     xor al, symbol_tag
     test al, ~(symbol_tag ^ bytevector_tag)
@@ -455,6 +461,7 @@ app_hash:
 ;;
 app_hash_bytevector:
   .A2:
+    instrumentation_point
     cmp bl, bytevector_tag
     jne .error
     xchg ebx, ecx

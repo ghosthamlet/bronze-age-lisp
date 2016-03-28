@@ -2,6 +2,10 @@ TODO
 ----
 
 - add tests
+- improve AFL fuzzer support
+    - implement forkserver
+    - add instrumentation points in interpreted operatives
+    - allow the user to defined instrumentation points in lisp code
 - add ground bindings for Klisp compatibility
 - complete binary port features
 - improve unicode support

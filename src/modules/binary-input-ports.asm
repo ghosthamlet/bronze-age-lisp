@@ -12,6 +12,7 @@
 ;;
 app_open_input_bytevector:
   .A1:
+    instrumentation_point
     mov eax, ebx
     xor al, (symbol_tag & bytevector_tag)
     test al, ~(symbol_tag ^ bytevector_tag)
@@ -45,6 +46,7 @@ app_open_input_bytevector:
 
 app_open_buffered_binary_input_port:
   .A1:
+    instrumentation_point
     ;; ebx = port
     ;; ebp = continuation
     mov edx, ebx

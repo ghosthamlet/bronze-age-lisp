@@ -33,6 +33,7 @@
 ;;
 app_shared_structure_indicator:
   .A1:
+    instrumentation_point
     push ebp
     mov ebp, nil_tag
     call sh_explore

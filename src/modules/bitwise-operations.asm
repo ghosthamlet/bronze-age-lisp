@@ -16,6 +16,7 @@
 ;;
 app_integer_length:
   .A1:
+    instrumentation_point
     call rn_integerP_procz
     jnz .error
     test al, al
@@ -86,6 +87,7 @@ app_integer_length:
 ;;
 app_arithmetic_shift:
   .A2:
+    instrumentation_point
     xor edx, edx
     call rn_numberP_procz
     jnz .type_error
@@ -197,6 +199,7 @@ app_arithmetic_shift:
 ;;
 app_bitwise_not:
   .A1:
+    instrumentation_point
     call rn_integerP_procz
     jnz .type_error
     test al, al
@@ -327,17 +330,21 @@ app_bitwise_not:
 
 %macro define_bitwise_operation 3
   .A0:
+    instrumentation_point
     mov eax, fixint_value(%1)
     jmp [ebp + cont.program]
   .A1:
+    instrumentation_point
     call rn_integerP_procz
     jnz .type_error
     mov eax, ebx
     jmp [ebp + cont.program]
   .A2:
+    instrumentation_point
     call .bitop
     jmp [ebp + cont.program]
   .A3:
+    instrumentation_point
     push edx
     call .bitop
     pop edx
@@ -368,9 +375,11 @@ app_bitwise_ior:
 
 app_bitwise_xor:
   .A2:
+    instrumentation_point
     call .bitop
     jmp [ebp + cont.program]
   .A3:
+    instrumentation_point
     push edx
     call .bitop
     pop edx

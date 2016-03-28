@@ -190,6 +190,9 @@ global _start
 _start:
     mov [stack_limit], esp
     call rn_platform_init
+%if configured_afl_fuzz_instrumentation
+    call __afl_setup
+%endif
     call rn_lisp_init
     mov ebx, ground_env_object
     call rn_make_list_environment ; standard environment

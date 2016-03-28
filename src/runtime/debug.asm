@@ -540,3 +540,122 @@ rn_fatal:
     int 0x80
   .regmsg:
     db "ERROR: "
+
+;;
+;; instrumentation_point (macro)
+;;
+;; Mark the current location as an instrumentation point for the AFL fuzzer.
+;;
+
+%if configured_afl_fuzz_instrumentation
+
+%assign i_state 0x2023D60019240B75
+
+%macro instrumentation_point 0
+    ;; generate a pseudo-random number on each invocation of the macro
+    %assign i_state      (i_state * 6364136223846793005 + 1)
+    %assign i_xorshifted ((i_state >> 18) ^ i_state) >> 27
+    %assign i_rot        (i_state >> 59)
+    %assign i_hash       (i_xorshifted >> i_rot) | (i_xorshifted << ((- i_rot) & 31))
+    %assign i_index      (i_hash & (configured_afl_fuzz_map_size - 1))
+    ;; call the instrumentation routine
+    push ecx
+    push edi
+    mov ecx, i_index
+    call rn_instrumentation_point
+    pop edi
+    pop ecx
+%endmacro
+
+%else
+
+%macro instrumentation_point 0
+    ;; instrumentation disabled, do nothing
+%endmacro
+
+%endif
+
+;;
+;; rn_instrumentation_point (native procedure)
+;;
+;; Record an instrumentation point in the shared-memory map. Based on afl-as.h
+;; from the AFL distribution (http://lcamtuf.coredump.cx/afl/).
+;;
+;; preconditions:  ECX = hash representing location of the instrumentation point
+;;                 0 <= ECX < configured_afl_fuzz_map_size
+;;
+;; preserves:      EAX, EBX, EDX, ESI, EBP
+;; clobbers:       ECX, EDI, EFLAGS
+;;
+
+%if configured_afl_fuzz_instrumentation
+rn_instrumentation_point:
+    mov edi, [__afl_prev_loc]
+    xor edi, ecx
+    shr ecx, 1
+    mov [__afl_prev_loc], ecx
+    inc byte [__afl_area + edi]
+    ret
+%endif
+
+;; __afl_setup (native procedure)
+;;
+;; Initialize AFL fuzzer instrumentation. Map the shared memory segment
+;; designated by the environment variable __AFL_SHM_ID over the __afl_area.
+;;
+;; preconditions:  platform_info is initialized
+;;
+;; preserves:      EBP
+;; clobbers:       EAX, EBX, ECX, EDX, ESI, EDI, EFLAGS
+
+%if configured_afl_fuzz_instrumentation
+__afl_setup:
+    ;; find the variable in the environment
+    mov edx, [platform_info + linux.envp]
+    mov esi, [edx]
+    test esi, esi
+    jz .variable_not_found
+  .next_variable:
+    mov edi, .variable_name
+    mov ecx, .variable_name_end - .variable_name
+    cld
+    repe cmpsb
+    je .parse_variable
+    lea edx, [edx + 4]
+    mov esi, [edx]
+    test esi, esi
+    jnz .next_variable
+  .variable_not_found:
+    ret
+    ;; the environment variable contains a decimal number
+    xor ecx, ecx
+  .parse_variable:
+    movzx eax, byte [esi]
+    cmp eax, '0'
+    jb .stop_parsing
+    cmp eax, '9'
+    ja .stop_parsing
+    lea ecx, [5*ecx]
+    lea ecx, [2*ecx + eax - '0']
+    inc esi
+    jmp .parse_variable
+  .stop_parsing:
+    push eax               ; allocate place for syscall output parameter on the stack
+    mov eax, 0x75          ; sys_ipc() syscall
+    mov ebx, 0x15          ;   ebx = SHMAT IPC operation
+                           ;   ecx = id
+    mov edx, 0o040000      ;   edx = SHM_REMAP (octal 040000)
+    mov esi, esp           ;   esi = pointer to map address location = ESP
+    mov edi, __afl_area    ;   edi = requested address
+    call call_linux
+    pop eax                ; ignore error code and returned address
+    instrumentation_point  ; write something in the mapped memory early
+                           ;   so AFL knows we support it
+    ret
+  .variable_name:
+    db "__AFL_SHM_ID="
+  .variable_name_end:
+    db "__AFL_SHM_ID", 0   ; afl-fuzz searches for zero-terminated string
+                           ;   in the executable file under test
+
+%endif

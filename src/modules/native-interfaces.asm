@@ -15,6 +15,7 @@
 ;;
 app_fixed_binding_address:
   .A1:
+    instrumentation_point
     cmp bl, symbol_tag
     jne .error
     cmp ebx, (256 * (1 + private_lookup_table_length))
@@ -64,6 +65,7 @@ app_fixed_binding_address:
 ;;
 app_vector_GoperativeB:
   .A1:
+    instrumentation_point
     test ebx, 3
     jnz .invalid_argument
     mov eax, [ebx]
@@ -149,6 +151,7 @@ app_vector_GoperativeB:
 ;;
 app_operative_Gvector:
   .A1:
+    instrumentation_point
     call rn_fully_unwrap
     test ebx, 3
     jnz .error

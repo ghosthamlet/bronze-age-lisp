@@ -116,9 +116,11 @@ app_member:
 ;;
 app_append:
   .A0:
+    instrumentation_point
     mov eax, nil_tag
     jmp [ebp + cont.program]
   .A1:
+    instrumentation_point
     mov eax, ebx
     jmp [ebp + cont.program]
   .invalid_argument:
@@ -134,6 +136,7 @@ app_append:
     call rn_cons
     jmp [ebp + cont.program]
   .A2:
+    instrumentation_point
     mov esi, ebx
     mov edi, ecx
     call rn_list_metrics
@@ -180,6 +183,7 @@ app_append:
 ;;
 app_reverse:
   .A1:
+    instrumentation_point
     mov esi, ebx
     call rn_list_metrics
     test eax, eax

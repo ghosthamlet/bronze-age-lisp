@@ -6,9 +6,11 @@
 
 app_open_output_bytevector:
   .A0:
+    instrumentation_point
     mov ebx, fixint_value(configured_default_buffer_size)
     ; fallthrough
   .A1:
+    instrumentation_point
     ;; eax = closure (not used)
     ;; ebx = buffer size (tagged fixint)
     ;; edi = environment (not used)
@@ -66,6 +68,7 @@ app_open_output_bytevector:
 
 app_get_output_bytevector:
   .A1:
+    instrumentation_point
     ;; eax = closure (not used)
     ;; ebx = port object
     ;; edi = environment (not used)
@@ -96,6 +99,7 @@ app_get_output_bytevector:
 
 app_get_output_bytevector_position:
   .A1:
+    instrumentation_point
     ;; eax = closure (not used)
     ;; ebx = port object
     ;; edi = environment (not used)
@@ -120,9 +124,11 @@ app_get_output_bytevector_position:
 
 app_open_buffered_binary_output_port:
   .A1:
+    instrumentation_point
     mov ecx, fixint_value(configured_default_buffer_size)
     ; fallthrough
   .A2:
+    instrumentation_point
     ;; eax = closure (not used)
     ;; ebx = underlying port
     ;; ecx = buffer size (tagged fixint)

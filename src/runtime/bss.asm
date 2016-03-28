@@ -49,3 +49,12 @@ scratchpad_end:
 ;;
 signal_stack_base:      resb 8192
 signal_stack_limit:
+
+;; AFL fuzzer previous location and shared memory map
+;;
+%if configured_afl_fuzz_instrumentation
+__afl_prev_loc:         resd 1
+                        alignb 4096
+__afl_area:             resb (1 << configured_afl_fuzz_map_size)
+__afl_area_end:
+%endif

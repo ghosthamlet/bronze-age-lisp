@@ -5,10 +5,12 @@
 ;;;
 
 primop_SquoteX:
+    instrumentation_point
     mov eax, ebx
     jmp [ebp + cont.program]
 
 primop_Squote:
+    instrumentation_point
     test bl, 3
     jz .error
     jnp .error
@@ -29,9 +31,11 @@ app_undef:
     jmp rn_error
 
 primop_no_op:
+    instrumentation_point
     mov eax, inert_tag
     jmp [ebp + cont.program]
 
 primop_true:
+    instrumentation_point
     mov eax, boolean_value(1)
     jmp [ebp + cont.program]

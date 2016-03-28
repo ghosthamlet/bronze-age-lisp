@@ -9,6 +9,7 @@
 
 app_map:
   .A2:
+    instrumentation_point
     push ebx
     push ecx
     mov esi, symbol_value(rom_string_map)
@@ -37,6 +38,7 @@ app_map:
 
 app_for_each:
   .A2:
+    instrumentation_point
     mov esi, symbol_value(rom_string_for_each)
     call aux_check_two_argument_map
     test edx, edx

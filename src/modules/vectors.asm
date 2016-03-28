@@ -41,6 +41,7 @@ rn_vector_length:
 ;;
 app_vector_length:
   .A1:
+    instrumentation_point
     test bl, 3
     jnz .type_error
     mov eax, [ebx]
@@ -118,6 +119,7 @@ aux_vector_access:
 ;;
 app_vector_ref:
   .A2:
+    instrumentation_point
     mov edi, symbol_value(rom_string_vector_ref)
     call aux_vector_access
     mov eax, [ebx + ecx + 3]
@@ -135,6 +137,7 @@ app_vector_ref:
 ;;
 app_vector_setB:
   .A3:
+    instrumentation_point
     mov esi, edx
     mov edi, symbol_value(rom_string_vector_setB)
     call aux_vector_access
@@ -153,8 +156,10 @@ app_vector_setB:
 ;;
 app_make_vector:
   .A1:
+    instrumentation_point
     mov ecx, inert_tag
   .A2:
+    instrumentation_point
     mov edx, ecx                    ; EDX := fill value
     mov ecx, ebx                    ; ECX := tagged N
     xor cl, 1                       ; ECX := untagged 4 * N

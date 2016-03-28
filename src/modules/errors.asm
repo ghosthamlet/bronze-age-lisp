@@ -4,10 +4,12 @@
 
 app_error:
   .A0:
+    instrumentation_point
     mov eax, string_value(rom_string_error)
     mov ebx, nil_tag
     jmp .throw
   .A1:
+    instrumentation_point
     mov eax, ebx
     mov ebx, nil_tag
   .throw:
@@ -32,10 +34,13 @@ app_error:
 
 app_make_error_object:
   .A1:
+    instrumentation_point
     mov ecx, nil_tag
   .A2:
+    instrumentation_point
     mov edx, inert_tag
   .A3:
+    instrumentation_point
     cmp bl, string_tag
     jne .invalid_argument
     cmp dl, symbol_tag
@@ -63,6 +68,7 @@ app_make_error_object:
 
 app_error_object_message:
   .A1:
+    instrumentation_point
     mov esi, symbol_value(rom_string_error_object_message)
     call check_error_object
     mov eax, [ebx + error.message]
@@ -70,6 +76,7 @@ app_error_object_message:
 
 app_error_object_irritants:
   .A1:
+    instrumentation_point
     mov esi, symbol_value(rom_string_error_object_irritants)
     call check_error_object
     mov eax, [ebx + error.irritants]
@@ -77,6 +84,7 @@ app_error_object_irritants:
 
 app_error_object_source:
   .A1:
+    instrumentation_point
     mov esi, symbol_value(rom_string_error_object_source)
     call check_error_object
     mov eax, [ebx + error.source]
@@ -96,6 +104,7 @@ app_error_object_source:
 
 app_error_object_continuation:
   .A1:
+    instrumentation_point
     mov esi, symbol_value(rom_string_error_object_continuation)
     call check_error_object
     mov eax, [ebx + error.cc]
@@ -103,6 +112,7 @@ app_error_object_continuation:
 
 app_error_object_environment:
   .A1:
+    instrumentation_point
     mov esi, symbol_value(rom_string_error_object_environment)
     call check_error_object
     mov eax, [ebx + error.env]
@@ -122,6 +132,7 @@ check_error_object:
 
 app_guess_object_name:
   .A2:
+    instrumentation_point
     push ebx
     call rn_guess_name
     pop ebx
@@ -147,6 +158,7 @@ app_deconstruct_environment:
     mov ecx, symbol_value(rom_string_deconstruct_environment)
     jmp rn_error
   .A1:
+    instrumentation_point
     test bl, 3
     jnz .error
     cmp byte [ebx], environment_header(0)

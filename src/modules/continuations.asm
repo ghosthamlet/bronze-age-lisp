@@ -4,6 +4,7 @@
 
 app_apply_continuation:
   .A2:
+    instrumentation_point
     ;; ebx = continuation
     ;; ecx = argument
     ;; ebp = current continuation
@@ -27,6 +28,7 @@ app_apply_continuation:
 ;;                 EDI = dynamic environment
 ;;                 EBP = current continuation
 primop_Slet_cc:
+    instrumentation_point
     call rn_pairP_procz
     jnz .error
     mov edx, car(ebx)
@@ -64,6 +66,7 @@ primop_Slet_cc:
 ;;
 app_guard_continuation:
   .A3:
+    instrumentation_point
     mov esi, symbol_value(rom_string_guard_continuation)
     test cl, 3
     jnz .error
@@ -99,6 +102,7 @@ app_guard_continuation:
 ;;
 app_guard_dynamic_extent:
   .A3:
+    instrumentation_point
     mov esi, symbol_value(rom_string_guard_dynamic_extent)
     push ebx
     mov ebx, ecx
@@ -266,8 +270,10 @@ make_guard_continuation:
 ;;
 app_exit:
   .A0:
+    instrumentation_point
     mov ebx, inert_tag
   .A1:
+    instrumentation_point
     mov ecx, ebx
     mov ebx, root_continuation
     jmp rn_apply_continuation
@@ -279,12 +285,14 @@ app_exit:
 ;;
 app_extend_continuation:
   .A2:
+    instrumentation_point
     push ebx
     mov ebx, empty_env_object
     call rn_make_list_environment
     mov edx, eax
     pop ebx
   .A3:
+    instrumentation_point
     test bl, 3
     jnz .error
     mov eax, [ebx]
@@ -331,6 +339,7 @@ app_extend_continuation:
 ;;
 app_continuation_Gapplicative:
   .A1:
+    instrumentation_point
     test bl, 3
     jnz .error
     mov eax, [ebx]

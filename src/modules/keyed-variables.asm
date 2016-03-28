@@ -17,6 +17,7 @@
 ;;
 app_make_keyed_dynamic_variableX:
   .A1:
+    instrumentation_point
     ;; allocate memory for accessor and binder
     mov ecx, 16
     call rn_allocate
@@ -58,11 +59,13 @@ app_make_keyed_dynamic_variableX:
 
 app_make_keyed_dynamic_variable:
   .A0:
+    instrumentation_point
     mov ebx, unbound_tag
     jmp app_make_keyed_dynamic_variableX.A1
 
 app_access_dynamic_variable:
   .A0:
+    instrumentation_point
      mov eax, [esi + operative.var1]
      cmp eax, unbound_tag
      je .unbound
@@ -75,6 +78,7 @@ app_access_dynamic_variable:
 
 app_bind_dynamic_variable:
   .A2:
+    instrumentation_point
     cmp cl, primitive_tag
     je .ok
     test cl, 3
@@ -173,6 +177,7 @@ app_bind_dynamic_variable:
 ;;
 app_make_keyed_static_variable:
   .A0:
+    instrumentation_point
     ;; allocate memory for accessor and binder
     mov ecx, 14
     call rn_allocate
@@ -212,6 +217,7 @@ app_make_keyed_static_variable:
 
 app_access_static_variable:
   .A0:
+    instrumentation_point
     mov ebx, eax                   ; use the operative as the key
     push .unbound_variable         ; jump there if lookup fails
     push edi                       ; save original environment
@@ -231,6 +237,7 @@ app_access_static_variable:
 
 app_bind_static_variable:
   .A2:
+    instrumentation_point
     xchg ebx, ecx                      ; use EBX (for error reporting)
     test bl, 3
     jnz .error

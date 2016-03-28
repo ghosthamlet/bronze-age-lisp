@@ -15,6 +15,7 @@
 ;;
 app_cons:
   .A2:
+    instrumentation_point
     push ebx
     push ecx
     call rn_cons
@@ -75,6 +76,7 @@ app_cXr:
 ;;
 app_list_tail:
   .A2:
+    instrumentation_point
     mov esi, symbol_value(rom_string_list_tail)
     call list_tail_helper
     mov eax, ebx
@@ -82,6 +84,7 @@ app_list_tail:
 
 app_list_ref:
   .A2:
+    instrumentation_point
     mov esi, symbol_value(rom_string_list_ref)
     call list_tail_helper
     test bl, 3
@@ -127,6 +130,7 @@ list_tail_helper:
 ;;
 app_set_carB:
   .A2:
+    instrumentation_point
     mov  edx, ecx
     mov  ecx, symbol_value(rom_string_set_carB)
     mov  eax, ebx
@@ -149,6 +153,7 @@ app_set_carB:
 
 app_set_cdrB:
   .A2:
+    instrumentation_point
     mov  edx, ecx
     mov  ecx, symbol_value(rom_string_set_cdrB)
     mov  eax, ebx
@@ -170,6 +175,7 @@ app_set_cdrB:
 ;;                 EBP = continuation
 app_encycleB:
   .A3:
+    instrumentation_point
     mov esi, symbol_value(rom_string_encycleB)
     mov eax, ecx
     xor eax, 1
@@ -207,6 +213,7 @@ app_encycleB:
 ;;
 app_get_list_metrics:
   .A1:
+    instrumentation_point
     call rn_list_metrics
     mov ebx, fixint_value(0)
     test eax, eax
@@ -246,6 +253,7 @@ app_get_list_metrics:
 ;;
 app_length:
   .A1:
+    instrumentation_point
     call rn_list_metrics
     test ecx, ecx
     jnz .cyclic
@@ -262,6 +270,7 @@ app_length:
 ;;
 app_copy_es_immutable:
   .A1:
+    instrumentation_point
     call rn_copy_es_immutable
     jmp [ebp + cont.program]
 
@@ -273,14 +282,17 @@ app_copy_es_immutable:
 ;;
 app_list:
   .A0:
+    instrumentation_point
     mov eax, nil_tag
     jmp [ebp + cont.program]
   .A1:
+    instrumentation_point
     push ebx
     push dword nil_tag
     call rn_cons
     jmp [ebp + cont.program]
   .A2:
+    instrumentation_point
     push ecx
     push dword nil_tag
     call rn_cons
@@ -289,6 +301,7 @@ app_list:
     call rn_cons
     jmp [ebp + cont.program]
   .A3:
+    instrumentation_point
     push edx
     push dword nil_tag
     call rn_cons
@@ -339,14 +352,17 @@ app_listX:
     mov ecx, symbol_value(rom_string_listX)
     jmp rn_error
   .A1:
+    instrumentation_point
     mov eax, ebx
     jmp [ebp + cont.program]
   .A2:
+    instrumentation_point
     push ebx
     push ecx
     call rn_cons
     jmp [ebp + cont.program]
   .A3:
+    instrumentation_point
     push ecx
     push edx
     call rn_cons

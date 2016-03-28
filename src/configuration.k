@@ -68,6 +68,11 @@
   ($param performance-statistics #t
     "Enable measurement of execution time.")
 
+  ($param afl-fuzz-instrumentation #f
+    "Enable AFL fuzzer support.")
+  ($param afl-fuzz-map-size 65536
+    "Shared memory map size for the AFL fuzzer (as configured in afl-fuzz).")
+
   ($param asm-prefix ""
     "Path to assembler sources of the interpreter (relative to working directory of NASM)")
   ($param src-prefix ""
@@ -125,4 +130,7 @@
       ($when ($configured reader-and-printer)
         ($unless ($configured character-predicates)
           (error "reader depends on character predicates")))
+      ($when ($configured afl-fuzz-instrumentation)
+        ($unless (power-of-two? ($configured afl-fuzz-map-size))
+          (error "afl-fuzz-map-size must be power of two")))
 )))

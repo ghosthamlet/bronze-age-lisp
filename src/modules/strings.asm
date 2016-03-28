@@ -15,6 +15,7 @@
 ;;
 app_string_size:
   .A1:
+    instrumentation_point
     cmp bl, string_tag
     jne .error
     call rn_get_blob_data
@@ -41,6 +42,7 @@ app_string_size:
 ;;
 app_string_length:
   .A1:
+    instrumentation_point
     cmp bl, string_tag
     jne .error
     call rn_get_blob_data
@@ -77,6 +79,7 @@ app_string_length:
 ;;
 app_string_ref:
   .A2:
+    instrumentation_point
     mov esi, ebx             ; ESI := string
     mov edi, ecx             ; EDI := index (tagged fixint)
     cmp bl, string_tag
@@ -132,11 +135,13 @@ app_string_ref:
 ;;
 app_string_append:
   .A0:
+    instrumentation_point
     mov eax, string_value(rom_empty_string)
     jmp [ebp + cont.program]
   .O1:
     mov ebx, car(esi)
   .A1:
+    instrumentation_point
     cmp bl, string_tag
     jne .type_error
     mov eax, ebx

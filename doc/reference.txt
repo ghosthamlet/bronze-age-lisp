@@ -1475,3 +1475,13 @@ Part III - Build Configuration
 
   stdio = #t
     Enable ports and standard input/output/error ports.
+
+  afl-fuzz-instrumentation = #f
+    Enable American Fuzzy Lop (http://lcamtuf.coredump.cx/afl/) fuzzer\
+    support. This option inserts instrumentation points in the built-in
+    operatives. The fork server is not implemented (run afl-fuzz with the
+    enviroment variable AFL_NO_FORKSRV set).
+
+  afl-fuzz-map-size = 65536
+    Shared memory map size for the AFL fuzzer. The value must be equal
+    to MAP_SIZE defined in afl's config.h.

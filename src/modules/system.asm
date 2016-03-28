@@ -6,17 +6,20 @@
 
 app_get_interpreter_arguments:
   .A0:
+    instrumentation_point
     call rn_interpreter_arguments
     jmp [ebp + cont.program]
 
 app_rdtsc:
   .A0:
+    instrumentation_point
     rdtsc
     call rn_u64_to_bigint
     jmp [ebp + cont.program]
 
 app_get_current_second:
   .A0:
+    instrumentation_point
     sub esp, 8         ; sizeof(struct timeval)
     mov eax, 0x4E      ; gettimeofday linux syscall
     mov ebx, esp       ; 1st arg = address of struct timeval
@@ -30,6 +33,7 @@ app_get_current_second:
 
 app_get_current_jiffy:
   .A0:
+    instrumentation_point
     sub esp, 8         ; sizeof(struct timeval)
     mov eax, 0x4E      ; gettimeofday linux syscall
     mov ebx, esp       ; 1st arg = address of struct timeval
@@ -46,6 +50,7 @@ app_get_current_jiffy:
 
 app_get_jiffies_per_second:
   .A0:
+    instrumentation_point
     mov eax, fixint_value(1000000)
     jmp [ebp + cont.program]
 
@@ -71,6 +76,7 @@ pred_file_exists:
 
 app_delete_file:
   .A1:
+    instrumentation_point
     cmp bl, string_tag
     jne .type_error
     call rn_blob_to_blobz
@@ -106,6 +112,7 @@ op_init_environ:
 
 app_collect_garbage:
   .A0:
+    instrumentation_point
     xor eax, eax
     xor ebx, ebx
     xor ecx, ecx
@@ -121,6 +128,7 @@ app_collect_garbage:
 %if (configured_performance_statistics == 1)
 app_perf_time:
   .A1:
+    instrumentation_point
     mov eax, ebx
     xor al, 1
     test al, 3

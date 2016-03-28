@@ -6,6 +6,7 @@
 
 app_make_library_object:
   .A1:
+    instrumentation_point
     mov ecx, 2
     call rn_allocate
     mov [eax + library.header], dword library_header
@@ -14,6 +15,7 @@ app_make_library_object:
 
 app_get_library_export_list:
   .A1:
+    instrumentation_point
     test bl, 3
     jnz .error
     cmp [ebx], dword library_header
@@ -40,6 +42,7 @@ app_get_library_export_list:
 
 app_get_library_environment:
   .A1:
+    instrumentation_point
     test bl, 3
     jnz .error
     cmp [ebx], dword library_header

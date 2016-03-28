@@ -14,6 +14,7 @@
 ;;
 app_negate:
   .A1:
+    instrumentation_point
     call rn_numberP_procz
     jne .error
     cmp al, 1
@@ -85,17 +86,21 @@ reduce_finite_list:
 ;;
 app_min_max:
   .A0:
+    instrumentation_point
     mov eax, [esi + operative.var1]
     jmp [ebp + cont.program]
   .A1:
+    instrumentation_point
     call rn_numberP_procz
     jnz .type_error
     mov eax, ebx
     jmp [ebp + cont.program]
   .A2:
+    instrumentation_point
     call dword [esi + operative.var0]
     jmp [ebp + cont.program]
   .A3:
+    instrumentation_point
     push edx
     call dword [esi + operative.var0]
     pop edx
@@ -144,17 +149,21 @@ app_min_max:
 ;;
 app_plus:
   .A0:
+    instrumentation_point
     mov eax, fixint_value(0)
     jmp [ebp + cont.program]
   .A1:
+    instrumentation_point
     call rn_numberP_procz
     jnz .type_error
     mov eax, ebx
     jmp [ebp + cont.program]
   .A2:
+    instrumentation_point
     call .add_two_numbers
     jmp [ebp + cont.program]
   .A3:
+    instrumentation_point
     push edx
     call .add_two_numbers
     pop edx
@@ -222,9 +231,11 @@ app_plus:
 ;;
 app_minus:
   .A2:
+    instrumentation_point
     call .subtract_two_numbers
     jmp [ebp + cont.program]
   .A3:
+    instrumentation_point
     push edx
     call .subtract_two_numbers
     pop edx
@@ -282,17 +293,21 @@ app_minus:
 ;;
 app_times:
   .A0:
+    instrumentation_point
     mov eax, fixint_value(1)
     jmp [ebp + cont.program]
   .A1:
+    instrumentation_point
     call rn_numberP_procz
     jnz .type_error
     mov eax, ebx
     jmp [ebp + cont.program]
   .A2:
+    instrumentation_point
     call .multiply_two_numbers
     jmp [ebp + cont.program]
   .A3:
+    instrumentation_point
     push edx
     call .multiply_two_numbers
     pop edx
@@ -367,6 +382,7 @@ app_times:
 ;; TODO: bigints
 app_div:
   .A2:
+    instrumentation_point
     call check_div_args
     jz .big
   .fix:
@@ -402,6 +418,7 @@ app_div:
 
 app_mod:
   .A2:
+    instrumentation_point
     call check_div_args
     jz .big
     sar ebx, 2
@@ -420,6 +437,7 @@ app_mod:
 
 app_div_and_mod:
   .A2:
+    instrumentation_point
     call check_div_args
     jz .big
   .fixint:

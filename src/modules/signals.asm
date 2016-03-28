@@ -16,6 +16,7 @@
 ;;
 app_signal_setup:
   .A2:
+    instrumentation_point
     mov eax, ebx
     xor al, 3
     test al, 1

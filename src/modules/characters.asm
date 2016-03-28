@@ -1,6 +1,7 @@
 
 app_char_Ginteger:
   .A1:
+    instrumentation_point
     ;; ebx = argument
     ;; ebp = continuation
     cmp bl, char_tag
@@ -16,6 +17,7 @@ app_char_Ginteger:
 
 app_integer_Gchar:
   .A1:
+    instrumentation_point
     mov ecx, symbol_value(rom_string_integer_Gchar)
     ;; ebx = argument
     ;; ebp = continuation
@@ -57,10 +59,12 @@ app_integer_Gchar:
 
 app_char_digitP:
   .A1:
+    instrumentation_point
     mov esi, symbol_value(rom_string_char_digitP)
     mov ecx, fixint_value(10)
     jmp .start
   .A2:
+    instrumentation_point
     mov esi, symbol_value(rom_string_char_digitP)
     call char_digit_error.check_base
   .start:
@@ -79,10 +83,12 @@ app_char_digitP:
 
 app_char_Gdigit:
   .A1:
+    instrumentation_point
     mov esi, symbol_value(rom_string_char_Gdigit)
     mov ecx, fixint_value(10)
     jmp .start
   .A2:
+    instrumentation_point
     mov esi, symbol_value(rom_string_char_Gdigit)
     call char_digit_error.check_base
   .start:
@@ -148,8 +154,10 @@ char_digit_aux:
 
 app_digit_Gchar:
   .A1:
+    instrumentation_point
     mov ecx, fixint_value(10)
   .A2:
+    instrumentation_point
     mov esi, symbol_value(rom_string_digit_Gchar)
     call char_digit_error.check_base
     mov eax, ebx

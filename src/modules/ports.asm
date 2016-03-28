@@ -55,12 +55,14 @@ check_port_type:
 
 app_read_typed:
   .A0:
+    instrumentation_point
     ;; eax = closure (var2 = name, var3 = port tag, var4 = method index)
     ;; edi = dynamic environment (not used)
     ;; ebp = continuation
     mov ebx, private_binding(rom_string_stdin)
     ; fallthrough
   .A1:
+    instrumentation_point
     ;; eax = closure (var0 = name, var1 = port tag, var2 = method index)
     ;; ebx = port object
     ;; edi = dynamic environment (not used)
@@ -75,6 +77,7 @@ app_read_typed:
 
 app_write_typed:
   .A1:
+    instrumentation_point
     ;; ebx = argument (char / string / bytevector)
     ;; esi = closure (var2 = name, var3 = port tag, var4 = object tag)
     ;; edi = dynamic environment (not used)
@@ -82,6 +85,7 @@ app_write_typed:
     mov ecx, private_binding(rom_string_stdout)
     ; fallthrough
   .A2:
+    instrumentation_point
     ;; ebx = argument
     ;; ecx = port object
     ;; esi = closure (var0 = name, var1 = port tag, var2 = object tag)
@@ -113,9 +117,11 @@ app_write_typed:
 ;;
 app_write_u8:
   .A1:
+    instrumentation_point
     mov ecx, private_binding(rom_string_stdout)
     ; fallthrough
   .A2:
+    instrumentation_point
     call rn_u8P_procz
     jnz .invalid_argument
     xchg ebx, ecx
@@ -133,12 +139,14 @@ app_write_u8:
 
 app_flush_output_port:
   .A0:
+    instrumentation_point
     ;; ebx = argument (output port object)
     ;; esi = closure (not used)
     ;; edi = dynamic environment (not used)
     ;; ebp = continuation
     mov ebx, private_binding(rom_string_stdout)
   .A1:
+    instrumentation_point
     mov edx, eax
     test bl, 3
     jnz .invalid_port
@@ -157,6 +165,7 @@ app_flush_output_port:
 
 app_close_typed:
   .A1:
+    instrumentation_point
     ;; EBX = port object
     ;; ESI = unwrapped applicative closure
     ;;  .var1 = applicative name
@@ -185,6 +194,7 @@ app_close_typed:
 
 app_open_raw_input_file:
   .A1:
+    instrumentation_point
     ;; ebx = name
     cmp bl, string_tag
     jne .error
@@ -206,6 +216,7 @@ app_open_raw_input_file:
 
 app_open_raw_output_file:
   .A1:
+    instrumentation_point
     ;; ebx = name
     cmp bl, string_tag
     jne .error
@@ -306,6 +317,7 @@ get_linux_port:
 ;;
 app_dup2:
   .A2:
+    instrumentation_point
     mov esi, symbol_value(rom_string_dup2)
     mov edi, ecx              ; EDI := 2nd arg
     call .get_fd              ; EBX := 1st fd
@@ -492,6 +504,7 @@ pred_terminal_port:
 ;;
 app_tcgetattr:
   .A1:
+    instrumentation_point
     mov ecx, symbol_value(rom_string_tcgetattr)
     call get_linux_port
     jne .error
@@ -504,6 +517,7 @@ app_tcgetattr:
 
 app_tcsetattr:
   .A2:
+    instrumentation_point
     mov edx, ecx
     mov ecx, symbol_value(rom_string_tcsetattr)
     cmp dl, bytevector_tag
@@ -521,6 +535,7 @@ app_tcsetattr:
 
 app_tc_cbreak_noecho:
   .A1:
+    instrumentation_point
     mov ecx, symbol_value(rom_string_tc_cbreak_noecho)
     cmp bl, bytevector_tag
     jne .type_error
@@ -545,8 +560,10 @@ app_tc_cbreak_noecho:
 ;;
 app_char_readyP:
   .A0:
+    instrumentation_point
     mov ebx, private_binding(rom_string_stdin)
   .A1:
+    instrumentation_point
     mov ecx, symbol_value(rom_string_char_readyP)
     mov esi, ebx
     call get_linux_port

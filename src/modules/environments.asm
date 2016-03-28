@@ -14,6 +14,7 @@
 ;;                 EBP = continuation
 ;;
 primop_SdefineB:
+    instrumentation_point
     call rn_list_metrics
     test al, al
     jz .error
@@ -62,6 +63,7 @@ primop_SdefineB:
 ;;                 EBP = continuation
 ;;
 primop_SsetB:
+    instrumentation_point
     call rn_list_metrics
     test al, al
     jz .arg_error
@@ -140,6 +142,7 @@ primop_SsetB:
 ;;
 app_setB:
   .A3:
+    instrumentation_point
     test bl, 3
     jnz .type_error
     mov eax, [ebx]
@@ -177,6 +180,7 @@ app_setB:
 ;;                 EBP = continuation
 ;;
 primop_Slet1:
+    instrumentation_point
     call rn_pairP_procz
     jnz .error
     mov eax, car(ebx)   ; eax = symbol
@@ -301,6 +305,7 @@ aux_map_car_cadr:
 ;;                 EBP = continuation
 ;;
 primop_Sletrec:
+    instrumentation_point
     mov esi, ebx                  ; ESI = (BINDINGS . BODY)
     mov eax, edi                  ; capture the dynamic
     call rn_capture               ;   environment
@@ -313,6 +318,7 @@ primop_Sletrec:
     jmp aux_let_common
 
 primop_Slet:
+    instrumentation_point
     mov esi, ebx                  ; ESI = (BINDINGS . BODY)
     mov eax, edi                  ; capture the dynamic
     call rn_capture               ;    environment
@@ -325,6 +331,7 @@ primop_Slet:
     jmp aux_let_common
 
 primop_Slet_safe:
+    instrumentation_point
     mov esi, ebx                  ; ESI = (BINDINGS . BODY)
     mov ebx, ground_env_object    ; create new standard
     call rn_make_list_environment ;   environment
@@ -344,6 +351,7 @@ primop_Slet_safe:
 ;;                 EBP = continuation
 ;;
 primop_Slet_redirect:
+    instrumentation_point
     test bl, 3
     jz .invalid_structure
     jnp .invalid_structure
@@ -473,6 +481,7 @@ aux_let_common:
 ;;                 EBP = continuation
 ;;
 primop_SletX:
+    instrumentation_point
     test bl, 3                    ; check argument list
     jz .invalid_structure
     jnp .invalid_structure
@@ -576,6 +585,7 @@ primop_SletX:
 ;;
 app_get_current_environment:
   .A0:
+    instrumentation_point
     mov eax, edi
     call rn_capture
     jmp [ebp + cont.program]
@@ -591,6 +601,7 @@ app_get_current_environment:
 ;;
 app_make_kernel_standard_environment:
   .A0:
+    instrumentation_point
     mov ebx, ground_env_object
     call rn_make_list_environment
     jmp [ebp + cont.program]
@@ -611,10 +622,12 @@ app_make_kernel_standard_environment:
 ;;
 app_make_environment:
   .A0:
+    instrumentation_point
     mov ebx, empty_env_object
     call rn_make_list_environment
     jmp [ebp + cont.program]
   .A1:
+    instrumentation_point
     test bl, 3
     jnz .type_error
     mov eax, [ebx]
@@ -623,6 +636,7 @@ app_make_environment:
     call rn_make_list_environment
     jmp [ebp + cont.program]
   .A2:
+    instrumentation_point
     test bl, 3
     jnz .type_error
     test cl, 3
@@ -688,6 +702,7 @@ app_make_environment:
 ;;
 app_eval:
   .A2:
+    instrumentation_point
     test cl, 3
     jnz .type_error
     mov eax, [ecx]
@@ -714,6 +729,7 @@ app_eval:
 ;;
 app_eval_sequence:
   .A2:
+    instrumentation_point
     test cl, 3
     jnz .type_error
     cmp [ecx], byte environment_header(0)
@@ -736,6 +752,7 @@ app_eval_sequence:
 ;;                 EBP = continuation
 ;;
 primop_SbindsP:
+    instrumentation_point
     test bl, 3
     jz .structure_error
     jnp .structure_error

@@ -8,6 +8,7 @@
 
 app_make_encapsulation_type:
   .A0:
+    instrumentation_point
     ;; create class object
     mov eax, inert_tag
     push eax
@@ -72,6 +73,7 @@ app_make_encapsulation_type:
 ;;
 app_encapsulate:
   .A1:
+    instrumentation_point
     mov edi, [esi + operative.var1]
     mov ecx, 4
     call rn_allocate
@@ -88,6 +90,7 @@ app_encapsulate:
 ;;
 app_decapsulate:
   .A1:
+    instrumentation_point
     test bl, 3
     jnz .type_error
     mov eax, [ebx]

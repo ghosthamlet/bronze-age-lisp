@@ -19,9 +19,11 @@
 ;;
 op_immediate_type_predicate:
   .A0:
+    instrumentation_point
     mov eax, boolean_value(1)
     jmp [ebp + cont.program]
   .A1:
+    instrumentation_point
     mov edx, [eax + operative.var0]
     shr edx, 2
     mov esi, [eax + operative.var1]
@@ -74,9 +76,11 @@ op_immediate_type_predicate:
 ;;
 op_header_type_predicate:
   .A0:
+    instrumentation_point
     mov eax, boolean_value(1)
     jmp [ebp + cont.program]
   .A1:
+    instrumentation_point
     test bl, 3
     jnz .no
     mov ecx, [ebx]
@@ -138,9 +142,11 @@ op_header_type_predicate:
 ;;
 op_native_type_predicate:
   .A0:
+    instrumentation_point
     mov eax, boolean_value(1)
     jmp [ebp + cont.program]
   .A1:
+    instrumentation_point
     mov eax, ebx
     call [esi + operative.var1]
     and eax, 0x000000FF
@@ -378,15 +384,19 @@ pred_ptree:
 ;;
 op_relational_predicate:
   .A0:
+    instrumentation_point
   .A1:
+    instrumentation_point
     mov eax, boolean_value(1)
     jmp [ebp + cont.program]
   .A2:
+    instrumentation_point
     call [esi + operative.var1]
     mov ah, al
     mov al, boolean_tag
     jmp [ebp + cont.program]
   .A3:
+    instrumentation_point
     call [esi + operative.var1]
     mov ebx, ecx
     mov ecx, edx

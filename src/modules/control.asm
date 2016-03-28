@@ -9,6 +9,7 @@
 %macro define_when_unless 3
     align 4
 primop_%1:
+    instrumentation_point
     pair_nil_cases
   .case.nil:
     mov eax, err_invalid_argument_structure
@@ -41,6 +42,7 @@ define_when_unless Sunless, false, true
 
     align 4
 primop_Sif:
+    instrumentation_point
     ; ebx = argument list
     ; edi = environment
     ; ebp = return
@@ -81,6 +83,7 @@ primop_Sif:
 
     align 4
 primop_Scond:
+    instrumentation_point
     ; ebx = argument list
     ; edi = environment
     ; ebp = return
@@ -132,6 +135,7 @@ primop_Scond:
 ;; Implementation of ($match EXPR (PTREE1 . BODY1) ...).
 ;;
 primop_Smatch:
+    instrumentation_point
     call rn_pairP_procz
     jnz .invalid_argument_structure
     mov esi, ebx
@@ -197,6 +201,7 @@ primop_Smatch:
 ;; the structure of clauses is NOT checked.
 ;;
 primop_Smatch_unsafe:
+    instrumentation_point
     push dword car(ebx)
     mov ebx, cdr(ebx)             ; EBX := list of clauses
     mov esi, ebx                  ; ESI := list of clauses

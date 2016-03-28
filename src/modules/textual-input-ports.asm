@@ -6,6 +6,7 @@
 
 app_open_input_string:
   .A1:
+    instrumentation_point
     ;; ebx = input string/symbol/keyword/bytevector
     ;; ebp = continuation
     mov eax, ebx
@@ -73,6 +74,7 @@ app_open_input_string:
 
 app_open_utf_decoder:
   .A1:
+    instrumentation_point
     ;; ebx = port
     ;; ebp = continuation
     mov edx, ebx
@@ -233,8 +235,10 @@ txt_in_update_position:
 
 app_get_textual_input_position:
   .A0:
+    instrumentation_point
     mov ebx, private_binding(rom_string_stdin)
   .A1:
+    instrumentation_point
     test bl, 3
     jnz .type_error
     mov eax, [ebx + txt_in.header]

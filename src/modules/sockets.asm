@@ -6,6 +6,7 @@
 
 app_integer_Gsocket:
   .A1:
+    instrumentation_point
     ;; ebx = file descriptor (tagged integer)
     call rn_fixintP_procz
     jnz socket_type_error
@@ -16,6 +17,7 @@ app_integer_Gsocket:
 
 app_socket_fd:
   .A1:
+    instrumentation_point
     ;; ebx = socket (tagged)
     mov esi, symbol_value(rom_string_socket_fd)
     cmp bl, socket_tag
@@ -27,6 +29,7 @@ app_socket_fd:
 
 app_socket:
   .A3:
+    instrumentation_point
     mov esi, symbol_value(rom_string_socket)
     ;; ebx = domain (fixint)
     ;; ecx = type (fixint)
@@ -60,6 +63,7 @@ socket_type_error:
 
 app_bind:
   .A2:
+    instrumentation_point
     mov esi, symbol_value(rom_string_bind)
     call socket_prepare_sockaddr
     mov ebx, 2                       ; SYS_BIND
@@ -69,6 +73,7 @@ app_bind:
 
 app_connect:
   .A2:
+    instrumentation_point
     mov esi, symbol_value(rom_string_connect)
     call socket_prepare_sockaddr
     mov ebx, 3                       ; SYS_CONNECT
@@ -78,6 +83,7 @@ app_connect:
 
 app_listen:
   .A2:
+    instrumentation_point
     ;; ebx = socket (tagged)
     ;; ecx = backlog (fixint)
     mov esi, symbol_value(rom_string_listen)
@@ -99,6 +105,7 @@ app_listen:
 
 app_accept:
   .A1:
+    instrumentation_point
     mov esi, symbol_value(rom_string_accept)
     cmp bl, socket_tag
     jne socket_type_error
@@ -157,8 +164,10 @@ app_setsockopt:
 
 app_sendto:
   .A2:
+    instrumentation_point
     mov edx, fixint_value(0);
   .A3:
+    instrumentation_point
     mov edi, inert_tag
   .check:
     mov esi, symbol_value(rom_string_sendto)
@@ -238,10 +247,13 @@ app_sendto:
 
 app_recvfrom:
   .A1:
+    instrumentation_point
     mov ecx, fixint_value(0)
   .A2:
+    instrumentation_point
     mov edx, fixint_value(8192)
   .A3:
+    instrumentation_point
     mov esi, symbol_value(rom_string_recvfrom)
     ;; sockfd
     cmp bl, socket_tag
@@ -377,6 +389,7 @@ linux_socketcall:
 
 app_socket_raw_input_port:
   .A1:
+    instrumentation_point
     mov esi, symbol_value(rom_string_socket_raw_input_port)
     call socket_tag_fd
     mov ecx, 6
@@ -391,6 +404,7 @@ app_socket_raw_input_port:
 
 app_socket_raw_output_port:
   .A1:
+    instrumentation_point
     mov esi, symbol_value(rom_string_socket_raw_output_port)
     call socket_tag_fd
     mov ecx, 6
@@ -413,6 +427,7 @@ socket_tag_fd:
 
 app_close_socket:
   .A1:
+    instrumentation_point
     mov esi, symbol_value(rom_string_close_socket)
     cmp bl, socket_tag
     jne socket_type_error

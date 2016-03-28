@@ -36,8 +36,10 @@
 ;;
 app_fork:
   .A1:
+    instrumentation_point
     mov ecx, ebp
   .A2:
+    instrumentation_point
     test bl, 3
     jnz .type_error
     mov eax, [ebx]
@@ -84,6 +86,7 @@ app_fork:
 ;;
 app_getpid:
   .A0:
+    instrumentation_point
     mov eax, 0x14            ; getpid()
     call call_linux
     test eax, eax
@@ -121,13 +124,16 @@ app_execve:
     mov ecx, symbol_value(rom_string_execve)
     jmp rn_error
   .A1:
+    instrumentation_point
     push ebx
     push dword nil_tag
     call rn_cons
     mov ecx, eax
   .A2:
+    instrumentation_point
     mov edx, keyword_value(rom_string_inherit)
   .A3:
+    instrumentation_point
     push ebx                 ; [EDI + 8] = PROGRAM
     push ecx                 ; [EDI + 4] = ARG list
     push edx                 ; [EDI + 0] = ENV list
@@ -240,10 +246,13 @@ aux_build_argv:
 ;;
 app_waitpid:
   .A0:
+    instrumentation_point
     mov ebx, ignore_tag
   .A1:
+    instrumentation_point
     mov ecx, nil_tag
   .A2:
+    instrumentation_point
     call .compute_pid
     call .compute_options
     push dword 0
@@ -354,11 +363,13 @@ app_open_raw_pipe:
     mov ecx, symbol_value(rom_string_open_raw_pipe)
     jmp rn_error
   .A1:
+    instrumentation_point
     cmp ebx, keyword_value(rom_string_no_cloexec)
     jne .invalid_argument
     xor ecx, ecx
     jmp .system_call
   .A0:
+    instrumentation_point
     mov ecx, O_CLOEXEC
   .system_call:
     mov eax, 0x14B        ; pipe2() linux system call

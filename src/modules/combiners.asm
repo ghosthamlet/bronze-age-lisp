@@ -14,6 +14,7 @@
 ;;                EBP = current continuation
 ;;
 primop_Svau:
+    instrumentation_point
     mov edx, ebx                           ; edx := (F E . B)
     jump_if_not_pair dl, .structure_error
     mov ebx, car(edx)                      ; ebx := F
@@ -50,6 +51,7 @@ primop_Svau:
 ;;                EBP = current continuation
 ;;
 primop_Slambda:
+    instrumentation_point
     mov edx, ebx                           ; edx := (F . B)
     jump_if_not_pair dl, .structure_error
     mov ebx, car(edx)                      ; ebx := F
@@ -140,6 +142,7 @@ try_simple_lambda:
 
 app_wrap:
   .A1:
+    instrumentation_point
     ;; eax = closure (not used)
     ;; ebx = argument (combiner)
     ;; edi = environment (not used)
@@ -163,6 +166,7 @@ app_wrap:
 
 app_unwrap:
   .A1:
+    instrumentation_point
     ;; eax = closure (not used)
     ;; ebx = argument (applicative)
     ;; edi = environment (not used)
@@ -193,6 +197,7 @@ app_unwrap:
 ;;
 app_apply:
   .A2:
+    instrumentation_point
     test bl, 3
     jnz .error
     mov eax, [ebx]
@@ -206,6 +211,7 @@ app_apply:
     mov ebx, ecx
     jmp rn_combine
   .A3:
+    instrumentation_point
     test bl, 3
     jnz .error
     mov eax, [ebx]

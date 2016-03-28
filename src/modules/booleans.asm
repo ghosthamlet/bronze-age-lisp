@@ -7,6 +7,7 @@
 %macro define_Sand_Sor 3
     align 4
 primop_%1:
+    instrumentation_point
     ;; ebx = argument list
     ;; edi = environment
     ;; ebp = continuation
@@ -52,6 +53,7 @@ define_Sand_Sor SorP, 1, 0
 
 app_notP:
   .A1:
+    instrumentation_point
     cmp bl, boolean_tag
     jne .error
     mov eax, ebx
@@ -65,14 +67,17 @@ app_notP:
 %macro define_and_or 2
 app_%1P:
   .A0:
+    instrumentation_point
     mov eax, boolean_value(%2)
     jmp [ebp + cont.program]
   .A1:
+    instrumentation_point
     cmp bl, boolean_tag
     jne .invalid_argument
     mov eax, ebx
     jmp [ebp + cont.program]
   .A2:
+    instrumentation_point
     cmp bl, boolean_tag
     jne .invalid_argument
     cmp cl, boolean_tag
@@ -81,6 +86,7 @@ app_%1P:
     %1 ah, ch
     jmp [ebp + cont.program]
   .A3:
+    instrumentation_point
     cmp bl, boolean_tag
     jne .invalid_argument
     cmp cl, boolean_tag
