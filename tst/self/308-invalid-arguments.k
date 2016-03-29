@@ -349,7 +349,6 @@
 ($test-binding-structure $bindings->environment () () ())
 
 ;; Invalid structure in non-standard operatives
-;;
 
 ($define! $test-non-standard
   ($vau (invalid-form messages irritant) denv
@@ -360,8 +359,12 @@
 ($test-non-standard ($let1) ("Invalid argument structure.") ())
 ($test-non-standard ($let1 x) ("Invalid argument structure.") ())
 ($test-non-standard ($let1 x 1) ("Invalid argument structure.") (x 1))
+
+;; Invalid arguments in non-standard applicatives
+
 ($test-non-standard (hash-table-ref 2 3) ("Internal error.") 2)
 ($test-non-standard (write-u8 4 5) ("Invalid argument.") 5)
 ($test-non-standard (bytevector-copy-partial 1 2 3) ("Invalid argument.") 1)
+($test-non-standard (char->digit #\newline 3) ("Not a digit.") #\newline)
 
 (summary)

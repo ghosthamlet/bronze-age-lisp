@@ -127,8 +127,25 @@ char_digit_error:
     jmp rn_error
     mov edx, err_invalid_base
 
+;;
+;; char_digit_aux (native procedure)
+;;
+;; Compute numeric value of a digit.
+;;
+;;    '0' ... '9'  =>  0 ...  9
+;;    'a' ... 'z'  => 10 ... 35
+;;    'A' ... 'Z'  => 10 ... 35
+;;
+;; preconditions:  EAX = input character (tagged value)
+;;
+;; postconditions: EAX = digit value (tagged fixint), if the input is a digit
+;;                 EAX = #f, if the input is not a digit
+;;                 EBX = input character, if it is not a digit (for error reporting)
+;;
+;; clobbers:       EAX, EBX, EDX, EFLAGS
+;; preserves:      ECX, ESI, EDI, EBP
+;;
 char_digit_aux:
-    ;; eax = character value
     cmp eax, char_value('z')
     ja .not_a_digit
     movzx ebx, ah
@@ -143,6 +160,7 @@ char_digit_aux:
     or al, fixint_tag
     ret
   .not_a_digit:
+    mov ebx, eax
     mov eax, boolean_value(0)
     ret
     align 4
