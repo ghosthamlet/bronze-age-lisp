@@ -10,4 +10,7 @@
     (bytevector->list y)
     (bytevector-copy-partial! y 1 4 y 0)
     (bytevector->list x)
+    (bytevector->list y)
+    (bytevector-copy! x y)
+    (bytevector->list x)
     (bytevector->list y)))

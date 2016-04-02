@@ -5,7 +5,7 @@
 ;;;
 
 ($define-ground-lambda! bytevector-copy! (src dst)
-  (bytevector-copy-partial! dst 0 (bytevector-length src) src 0))
+  (bytevector-copy-partial! src 0 (bytevector-length src) dst 0))
 
 ($define-ground-lambda! utf8->string (b)
   ($define! p (open-input-string b))
