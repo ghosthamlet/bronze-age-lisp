@@ -34,7 +34,8 @@ section .bss
 test_buffer resb 1024
 test_buffer_end: resd 32
 %include "runtime/bss.asm"
-lisp_heap_area: resd (4 * configured_lisp_heap_size + configured_blob_heap_size)
+lisp_heap_area: resd (4 * configured_lisp_heap_size)
+blob_heap_base: resd configured_blob_heap_size
 lisp_heap_area_end:
 
 section .text

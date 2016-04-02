@@ -206,8 +206,9 @@
       ($for-each-src asm-include asm-prefix "runtime/" "bss.asm")
       (asm "section .heap_area nobits alloc noexec write")
       (asm "lisp_heap_area:")
-      (asm "resb" (+ (* 2 ($configured lisp-heap-size))
-                     ($configured blob-heap-size)))
+      (asm "resb" (* 2 ($configured lisp-heap-size)))
+      (asm "blob_heap_base:")
+      (asm "resb" ($configured blob-heap-size))
       (asm "lisp_heap_area_end:")
       (emit-data-segments))))
 

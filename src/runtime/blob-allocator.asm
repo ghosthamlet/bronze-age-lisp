@@ -21,10 +21,7 @@
 ;;
 init_blob_heap:
     ;; get pointer to string heap
-    mov eax, lisp_heap_area
-    add eax, (2*configured_lisp_heap_size - 1)
-    and eax, ~(2*configured_lisp_heap_size - 1)
-    add eax, 2*configured_lisp_heap_size
+    mov eax, blob_heap_base
     ;;
     mov ecx, 1 + (blob_descriptors.ram - blob_descriptors) / 8
     lea ebx, blob_address(ecx)
