@@ -390,8 +390,10 @@ List of combiners bound in the ground environment
   (registered-requirement? STRING)                   ; klisp
   ($remote-eval FORM ENV)
   (require STRING)                                   ; klisp
+  (restore-heap-image FILE-NAME)                     ; ext
   (reverse LIST)                                     ; klisp, r5rs
 
+  (save-heap-image FILE-NAME)                        ; ext
   ($sequence . FORMs)
   (set! ENV SYMBOL OBJECT)                           ; ext
   ($set! ENV SYMBOL FORM)
@@ -1274,6 +1276,43 @@ Bronze Age Lisp Extensions
        (load/rte ...). However, the dynamic binding is undone
        before evaluating the contents read from FILE.
 
+ 13) Interpreter heap save and restore
+
+   The state of the interpreter may be saved to a file and restored
+   later.
+
+     (save-heap-image FILE) => KEYWORD
+
+       Saves the current state into FILE. The applicative returns
+       the keyword #:original and the program continues normally.
+       When restored, the applicative returns the keyword #:clone.
+
+     (restore-heap-image FILE)
+
+       Load saved state from FILE. The current state of the interpreter
+       is discarded. The continuation of the (save-heap-image ...)
+       invocation used to save the file is invoked.
+
+   The saved image may be also passed to the interpreter via the
+   command line option -H. In this case, the list returned
+   by the applicative (get-script-arguments) corresponds to the
+   command line arguments that follow the option -H.
+
+   Restrictions
+
+     - No files except stdin, stdout and stderr should be open,
+       and no signal handlers should be installed when calling
+       (save-heap-image ...).
+
+     - Heap of the interactive read-eval-print loop should not
+       be saved, because the signal and terminal-related will
+       not be restored (TODO).
+
+     - The saved heap image may be loaded only in the same
+       version of the interpreter that was used to save it.
+       The image is essentially a snapshot of the interpreter
+       memory and includes absolute addresses.
+
 Part II - REPL
 ==============
 
@@ -1294,6 +1333,9 @@ Command line arguments
 
   -r FILE        require a FILE and continue processing arguments,
                  equivalent to -e '(require "FILE")'
+
+  -H FILE        restore saved interpreter state from FILE,
+                 similar to -e '(restore-heap-state "FILE")'
 
   -i             force interactive REPL
 

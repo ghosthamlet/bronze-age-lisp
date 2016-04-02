@@ -148,6 +148,7 @@
   "sockets.k"
   "assertions.k"
   "hash-tables.k"
+  "heap-images.k"
   "native-interfaces.k"
   "_provisional.k"
   )
@@ -271,6 +272,7 @@
     "environments.asm"
     "errors.asm"
     "hash-tables.asm"
+    "heap-images.asm"
     "iterations.asm"
     "keyed-variables.asm"
     "lists.asm"

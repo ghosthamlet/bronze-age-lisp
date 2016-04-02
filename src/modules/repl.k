@@ -16,6 +16,9 @@
 ;;;
 ;;;    -r FILE        equivalent to -e '(require "FILE")'
 ;;;
+;;;    -H FILE        load heap image from FILE
+;;;                   similar to -e '(restore-heap-image "FILE")'
+;;;
 ;;;    -i             force interactive REPL
 ;;;
 ;;;    -b             disable color output and line editing in REPL
@@ -119,7 +122,7 @@
             (eval x env)
             . #9#)))
   (print-usage-instructions ()
-    (write-string "usage: bronze [-l FILE] [-e EXPR] [-w EXPR] [-i] [-b] [-v] [SCRIPT [ARGS...]]" stderr)
+    (write-string "usage: bronze [-l FILE] [-e EXPR] [-w EXPR] [-i] [-b] [-v] SCRIPT [ARGS...]\n       bronze -H HEAP-IMAGE-FILE [ARGS...]" stderr)
     (newline stderr)
     #f)
   (print-version ()
@@ -150,6 +153,9 @@
           (write (eval-string (cadr args) env))
           (newline))
         #1#)
+      ((equal? (car args) "-H")
+        ($abort-on-error args
+          (restore-heap-image/arguments (cdr args))))
       ((equal? (car args) "-i")
         (process-interpreter-arguments (cdr args) #t env))
       ((equal? (car args) "-b")
