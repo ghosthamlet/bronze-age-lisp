@@ -461,7 +461,7 @@ List of combiners bound in the ground environment
   (with-input-from-binary-file FILENAME COMBINER)    ; ext, srfi-56
   (with-input-from-file FILENAME COMBINER)
   (with-input-from-port FILENAME COMBINER)
-  (with-input-from-string FILENAME COMBINER)         ; ext
+  (with-input-from-string STRING COMBINER)           ; ext
   (with-noncanonical-input COMBINER)                 ; ext
   (with-output-to-binary-file FILENAME COMBINER)     ; ext, srfi-56
   (with-output-to-file FILENAME COMBINER)
