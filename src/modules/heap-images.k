@@ -15,13 +15,8 @@
 ($define-ground-lambda! save-heap-image (path . rest)
   ($let1 r
       (save-heap-aux
-        ($let ((p (open-binary-output-file path))
-               (h (string->utf8
-                     (with-output-to-string
-                       ($lambda ()
-                        (display "# saved image textual header TODO\n")))))
-              (b (make-bytevector 256)))
-          (bytevector-copy! h b)
+        ($let* ((b (make-heap-image-header path rest))
+                (p (open-binary-output-file path)))
           (write-bytevector b p)
           (flush-output-port p)
           ;; discard cached environment variables
@@ -39,21 +34,12 @@
         ;; restored by (restore-heap-image ...)
         r))))
 
-($define-ground-lambda! restore-heap-image (path . rest)
-  (restore-heap-aux
-    ($let* ((p (open-raw-input-file path))
-            (b (read-bytevector p)))
-      ;; TODO: depends on default buffer size and no partial read, fix!
-      ;; TODO: restore signal handlers
-      p)
-    #:clone))
+($define-ground-lambda! restore-heap-image args
+  (restore-heap-aux (apply open-heap-image-file args) #:clone))
 
 ($define-private-lambda! restore-heap-image/arguments (tail)
   (restore-heap-aux
-    ($let* ((p (open-raw-input-file (car tail)))
-            (b (read-bytevector p)))
-      ;; TODO: depends on default buffer size and no partial read, fix!
-      p)
+    (open-heap-image-file (car tail))
     ($letrec
       ;; Find position of the heap image argument on the interpreter
       ;; command line. It will be used for (get-script-arguments)
@@ -64,3 +50,30 @@
             i
             (index (+ i 1) (cdr p) q)))))
       (index 0 (get-interpreter-arguments) tail))))
+
+($define-private-lambda! make-heap-image-header (path rest)
+  ($define! t
+    (string->utf8
+      (with-output-to-string
+        ($lambda ()
+          (format #t "# interpreter: ~a~%" interpreter-version)))))
+  ($define! b
+    (make-bytevector 256 (char->integer #\#)))
+  (bytevector-copy! t b)
+  b)
+
+($define-private-lambda! open-heap-image-file (path . rest)
+  ($define! match-version?
+    ($lambda ()
+      ($define! line (read-line))
+      ($and? (string? line)
+             ($or? (equal? line (format "# interpreter: ~a" interpreter-version))
+                   (match-version?)))))
+  ($define! port
+    (open-raw-input-file path))
+  ;; TODO: depends on default port buffer size
+  ($unless (with-input-from-string (utf8->string (read-bytevector port))
+                                   match-version?)
+    (close-port port)
+    (error "Incompatible heap image." path))
+  port)

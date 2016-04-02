@@ -8,7 +8,6 @@ TODO
     - allow the user to defined instrumentation points in lisp code
 - improve heap image handling
     - add #! line in the image
-    - store interpreter version in image header, and check it
     - command to save REPL state (signal and ANSI terminal issues)
     - print saved image in human-readable form
     - combine saved image with the interpreter code in one ELF file
