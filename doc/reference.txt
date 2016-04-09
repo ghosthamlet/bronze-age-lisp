@@ -1313,6 +1313,11 @@ Bronze Age Lisp Extensions
        The image is essentially a snapshot of the interpreter
        memory and includes absolute addresses.
 
+   See also
+
+     tools/dump-heap-image.k
+     tools/executable-heap-image.sh
+
 Part II - REPL
 ==============
 

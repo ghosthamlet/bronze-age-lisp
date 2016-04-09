@@ -7,9 +7,7 @@ TODO
     - add instrumentation points in interpreted operatives
     - allow the user to defined instrumentation points in lisp code
 - improve heap image handling
-    - add #! line in the image
     - command to save REPL state (signal and ANSI terminal issues)
-    - print saved image in human-readable form
     - combine saved image with the interpreter code in one ELF file
 - add ground bindings for Klisp compatibility
 - complete binary port features
